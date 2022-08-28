@@ -51,7 +51,12 @@ get_max_changes <- function(anom_df, start_points, end_points)
     mean_changes <- anom_df$mean.change[start:end]
     maxs[[length(maxs) + 1]] <- round(max(mean_changes), 4)
   }
-  return (maxs)
+  # The values of get_max_changes are passed to cleaned
+  # mean.change columns in anomaly data frames. Unlisting
+  # is therefore necessary to avoid the column type is the
+  # same in data frames that underwent cleaning and data frames
+  # that did not (for example, those with only one anomaly).
+  return (unlist(maxs))
 }
 
 is_in_cluster <- function(previous_anom_time, time, threshold)

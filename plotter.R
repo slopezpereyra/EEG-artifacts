@@ -11,8 +11,6 @@ draw_eeg <- function(o_df, channel)
   return (plot)
 }
 
-draw_eeg(eleventh_minute, 7)
-
 draw_col_anoms <- function(o_df, col_anoms_df, channel, alpha)
 {
   
@@ -76,8 +74,6 @@ draw_anomalies <- function(o_df, col_anoms_df, point_anoms_df, channel, alpha)
   
 }
 
-plot_channel(eleventh_minute, cols, point_anoms, 8, 8)
-
 plot_channel <- function(o_df, col_anoms_df, point_anoms_df, channel, alpha)
 {
   col_anoms_df <- subset(col_anoms_df, col_anoms_df$variate == channel)
@@ -95,9 +91,6 @@ plot_channel <- function(o_df, col_anoms_df, point_anoms_df, channel, alpha)
   }
   return (plot)
 }
-
-
-plot_channel(eleventh_minute, cols, point_anoms, 8, 8)
 
 plot_all_channels <- function(o_df, col_anoms_df, point_anoms_df, alpha)
 {

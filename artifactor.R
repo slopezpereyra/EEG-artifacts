@@ -5,26 +5,47 @@ source('plotter.R')
 
 data <- read_csv('./data/test_data.txt')
 data <- na.omit(data)
+data[10:14] <- NULL
 
 run_local_analysis <- function(df, start, end, resolution=1, alpha=1, thresh=3, plot=TRUE, save_image=FALSE)
 {
+  
   df <- partition_eeg_data(df, start, end)
-  df <- lower_resolution(df, resolution)
+  if (resolution > 1)
+  {
+    df <- lower_resolution(df, resolution)
+  }
   
+  print('Analysis')
   analysis <- capa.mv(df[-1], type='mean')
+  
+  print('Anoms')
   anoms <- collective_anomalies(analysis)
+  
+  print('Signif')
   sig_anoms <- subset(anoms, anoms$mean.change >= alpha)
-  sig_anoms$Time <- add_anomaly_time(sig_anoms, df)
-  anoms$Time <- add_anomaly_time(anoms, df)
-  sig_anoms_reduced <- clean_anomaly_data(sig_anoms, thresh)
   
-  
+  print('Time addition')
   View(anoms)
   View(sig_anoms)
+  if (nrow(sig_anoms) == 0)
+  {
+    return(sig_anoms)
+  }
+  sig_anoms$Time <- add_anomaly_time(sig_anoms, df)
+  
+  print('Reduction')
+  sig_anoms_reduced <- clean_anomaly_data(sig_anoms, thresh)
+
+  View(sig_anoms)
   View(sig_anoms_reduced)
+  
+  # NEEDS REFACTORING
+  
   if (plot == TRUE)
   {
     point <- point_anomalies(analysis)
+    print('Plotting')
     anom_plot <- plot_all_channels(df, sig_anoms_reduced, point, alpha)
     print(anom_plot)
   }
@@ -32,13 +53,10 @@ run_local_analysis <- function(df, start, end, resolution=1, alpha=1, thresh=3, 
   {
     point <- point_anomalies(analysis)
     anom_plot <- plot_all_channels(df, sig_anoms_reduced, point, alpha)
-    print('Saving')
     time <- paste(start, end, sep = ' to ')
-    ggsave(paste('images/', time, '.png', sep = ''), plot=anom_plot)
+    ggsave(paste('./images/', time, '.png', sep = ''), plot=anom_plot)
   }
 }
-
-run_local_analysis(data, 660, 720, resolution = 10, alpha=8, thresh=2, plot=TRUE)
 
 get_col_anoms <- function(df, resolution=1, alpha=1)
 {
@@ -126,7 +144,8 @@ save_epoch_plots <- function(df, step_size, resolution, alpha=1) # Step size in 
   return(base)
 }
 
-save_epoch_plots(data, 60, 10, 8)
+save_epoch_plots(data, 30, 1, 8)
+run_local_analysis(data, 901, 960, resolution = 1, alpha = 8)
 
 #################
 
