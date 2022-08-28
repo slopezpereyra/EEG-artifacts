@@ -1,14 +1,15 @@
-library(lubridate)
-
-# Data manager
+# Scripts on this file are dedicated to partitioning
+# and handling EEG data at the most basic level
+# (sub-setting by record time, lowering data resolution, 
+# etc.).
 
 #
 partition_eeg_data <- function(df, start, end)
 {
-   s_ind <- which(df$Time == start)
-   e_ind <- which(df$Time == end)
-   
-   return (df[s_ind:e_ind, ])
+  s_ind <- which(df$Time == start)
+  e_ind <- which(df$Time == end)
+  
+  return (df[s_ind:e_ind, ])
 }
 
 lower_resolution <- function(df, steps)
@@ -31,11 +32,6 @@ remove_channels <- function(df, channels)
     df[c] <- NULL
   }
   return (df)
-}
-
-
-substrRight <- function(x, n){
-  substr(x, nchar(x)-n+1, nchar(x))
 }
 
 #remove_repeated_anoms(subset(POINT_ANOMS, POINT_ANOMS$variate == 1))
