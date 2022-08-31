@@ -7,61 +7,53 @@ data <- read_csv("./data/test_data.txt")
 data <- na.omit(data)
 data[10:14] <- NULL
 
+#" Perform CAPA analysis on EEG data in a given range of seconds
+#" and return results filtered by anomaly strength.
+#"
+#" @param df EEG data
+#" @param start First second of timespan to analyze
+#" @param end Last second of timespan to analyze
+#" @param res Resolution at which to perform analysis 
+#"            (see lower_resolution function)
+#" @param alpha Threshold of strength significance for collective anomalies 
+#" @param beta Threshold of strength significance for point anomalies
+#" @param thresh How many seconds anomaly n must be from anomaly (n - 1) to
+#"               consider them part of a same cluster?
+#" @param end save_origin Return df along with results?
 
-analyze <- function(df, start, end, res = 1, alpha = 1, thresh = 3,
-                                    plot = TRUE, save_plot = FALSE) {
+#" @return List containing collective anomaly data, point anomaly data
+#" @       and df if save_origin is true.
+analyze <- function(df, start, end, res = 1, alpha = 1, beta = 1, thresh = 3,
+                    save_origin = TRUE) {
 
   df <- df %>% partition_eeg_data(start, end) %>% lower_res(res)
-
   analysis <- capa.mv(df[-1], type = "mean")
-  sig_anoms <- collective_anomalies(analysis) %>% filter(mean.change >= alpha)
-  #sig_anoms <- subset(anoms, anoms$mean.change >= alpha)
+  col_anoms <- collective_anomalies(analysis) %>% filter(mean.change >= alpha)
+  point_anoms <- point_anomalies(analysis) %>% filter(strength >= beta) 
 
-  if (nrow(sig_anoms) == 0) {
-    return(sig_anoms)
+  if (nrow(col_anoms) != 0) {
+    col_anoms$Time <- add_anomaly_time(col_anoms, df)
+    col_anoms <- col_anoms %>% format_collective_data(thresh)
   }
-  sig_anoms$Time <- add_anomaly_time(sig_anoms, df)
 
-  sig_anoms_reduced <- clean_anomaly_data(sig_anoms, thresh)
-
-  # NEEDS REFACTORING
-
-  if (plot == TRUE) {
-    point <- point_anomalies(analysis)
-    print("Plotting")
-    anom_plot <- plot_all_channels(df, sig_anoms_reduced, point, alpha)
-    print(anom_plot)
+  results <- list("Collective anomalies" = col_anoms,
+                  "Point anomalies" = point_anoms,
+                  "Origin" = df)
+  if (save_origin == FALSE) {
+    results <- head(results, -1)
   }
-  if (save_plot == TRUE) {
-    point <- point_anomalies(analysis)
-    anom_plot <- plot_all_channels(df, sig_anoms_reduced, point, alpha)
-    time <- paste(start, end, sep = " to ")
-    ggsave(paste("./images/", time, ".png", sep = ""), plot = anom_plot)
-  }
-return(sig_anoms_reduced)
+  return(results)
 }
 
-
-get_col_anoms <- function(df, res = 1, alpha = 1) {
-  if (res != 1) {
-    df <- lower_res(df, res)
-  }
-
-  analysis <- capa.mv(na.omit(df)[-1], type = "mean") #[-1] excludes Time var.
-  an_obj <- collective_anomalies(analysis)
-  if (nrow(an_obj) == 0) { # What if the col obj is empty (no anomalies)?
-    return(an_obj)
-  }
-  sig_anoms <- subset(an_obj, an_obj$mean.change > alpha)
-
-  if (nrow(sig_anoms) == 0) {# What if the col obj is empty (no anomalies)?
-    return(sig_anoms)
-  }
-
-  sig_anoms$Time <- add_anomaly_time(sig_anoms, df)
-  return(join_anomalous_clusters(sig_anoms))
+has_anomalies <- function(analysis){
+  # We can't use the any() function because analysis may contain
+  # original data (non-empty always).
+  return(nrow(analysis[[1]]) > 0 | nrow(analysis[[2]]) > 0)
 }
 
+view_analysis <- function(analysis){
+  lapply(analysis[1:2], View)
+}
 
 analyze_by_steps <- function(df, step_size, res, alpha = 1) {
   base <- get_col_anoms(partition_eeg_data(df, 1, step_size))
@@ -109,3 +101,4 @@ save_epoch_plots <- function(df, step_size, res, alpha = 1) {
     setTxtProgressBar(pb, s)
   }
 }
+

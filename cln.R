@@ -22,6 +22,13 @@ thresh <- function(anom_df, index, threshold) {
   return(time_in_secs + threshold)
 }
 
+format_time <- function(s) {
+  formated_time <- paste(round(s@hour, 4), round(minute(s), 4),
+                  round(second(s)), sep = ":")
+
+  print(class(formated_time))
+  return(formated_time)
+}
 add_anomaly_time <- function(col_anom_df, data) {
 
   s <- c()
@@ -31,13 +38,10 @@ add_anomaly_time <- function(col_anom_df, data) {
     s <- append(s, time)
   }
 
-  s <- seconds_to_period(s)
-  formated_time <- paste(round(s@hour, 4), round(minute(s), 4),
-                  round(second(s)), sep = ":")
+  s <- format_time(seconds_to_period(s))
 
   return(formated_time)
 }
-
 
 get_max_changes <- function(anom_df, start_points, end_points) {
   maxs <- list()
@@ -95,7 +99,6 @@ detect_clusters <- function(anom_df, cluster_threshold) {
   return(clusters)
 }
 
-
 join_clusters <- function(anom_df, clusters) {
   cluster_starts <- unlist(lapply(clusters, `[[`, 1))
   cluster_ends <- unlist(lapply(clusters, `[[`, 2))
@@ -107,7 +110,7 @@ join_clusters <- function(anom_df, clusters) {
   return(joined)
 }
 
-clean_anomaly_data <- function(anom_df, cluster_thresh) {
+format_collective_data <- function(anom_df, cluster_thresh) {
   anom_df <- anom_df[order(anom_df$variate), ]
   subsets <- list()
   for (channel in unique(anom_df$variate)) {
