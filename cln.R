@@ -29,6 +29,7 @@ format_time <- function(s) {
   print(class(formated_time))
   return(formated_time)
 }
+
 add_anomaly_time <- function(col_anom_df, data) {
 
   s <- c()
@@ -38,14 +39,13 @@ add_anomaly_time <- function(col_anom_df, data) {
     s <- append(s, time)
   }
 
-  s <- format_time(seconds_to_period(s))
-
+  formated_time <- format_time(seconds_to_period(s))
   return(formated_time)
 }
 
 get_max_changes <- function(anom_df, start_points, end_points) {
   maxs <- list()
-  for (n in seq_len(nrow(start_points))) {
+  for (n in seq_along(start_points)) {
     start <- start_points[n]
     end <- end_points[n]
     mean_changes <- anom_df$mean.change[start:end]

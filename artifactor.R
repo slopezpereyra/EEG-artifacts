@@ -3,9 +3,6 @@ source("dman.R")
 source("cln.R")
 source("plotter.R")
 
-data <- read_csv("./data/test_data.txt")
-data <- na.omit(data)
-data[10:14] <- NULL
 
 #" Perform CAPA analysis on EEG data in a given range of seconds
 #" and return results filtered by anomaly strength.
@@ -55,15 +52,15 @@ view_analysis <- function(analysis){
   lapply(analysis[1:2], View)
 }
 
-analyze_by_steps <- function(df, step_size, res, alpha = 1) {
-  base <- get_col_anoms(partition_eeg_data(df, 1, step_size))
-  View(base)
+analyze_by_steps <- function(df, step_size, res, alpha = 1, beta = 1) {
+
   eeg_duration <- df$Time[nrow(df)]
   s <- 1 + step_size
   e <- s + step_size - 1
   steps <- nrow(df) %/% step_size
 
   pb <- txtProgressBar(min = s, max = eeg_duration, style = 3) # Progress bar
+  base <- analyze(df, 1, s, res = res, alpha = alpha, beta = beta)
 
   for (x in 1:steps) {# One step already done defining base
     if (e > df$Time[nrow(df)]) { # If this is the last step...
@@ -81,24 +78,28 @@ analyze_by_steps <- function(df, step_size, res, alpha = 1) {
   return(base)
 }
 
-save_epoch_plots <- function(df, step_size, res, alpha = 1) {
+save_epoch_plots <- function(df, step_size, res, alpha = 1, beta = 1) {
 
   eeg_duration <- df$Time[nrow(df)]
   s <- 1
   e <- s + step_size - 1
   steps <- nrow(df) %/% step_size
 
-  pb <- txtProgressBar(min = s, max = eeg_duration, style = 3) # Progress bar
+  pb <- txtProgressBar(min = 1, max = eeg_duration, style = 3) # Progress bar
 
   for (x in 1:steps){ # One step already done defining base
     if (e > df$Time[nrow(df)]) { # If this is the last step...
       break # For now only
       e <- nrow(df)
     }
-    analyze(data, s, e, res, alpha, thresh = 3, FALSE, TRUE)
-    s <- e + 1
+
+    analysis <- analyze(df, s, e, res, alpha, beta = beta)
+    print(paste(s, e, sep=":"))
+    if (has_anomalies(analysis)){
+      plot <- plot_analysis(analysis, save_plot = TRUE)
+    }
+    s <- e
     e <- e + step_size
     setTxtProgressBar(pb, s)
-  }
+    }
 }
-
