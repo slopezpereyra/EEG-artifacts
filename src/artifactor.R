@@ -2,10 +2,41 @@
 # on EEG data.
 
 library(anomaly)
+library(methods)
 source("dman.R")
 source("cln.R")
 source("plotter.R")
 
+setClass("analysis",
+  slots = list(
+    canoms = "data.frame",
+    panoms = "data.frame",
+    origin = "data.frame"
+  )
+)
+
+setMethod(
+  "show",
+  "analysis",
+  function(object) {
+    View(object@canoms)
+    View(object@panoms)
+    View(object@origin)
+  }
+)
+
+
+# " Check if analysis as returned by the analyze() function
+# " found anomalies or not.
+# " @param analysis An analysis as returned by the analyze() function.
+
+setMethod(
+  "has.anomalies",
+  "analysis",
+  function(object) {
+    return(nrow(object@canoms) > 0 | nrow(object@panoms) > 0)
+  }
+)
 
 # " Perform M-CAPA analysis on EEG data in a given range of seconds
 # " and return results filtered by anomaly strength.
@@ -23,8 +54,7 @@ source("plotter.R")
 
 # " @return List containing collective anomaly data, point anomaly data
 # " @       and df if save_origin is true.
-analyze <- function(df, start, end, res = 1, alpha = 1, beta = 1, thresh = 3,
-                    save_origin = TRUE) {
+analyze <- function(df, start, end, res = 1, alpha = 1, beta = 1, thresh = 3) {
   df <- df %>%
     partition.eeg(start, end) %>%
     lower.res(res)
@@ -33,38 +63,20 @@ analyze <- function(df, start, end, res = 1, alpha = 1, beta = 1, thresh = 3,
   canoms <- collective_anomalies(analysis) %>%
     filter(mean.change >= alpha) %>%
     set.timevars(data = df) %>%
-    format.collectives(thresh)
+    format.collectives(thresh) %>%
+    as_tibble()
 
   panoms <- point_anomalies(analysis) %>%
     filter(strength >= beta) %>%
-    set.timevars(data = df)
+    set.timevars(data = df) %>%
+    as_tibble()
 
 
-  results <- list(
-    "Collective anomalies" = canoms,
-    "Point anomalies" = panoms,
-    "Origin" = df
-  )
-  if (save_origin == FALSE) {
-    results <- head(results, -1)
-  }
+  results <- new("analysis", canoms = canoms, panoms = panoms, origin = df)
   return(results)
 }
 
-# " Check if analysis as returned by the analyze() function
-# " found anomalies or not.
-# " @param analysis An analysis as returned by the analyze() function.
-has.anomalies <- function(analysis) {
-  # We can't use the any() function because analysis may contain
-  # original data (non-empty always).
-  return(nrow(analysis[[1]]) > 0 | nrow(analysis[[2]]) > 0)
-}
 
-# " Show analysis results in table.
-# " @param analysis An analysis as returned by the analyze() function.
-view.analysis <- function(analysis) {
-  lapply(analysis[1:2], View)
-}
 
 # " Performs stepwise M-CAPA analysis on EEG data, saving
 # " result plots for each step and writes a .csv data file

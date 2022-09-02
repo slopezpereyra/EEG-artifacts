@@ -5,6 +5,7 @@ library(ggplot2)
 library(cowplot)
 library(patchwork)
 
+
 draw.egg <- function(o_df, channel) {
   o_df <- o_df[-1]
   plot <- ggplot(o_df, aes(seq_len(nrow(o_df)), unlist(o_df[channel]))) +
@@ -99,9 +100,9 @@ plot.channels <- function(o_df, canoms, panoms) {
 }
 
 plot.analysis <- function(analysis, save_plot = FALSE) {
-  anom_plot <- plot.channels(analysis[[3]], analysis[[1]], analysis[[2]])
-  start <- seconds_to_period(analysis[[3]]$Time[1]) %>% format.time()
-  end <- seconds_to_period(tail(analysis[[3]]$Time, 1)) %>% format.time()
+  anom_plot <- plot.channels(analysis@origin, analysis@canoms, analysis@panoms)
+  start <- seconds_to_period(analysis@origin$Time[1]) %>% format.time()
+  end <- seconds_to_period(tail(analysis@origin$Time, 1)) %>% format.time()
   if (save_plot == TRUE) {
     time <- paste(start, end, sep = " to ")
     ggsave(paste("/home/santi/work/EEG-artifacts/images/", time, ".png", sep = ""), plot = anom_plot)

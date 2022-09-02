@@ -37,15 +37,15 @@ create.epoch.data <- function() {
 }
 
 update.epochs <- function(epoch_data, analysis) {
-  colls <- analysis[[1]]
-  points <- analysis[[2]]
+  canoms <- analysis@canoms
+  panoms <- analysis@panoms
 
-  collective_epochs <- unique(paste(colls$Epoch, colls$Subepoch))
-  point_epochs <- unique(paste(points$Epoch, points$Subepoch))
+  collective_epochs <- unique(paste(canoms$Epoch, canoms$Subepoch))
+  point_epochs <- unique(paste(panoms$Epoch, panoms$Subepoch))
 
   epochs <- union(collective_epochs, point_epochs)
   epoch_list <- lapply(strsplit(epochs, " "), as.numeric)
-  chans <- union(unique(colls$variate), unique(points$variate))
+  chans <- union(unique(canoms$variate), unique(panoms$variate))
 
   epoch_data <- add_row(epoch_data,
     epoch = unlist(lapply(epoch_list, `[[`, 1)),
