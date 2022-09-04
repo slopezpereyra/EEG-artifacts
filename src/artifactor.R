@@ -5,38 +5,8 @@ library(anomaly)
 library(methods)
 source("dman.R")
 source("cln.R")
-source("plotter.R")
+source("analysis.r")
 
-setClass("analysis",
-  slots = list(
-    canoms = "data.frame",
-    panoms = "data.frame",
-    origin = "data.frame"
-  )
-)
-
-setMethod(
-  "show",
-  "analysis",
-  function(object) {
-    View(object@canoms)
-    View(object@panoms)
-    View(object@origin)
-  }
-)
-
-
-# " Check if analysis as returned by the analyze() function
-# " found anomalies or not.
-# " @param analysis An analysis as returned by the analyze() function.
-
-setMethod(
-  "has.anomalies",
-  "analysis",
-  function(object) {
-    return(nrow(object@canoms) > 0 | nrow(object@panoms) > 0)
-  }
-)
 
 # " Perform M-CAPA analysis on EEG data in a given range of seconds
 # " and return results filtered by anomaly strength.
@@ -113,7 +83,7 @@ analyize.stepwise <- function(df, step_size, res, alpha = 1, beta = 1) {
 
     analysis <- analyze(df, s, e, res, alpha, beta = beta, thresh = 3)
     if (has.anomalies(analysis)) {
-      plot <- plot.analysis(analysis, save_plot = TRUE)
+      plot <- plot(analysis, save = TRUE)
     }
     epoch_data <- update.epochs(epoch_data, analysis)
     s <- e

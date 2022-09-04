@@ -18,7 +18,7 @@ library(lubridate)
 # " @return
 thresh <- function(anom_df, index, threshold) {
   time <- anom_df$Time[index]
-  time_in_secs <- period_to_seconds(hms(time))
+  time_in_secs <- period_to_seconds(time)
   return(time_in_secs + threshold)
 }
 
@@ -51,19 +51,15 @@ format.time <- function(s) {
 # "
 # " @return
 get.time <- function(anom_df, data) {
-  if (nrow(anom_df) == 0) {
-    return()
-  }
-  s <- c()
-  for (x in seq_len(nrow(anom_df))) {
-    start <- anom_df[1][x, ]
-    time <- data$Time[start]
-    s <- append(s, time)
-  }
-
-  formated_time <- format.time(seconds_to_period(s))
-  return(formated_time)
+  print(seconds_to_period(data$Time[unlist(anom_df[1])]))
+  return(seconds_to_period(data$Time[unlist(anom_df[1])]))
 }
+
+get.time2 <- function(anom_df, data) {
+  first_col <- anom_df[1]
+  return(as_datetime(data$Time[unlist(first_col)]))
+}
+
 
 set_anomaly_epoch <- function(anom_df) {
   if (nrow(anom_df) == 0) {
@@ -71,11 +67,9 @@ set_anomaly_epoch <- function(anom_df) {
   }
 
   epoch <- anom_df$Time %>%
-    hms() %>%
     period_to_seconds() %/% 30
 
   second <- anom_df$Time %>%
-    hms() %>%
     second()
   subepoch <- ((second - 30 * (second %/% 30)) %/% 5) + 1
 
@@ -129,7 +123,7 @@ get.maxchange <- function(anom_df, start_points, end_points) {
 # "
 # " @return bool
 is.clustered <- function(previous_anom_time, time, threshold) {
-  time_in_secs <- period_to_seconds(hms(time))
+  time_in_secs <- period_to_seconds(time)
   return(threshold - time_in_secs >= 0 | time == previous_anom_time)
 }
 
