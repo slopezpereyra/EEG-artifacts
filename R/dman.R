@@ -6,16 +6,8 @@
 library(tidyverse)
 
 load.eeg <- function(data_file, signals_file) {
-  data <- read_csv(paste(
-    "/home/santi/work/EEG-artifacts/data/",
-    data_file,
-    sep = ""
-  ))
-  signals <- read_csv(paste(
-    "/home/santi/work/EEG-artifacts/data/",
-    signals_file,
-    sep = ""
-  ))
+  data <- read_csv(data_file)
+  signals <- read_csv(signals_file)
   colnames(data)[-1] <- signals$Label %>%
     str_remove("EEG ") %>%
     str_remove("EOG")
