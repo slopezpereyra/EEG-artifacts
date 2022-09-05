@@ -45,9 +45,7 @@ lowpass < -lower.res(tenth_min_data, 20);
 
 defines two new data sets. The first contains the raw tenth minute of the record; the latter, that same timespan with a resolution such that $5$ entries (instead of a hundred) make up a second. If we plot the F3-A2 channel of both sets, the difference is evident.
 
-<img src="https://i.ibb.co/s1FRfxV/chan1.png" width="600" height="200" />
-
-<img src="https://i.ibb.co/j65ZYYc/plot-zoom.png" width="600" height="200" />
+![Full resolution](https://i.ibb.co/PgP1S3P/plot.png)
 
 We could conduct artifact rejection analysis on any of the two formats, with the expectable accuracy vs. performance trade-off.
 
