@@ -5,7 +5,6 @@
 
 library(ggplot2)
 library(cowplot)
-library(patchwork)
 library(lubridate)
 
 
@@ -87,8 +86,9 @@ setMethod(
                 )
             ) +
             geom_line() +
-            scale_x_datetime(date_labels = "%H:%M:%S")
-        return(plot)
+            scale_x_datetime(date_labels = "%H:%M:%S") +
+            xlab("") +
+            ylab(colnames(object@origin[-1][channel]))
     }
 )
 
@@ -112,7 +112,7 @@ setMethod(
         areas <- tibble(
             xmin = as_datetime(canoms$Time),
             xmax = as_datetime(object@origin$Time[canoms$end]),
-            ymin = -300, ymax = 300, alpha = 0.3
+            ymin = -315, ymax = 315, alpha = 0.3
         )
         print(canoms)
         print(areas)
@@ -122,7 +122,7 @@ setMethod(
                 alpha = 0.3, fill = "red",
                 data = transform(areas, as.character(seq_len(nrow(areas)))),
                 inherit.aes = FALSE
-            )
+            ) + xlab("") + ylab(colnames(object@origin[-1][channel]))
         return(plot)
     }
 )
@@ -146,7 +146,7 @@ setMethod(
         eeg <- draw.eeg(object, channel = channel)
         plot <- eeg +
             geom_point(data = points, aes(A, B), inherit.aes = FALSE, color = "red") +
-            xlab("") + ylab(channel)
+            xlab("") + ylab(colnames(object@origin[-1][channel]))
 
         return(plot)
     }
@@ -183,7 +183,7 @@ setMethod(
                 inherit.aes = FALSE
             ) +
             geom_point(data = points, aes(A, B), inherit.aes = FALSE, color = "red") +
-            xlab("") + ylab(channel)
+            xlab("") + ylab(colnames(object@origin[-1][channel]))
 
         return(plot)
     }
