@@ -22,17 +22,6 @@ thresh <- function(anom_df, index, threshold) {
   return(time_in_secs + threshold)
 }
 
-# " Given an anomaly database, an anomaly index and a threshold in seconds,
-# " returns the time at which the anomaly occurred plus the threshold in seconds.
-# " The function is designed to be used in the context of removing anomalies
-# " that are statistically different but clustered in a short time-span
-# " (see function join_anomalous_clusters).
-# "
-# " @param anom_dfr Anomaly database
-# " @param index Anomaly index
-# " @param threshold Threshold in seconds
-# "
-# " @return
 format.time <- function(s) {
   formated_time <- paste(round(s@hour, 4), round(minute(s), 4),
     round(second(s)),
@@ -53,7 +42,6 @@ format.time <- function(s) {
 get.time <- function(anom_df, data) {
   return(seconds_to_period(data$Time[unlist(anom_df[1])]))
 }
-
 
 
 set_anomaly_epoch <- function(anom_df) {

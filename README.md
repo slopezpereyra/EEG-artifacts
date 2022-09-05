@@ -59,12 +59,13 @@ The `analyze` function returns an `analysis` object defined by a data frame of a
 
 We will perform anomaly detection on the tenth minute of data with $\alpha = 8$.
 
-> :bulb: Alpha is the threshold value determining how far from the estimated distribution mean a sequence ought to stray to be to be considered anomalous. Experimentation has found a good standard value is $8$.
+> :bulb: Alpha is the threshold value determining how far from the estimated distribution mean a sequence ought to stray to be considered anomalous. Experimentation has found a good standard value is $8$.
 
     analysis <- analyze(data, 60 * 11, 60 * 12, alpha = 8)
     plot(analysis)
 
 ![Analysis](https://i.ibb.co/7KgzB77/analysis.png)
+
 The algorithm is finding a long artifact in the last ten seconds of data, while all channels also show anomalies around minute 11:15. If we are curious to see a particular channel, we can call a specific plot for it. Let us see what is going on with LOC-A2, the seventh channel.
 
     draw.anomalies(analysis, channel = 7)
