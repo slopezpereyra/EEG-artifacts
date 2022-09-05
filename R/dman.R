@@ -3,8 +3,25 @@
 # (sub-setting by record time, lowering data res,
 # etc.).
 
-
 library(tidyverse)
+
+load.eeg <- function(data_file, signals_file) {
+  data <- read_csv(paste(
+    "/home/santi/work/EEG-artifacts/data/",
+    data_file,
+    sep = ""
+  ))
+  signals <- read_csv(paste(
+    "/home/santi/work/EEG-artifacts/data/",
+    signals_file,
+    sep = ""
+  ))
+  colnames(data)[-1] <- signals$Label %>%
+    str_remove("EEG ") %>%
+    str_remove("EOG")
+
+  return(data)
+}
 
 partition.eeg <- function(df, start, end) {
   s_ind <- which(df$Time == start)

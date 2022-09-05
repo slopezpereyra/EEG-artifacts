@@ -1,0 +1,5 @@
+Package: artifactor
+Type: Package
+Title: Automated Artifact Detection for EEG data using
+Version: 0.0.1.0
+RoxygenNote: 7.2.1

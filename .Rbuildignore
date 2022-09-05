@@ -1,0 +1,13 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.data
+^\.images
+^\.results
+^\.git
+^\.vscode
+^\.data
+
+
+
+
+
