@@ -51,14 +51,9 @@ format.time <- function(s) {
 # "
 # " @return
 get.time <- function(anom_df, data) {
-  print(seconds_to_period(data$Time[unlist(anom_df[1])]))
   return(seconds_to_period(data$Time[unlist(anom_df[1])]))
 }
 
-get.time2 <- function(anom_df, data) {
-  first_col <- anom_df[1]
-  return(as_datetime(data$Time[unlist(first_col)]))
-}
 
 
 set_anomaly_epoch <- function(anom_df) {

@@ -1,8 +1,6 @@
 # Scripts on this file are dedicated to performing M-CAPA analysis
 # on EEG data.
 
-library(roxygen2)
-roxygenize()
 library(anomaly)
 library(methods)
 source("R/dman.R")
