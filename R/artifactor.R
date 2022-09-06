@@ -3,13 +3,13 @@
 
 library(anomaly)
 library(methods)
-source("R/eeg.R")
 source("R/cln.R")
 source("R/analysis.r")
+source("R/eeg.R")
 
 
 # " Perform M-CAPA analysis on EEG data in a given range of seconds
-# " and return results filtered by anomaly strength.
+# " and return results dplyr::filtered by anomaly strength.
 # "
 # " @param df EEG data
 # " @param s First second of timespan to analyze
@@ -32,13 +32,13 @@ analyze <- function(eeg, s, e, res = 1, alpha = 1, beta = 1, thresh = 3) {
   analysis <- capa.mv(eeg@data[-1], type = "mean")
 
   canoms <- collective_anomalies(analysis) %>%
-    filter(mean.change >= alpha) %>%
+    dplyr::filter(mean.change >= alpha) %>%
     set.timevars(data = eeg@data) %>%
     format.collectives(thresh) %>%
     as_tibble()
 
   panoms <- point_anomalies(analysis) %>%
-    filter(strength >= beta) %>%
+    dplyr::filter(strength >= beta) %>%
     set.timevars(data = eeg@data) %>%
     as_tibble()
 
