@@ -78,9 +78,11 @@ The `analyze` function returns an `analysis` object defined by a data frame of a
 
 #### Example analyses
 
+We will now choose certain portions of the EEG record that seem to contain more or less subtles artifacts and perform an analysis on them.
+
 ##### 1. A
 
-We will perform anomaly detection on the tenth minute of data with $\alpha = 8$.
+Firstly, we will perform anomaly detection on the tenth minute of data with $\alpha = 8$.
 
 > :bulb: Alpha is the threshold value determining how far from the estimated distribution mean a sequence ought to stray to be considered anomalous. Experimentation has found a good standard value is $8$.
 
@@ -99,9 +101,9 @@ draw.anomalies(analysis, channel = 7)
 
 ![LOC-A2](https://i.ibb.co/DgrQH7G/analyisis-c7.png)
 
-##### B. Analyzing a 30-second epoch
+##### B.
 
-We will now perform an analysis on the timespan from minute 11:30 to 12:00.
+We will now perform an analysis on the timespan from minute 17 to 18.
 
 ```
 analysis <- analyze(eeg, 17 * 60, 18 * 60, alpha = 8)
