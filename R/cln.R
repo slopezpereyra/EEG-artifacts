@@ -164,7 +164,7 @@ format.collectives <- function(anom_df, cluster_thresh) {
   anom_df <- anom_df[order(anom_df$variate), ]
   subsets <- list()
   for (channel in unique(anom_df$variate)) {
-    channel_anoms <- filter(anom_df, variate == channel)
+    channel_anoms <- dplyr::filter(anom_df, variate == channel)
     if (nrow(channel_anoms) <= 2) {
       subsets[[length(subsets) + 1]] <- channel_anoms
       next

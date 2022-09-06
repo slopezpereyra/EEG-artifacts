@@ -92,7 +92,6 @@ setMethod(
     }
 )
 
-
 setGeneric(
     "draw.clusters",
     function(object, channel) {
@@ -105,7 +104,7 @@ setMethod(
     "analysis",
     function(object, channel) {
         canoms <- object@canoms %>%
-            filter(variate == channel)
+            dplyr::filter(variate == channel)
         # mutate(
         #    start = as_datetime(object@origin$Time[object@canoms$start])
         # )
@@ -139,7 +138,7 @@ setMethod(
     "analysis",
     function(object, channel) {
         points <- object@panoms %>%
-            filter(variate == channel)
+            dplyr::filter(variate == channel)
         point_values <- unlist(object@origin[-1][points$location, channel])
         points <- tibble(A = as_datetime(points$Time), B = point_values)
 
@@ -164,11 +163,11 @@ setMethod(
     "analysis",
     function(object, channel) {
         points <- object@panoms %>%
-            filter(variate == channel)
+            dplyr::filter(variate == channel)
         point_values <- unlist(object@origin[-1][points$location, channel])
         points <- tibble(A = as_datetime(points$Time), B = point_values)
 
-        canoms <- object@canoms %>% filter(variate == channel)
+        canoms <- object@canoms %>% dplyr::filter(variate == channel)
         areas <- tibble(
             xmin = as_datetime(canoms$Time),
             xmax = as_datetime(object@origin$Time[canoms$end]),
@@ -200,9 +199,9 @@ setMethod(
     "plot.channel",
     "analysis",
     function(object, channel) {
-        canoms <- object@canoms %>% filter(variate == channel)
+        canoms <- object@canoms %>% dplyr::filter(variate == channel)
         point_locs <- object@panoms %>%
-            filter(variate == channel) %>%
+            dplyr::filter(variate == channel) %>%
             .$location
         if (nrow(canoms) == 0 & length(point_locs) == 0) {
             return(draw.egg(object, channel))

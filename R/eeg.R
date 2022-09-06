@@ -1,4 +1,5 @@
 library(tidyverse)
+library(signal)
 
 setClass("eeg",
     slots = list(
@@ -46,6 +47,26 @@ setMethod(
 )
 
 setGeneric(
+    "low.pass",
+    function(object, n) {
+        standardGeneric("low.pass")
+    }
+)
+
+setMethod(
+    "low.pass",
+    "eeg",
+    function(object, n) {
+        for (chan in 1:(ncol(object@data) - 1)) {
+            bf <- butter(3, 1 / n) # 1/n Hz low-pass filter
+            lowp <- signal::filter(bf, unlist(object@data[-1][chan]))
+            object@data[-1][chan] <- lowp
+        }
+        return(object)
+    }
+)
+
+setGeneric(
     "lower.res",
     function(object, n) {
         standardGeneric("lower.res")
@@ -68,6 +89,37 @@ setMethod(
     }
 )
 
+setGeneric(
+    "draw",
+    function(object) {
+        standardGeneric("draw")
+    }
+)
+
+setMethod(
+    "draw",
+    "eeg",
+    function(object) {
+        plots <- list()
+        for (channel in 1:(ncol(object@data) - 1)) {
+            plot <- object@data %>%
+                mutate(Time = as_datetime(Time)) %>%
+                ggplot(
+                    aes(
+                        Time,
+                        unlist(object@data[-1][channel])
+                    )
+                ) +
+                geom_line() +
+                scale_x_datetime(date_labels = "%H:%M:%S") +
+                xlab("") +
+                ylab(colnames(object@data[-1][channel]))
+
+            plots[[channel]] <- plot
+        }
+        return(plot_grid(plotlist = plots, align = "v", ncol = 1))
+    }
+)
 
 load.eeg <- function(data_file, signals_file) {
     data <- read_csv(data_file)

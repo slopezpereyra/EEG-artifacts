@@ -10,9 +10,11 @@ The aim of this document is to succinctly show how our automated artifact detect
 
 In order to perform automated artifact detection, we need to install our `artifactor` package in R. Simply run the following commands in the R console.
 
-    library(devtools)
-    install_github("slopezpereyra/EEG-artifacts")
-    library(artifactor)
+library(devtools)
+
+install_github("slopezpereyra/EEG-artifacts")
+
+library(artifactor)
 
 And that is it! Our package is ready to go. :fire::smiling_imp:
 
@@ -24,23 +26,31 @@ To load EEG data, we use the `load_eeg(data_file, signals_file)` function and pa
 
 For example, after previously exporting an EDF file named `test` in a .csv format,
 
-    data <- load.eeg("test_data.txt",
-    				"test_signals.txt") %>%
-    		na.omit()
-    View(data)
+```r
+eeg <- load.eeg("test_data.txt",
+				"test_signals.txt") %>%
+				na.omit()
+View(eeg@data)
+```
 
 ![EEG data](https://i.ibb.co/M9CqQzG/Screenshot-from-2022-09-04-16-20-50.png)
+
 Channel labels are automatically recognized and appropriately set as column names.
 
 ### Handling EEG data
 
-EEG data is extremely large. For that reason, it is often desirable to work with only a subset of the record, or a low resolution version of it. This is accomplished via the `partition.eeg(df, start, end)` and `lower.res(df, n)` functions. The latter is equivalent to applying a low-pass filter, since it reduces the number of events per unit of time (only one every $n$th values are kept). The first is a sub-setting function that extracts a time period of data in seconds.
+EEG data is extremely large. For that reason, it is often desirable to work with only a subset of the record, or a low resolution version of it. This is accomplished via the `partition.eeg(df, start, end)` and `lower.res(df, n)` functions.
+
+`partition.eeg` is a sub-setting function that extracts a time period of data in seconds. `lower.res` is _similar_ to applying a low-pass filter, in the sense that it reduces the number of events per unit of time by keeping only one every $n$th values).
 
 For example,
 
-```js
-tenth_min_data < -partition.eeg(data, 60 * 10, 60 * 11);
-lowpass < -lower.res(tenth_min_data, 20);
+```r
+
+tenth_min_data <  -partition.eeg(data, 60  *  10, 60  *  11);
+
+lowpass <  -lower.res(tenth_min_data, 20);
+
 ```
 
 defines two new data sets. The first contains the raw tenth minute of the record; the latter, that same timespan with a resolution such that $5$ entries (instead of a hundred) make up a second. If we plot the F3-A2 channel of both sets, the difference is evident.
@@ -48,6 +58,17 @@ defines two new data sets. The first contains the raw tenth minute of the record
 ![Full resolution](https://i.ibb.co/PgP1S3P/plot.png)
 
 We could conduct artifact rejection analysis on any of the two formats, with the expectable accuracy vs. performance trade-off.
+
+Lowering the data resolution is not mathematically equivalent to performing a low-pass filter. If one should want to apply a low-pass filter, then the `low.pass(eeg, n)` function should be passed, where a $\frac{1}{n} \text{Hz}$ [Butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter) is applied. For example,
+
+```r
+	minute <- partition.eeg(eeg, 60, 120) # Second minute of record
+	low_pass_minute <- low.pass(minute, 20) # Apply 0.05Hz filter
+```
+
+defines two `eeg` objects containing the second minute of record, the latter with a low-pass filter. Visually, they differ as shown in the image below.
+
+![enter image description here](https://i.ibb.co/vDG7Lpj/plot-2.png)
 
 ### Anomaly detection
 
@@ -61,14 +82,15 @@ We will perform anomaly detection on the tenth minute of data with $\alpha = 8$.
 
 > :bulb: Alpha is the threshold value determining how far from the estimated distribution mean a sequence ought to stray to be considered anomalous. Experimentation has found a good standard value is $8$.
 
-    analysis <- analyze(data, 60 * 11, 60 * 12, alpha = 8)
-    plot(analysis)
+analysis <- analyze(data, 60 _ 11, 60 _ 12, alpha = 8)
+
+plot(analysis)
 
 ![Analysis](https://i.ibb.co/7KgzB77/analysis.png)
 
 The algorithm is finding a long artifact in the last ten seconds of data, while all channels also show anomalies around minute 11:15. If we are curious to see a particular channel, we can call a specific plot for it. Let us see what is going on with LOC-A2, the seventh channel.
 
-    draw.anomalies(analysis, channel = 7)
+draw.anomalies(analysis, channel = 7)
 
 ![LOC-A2](https://i.ibb.co/DgrQH7G/analyisis-c7.png)
 
