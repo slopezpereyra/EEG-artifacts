@@ -82,7 +82,7 @@ We will now choose certain portions of the EEG record that seem to contain more 
 
 ##### 1. A
 
-Firstly, we will perform anomaly detection on the tenth minute of data with $\alpha = 8$.
+Firstly, we will perform anomaly detection on the eleventh minute of data with $\alpha = 8$.
 
 > :bulb: Alpha is the threshold value determining how far from the estimated distribution mean a sequence ought to stray to be considered anomalous. Experimentation has found a good standard value is $8$.
 
