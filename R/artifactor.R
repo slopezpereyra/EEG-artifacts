@@ -85,9 +85,7 @@ analyize.stepwise <- function(eeg, step_size, res, alpha = 1, beta = 1) {
       break # For now only
       e <- nrow(df)
     }
-    print("here")
     analysis <- analyze(eeg, s, e, res, alpha, beta = beta, thresh = 3)
-    print("done")
     if (has.anomalies(analysis)) {
       plot <- plot(analysis, save = TRUE)
     }

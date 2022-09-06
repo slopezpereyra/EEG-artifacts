@@ -90,6 +90,35 @@ setMethod(
 )
 
 setGeneric(
+    "draw.channel",
+    function(object, channel) {
+        standardGeneric("draw.channel")
+    }
+)
+
+setMethod(
+    "draw.channel",
+    "eeg",
+    function(object, channel) {
+        y <- object@data[-1][channel]
+        p <- object@data %>%
+            mutate(Time = as_datetime(Time)) %>%
+            ggplot(
+                aes(
+                    Time,
+                    unlist(y)
+                )
+            ) +
+            geom_line() +
+            scale_x_datetime(date_labels = "%H:%M:%S") +
+            xlab("") +
+            ylab(colnames(object@data[-1][channel]))
+
+        return(p)
+    }
+)
+
+setGeneric(
     "draw",
     function(object) {
         standardGeneric("draw")
@@ -102,20 +131,8 @@ setMethod(
     function(object) {
         plots <- list()
         for (channel in 1:(ncol(object@data) - 1)) {
-            plot <- object@data %>%
-                mutate(Time = as_datetime(Time)) %>%
-                ggplot(
-                    aes(
-                        Time,
-                        unlist(object@data[-1][channel])
-                    )
-                ) +
-                geom_line() +
-                scale_x_datetime(date_labels = "%H:%M:%S") +
-                xlab("") +
-                ylab(colnames(object@data[-1][channel]))
-
-            plots[[channel]] <- plot
+            p <- draw.channel(object, channel)
+            plots[[channel]] <- p
         }
         return(plot_grid(plotlist = plots, align = "v", ncol = 1))
     }

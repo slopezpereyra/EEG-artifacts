@@ -113,8 +113,6 @@ setMethod(
             xmax = as_datetime(object@origin$Time[canoms$end]),
             ymin = -315, ymax = 315, alpha = 0.3
         )
-        print(canoms)
-        print(areas)
         eeg <- draw.eeg(object, channel = channel)
         plot <- eeg +
             geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),

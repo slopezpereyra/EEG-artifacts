@@ -4,7 +4,6 @@
 
 library(lubridate)
 
-
 # " Given an anomaly database, an anomaly index and a threshold in seconds,
 # " returns the time at which the anomaly occurred plus the threshold in seconds.
 # " The function is designed to be used in the context of removing anomalies
