@@ -59,3 +59,7 @@ po/*~
 rsconnect/
 
 .vscode/
+
+*.Rproj
+
+R/tests.R

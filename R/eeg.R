@@ -138,12 +138,16 @@ setMethod(
     }
 )
 
-load.eeg <- function(data_file, signals_file) {
+load.eeg <- function(data_file, signals_file = NULL) {
     data <- read_csv(data_file)
-    signals <- read_csv(signals_file)
-    colnames(data)[-1] <- signals$Label %>%
-        str_remove("EEG ") %>%
-        str_remove("EOG")
+    if (!is.null(signals_file)) {
+        signals <- read_csv(signals_file)
+        colnames(data)[-1] <- signals$Label %>%
+            str_remove("EEG ") %>%
+            str_remove("EOG")
+    } else {
+        signals <- tibble()
+    }
 
     return(new("eeg", data = data, signals = signals))
 }
