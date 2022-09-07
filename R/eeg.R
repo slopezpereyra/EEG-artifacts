@@ -1,5 +1,8 @@
 library(signal)
 
+#' EEG class.
+#' @slot data A data frame containing EEG records
+#' @slot signals A data frame containing signal information (may be empty).
 setClass("eeg",
     slots = list(
         data = "data.frame",
@@ -7,6 +10,8 @@ setClass("eeg",
     )
 )
 
+#' Show method for the EEG class that prints the data slot.
+#' @param object An EEG object.
 setMethod(
     "show",
     "eeg",
@@ -15,6 +20,8 @@ setMethod(
     }
 )
 
+#' NA omit for the EEG class that applies na.omit() to the data slot.
+#' @param object An EEG object.
 setMethod(
     "na.omit",
     "eeg",
@@ -31,6 +38,17 @@ setGeneric(
     }
 )
 
+#' Given an eeg object, determine the subset of
+#' its data attribute that contains records from
+#' second s to e, and return a new eeg object whose
+#' data attribute is such subset.
+#'
+#' @param object An eeg object.
+#' @param s Starting time of the subset in seconds.
+#' @param e Ending time of the subset in seconds.
+#'
+#' @return A new eeg whose data is the subset ranging from
+#' second s to e of the object's data attribute.
 setMethod(
     "partition.eeg",
     "eeg",
@@ -52,6 +70,13 @@ setGeneric(
     }
 )
 
+#' Given an eeg object and a numeric frequency n,
+#' applies a 1/n Hz low-pass Butterworth filter.
+#'
+#' @param object An eeg object.
+#' @param n Filter frequency.
+#'
+#' @return A new filtered EEG object
 setMethod(
     "low.pass",
     "eeg",
@@ -72,6 +97,17 @@ setGeneric(
     }
 )
 
+#' Given an eeg object and an integer n,
+#' subset the EEG's data by keeping only one every
+#' n values and return a new EEG with the subsetted data.
+#'
+#' Logically, the new EEG will have a length of 1/n
+#' the length of the subsetted EEG.
+#'
+#' @param object An eeg object.
+#' @param n An integer.
+#'
+#' @return A new filtered EEG object
 setMethod(
     "lower.res",
     "eeg",
@@ -89,14 +125,21 @@ setMethod(
 )
 
 setGeneric(
-    "draw.channel",
+    "plot.channel",
     function(object, channel) {
-        standardGeneric("draw.channel")
+        standardGeneric("plot.channel")
     }
 )
 
+#' Given an eeg object and a channel integer n,
+#' plots EEG record of the nth channel.
+#'
+#' @param object An eeg object.
+#' @param channel An integer indicating index of channel to plot.
+#'
+#' @return A ggplot object.
 setMethod(
-    "draw.channel",
+    "plot.channel",
     "eeg",
     function(object, channel) {
         y <- object@data[-1][channel]
@@ -118,33 +161,40 @@ setMethod(
 )
 
 setGeneric(
-    "draw",
+    "plot.eeg",
     function(object) {
-        standardGeneric("draw")
+        standardGeneric("plot.eeg")
     }
 )
 
+#' Given an eeg object, plot all the EEG channels
+#' in a vertical single-column layout.
+#'
+#' @param object An eeg object.
+#'
+#' @return A plot_grid object.
 setMethod(
-    "draw",
+    "plot.eeg",
     "eeg",
     function(object) {
         plots <- list()
         for (channel in 1:(ncol(object@data) - 1)) {
-            p <- draw.channel(object, channel)
+            p <- plot.channel(object, channel)
             plots[[channel]] <- p
         }
+
         return(plot_grid(plotlist = plots, align = "v", ncol = 1))
     }
 )
 
-# " Read a .csv data file containing EEG data and an optionall
-# " signals file and return an eeg object. If the signals file is provided,
-# "  channel names are appropriately set.
-# "
-# " @param data_file .csv file containing eeg data.
-# " @param signals_file .csv file containing signal information
-# "
-# " @return An eeg object.
+#' Read a .csv data file containing EEG data and an optionall
+#' signals file and return an eeg object. If the signals file is provided,
+#'  channel names are appropriately set.
+#'
+#' @param data_file .csv file containing eeg data.
+#' @param signals_file .csv file containing signal information
+#'
+#' @return An eeg object.
 load.eeg <- function(data_file, signals_file = NULL) {
     data <- read_csv(data_file)
     if (!is.null(signals_file)) {
@@ -160,10 +210,10 @@ load.eeg <- function(data_file, signals_file = NULL) {
 }
 
 
-# " Create an empty data frame to be filled with epoch-subepoch
-# " anomalous pairs during stepwise analysis.
-# "
-# " @return An empty dataframe.
+#' Create an empty data frame to be filled with epoch-subepoch
+#' anomalous pairs during stepwise analysis.
+#'
+#' @return An empty dataframe.
 create.epoch.data <- function() {
     results <- tibble(
         epoch = numeric(),
@@ -176,11 +226,11 @@ create.epoch.data <- function() {
 }
 
 
-# " Update a data frame containing anomalous epoch-subepoch
-# " pairs given a certain analysis results.
-# "
-# " @return A data frame as defined by create.epoch.data().
-# " @return An analysis object.
+#' Update a data frame containing anomalous epoch-subepoch
+#' pairs given a certain analysis results.
+#'
+#' @return A data frame as defined by create.epoch.data().
+#' @return An analysis object.
 update.epochs <- function(epoch_data, analysis) {
     canoms <- analysis@canoms
     panoms <- analysis@panoms
