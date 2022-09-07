@@ -6,22 +6,28 @@
 library(ggplot2)
 library(cowplot)
 
-
+#' Analysis class.
+#' @slot canoms A collective anomalies data frame.
+#' @slot signals A point anomalies data frame.
+#' @slot The eeg upon which analysis is conducted.
 setClass("analysis",
     slots = list(
         canoms = "data.frame",
         panoms = "data.frame",
-        origin = "data.frame"
+        eeg = "eeg"
     )
 )
 
+#' Show method for the EEG class that calls View on the canoms panoms
+#' and eeg slots.
+#' @param object An Analysis object.
 setMethod(
     "show",
     "analysis",
     function(object) {
         View(object@canoms)
         View(object@panoms)
-        View(object@origin)
+        View(object@eeg@data)
     }
 )
 
@@ -32,10 +38,10 @@ setGeneric(
     }
 )
 
-# " Check if analysis as returned by the analyze() function
-# " found anomalies or not.
-# " @param analysis An analysis as returned by the analyze() function.
-
+#' Check if either canoms or panoms are non-empty data frames.
+#' @param object An Analysis object.
+#'
+#' @return bool
 setMethod(
     "has.anomalies",
     "analysis",
@@ -52,6 +58,12 @@ setGeneric(
     }
 )
 
+
+#' Getter function retrieving all EEG channels containing
+#' anomalies in the Analysis object.
+#'
+#' @param object An Analysis object.
+#' @return A vector containing all anomalous channels in the analysis.
 setMethod(
     "get.anomalous.channels",
     "analysis",
@@ -64,114 +76,104 @@ setMethod(
     }
 )
 
-
 setGeneric(
-    "draw.eeg",
+    "plot.clusters",
     function(object, channel) {
-        standardGeneric("draw.eeg")
+        standardGeneric("plot.clusters")
     }
 )
 
+#' Plots only collective anomalies in one of the EEG channels.
+#'
+#' @param object An Analysis object.
+#' @param channel An integer.
+#' @return A ggplot.
 setMethod(
-    "draw.eeg",
-    "analysis",
-    function(object, channel) {
-        plot <- object@origin %>%
-            mutate(Time = as_datetime(Time)) %>%
-            ggplot(
-                aes(
-                    Time,
-                    unlist(object@origin[-1][channel])
-                )
-            ) +
-            geom_line() +
-            scale_x_datetime(date_labels = "%H:%M:%S") +
-            xlab("") +
-            ylab(colnames(object@origin[-1][channel]))
-    }
-)
-
-setGeneric(
-    "draw.clusters",
-    function(object, channel) {
-        standardGeneric("draw.clusters")
-    }
-)
-
-setMethod(
-    "draw.clusters",
+    "plot.clusters",
     "analysis",
     function(object, channel) {
         canoms <- object@canoms %>%
             dplyr::filter(variate == channel)
         # mutate(
-        #    start = as_datetime(object@origin$Time[object@canoms$start])
+        #    start = as_datetime(object@eeg@data$Time[object@canoms$start])
         # )
         areas <- tibble(
             xmin = as_datetime(canoms$Time),
-            xmax = as_datetime(object@origin$Time[canoms$end]),
+            xmax = as_datetime(object@eeg@data$Time[canoms$end]),
             ymin = -315, ymax = 315, alpha = 0.3
         )
-        eeg <- draw.eeg(object, channel = channel)
+        eeg <- plot.channel(object@eeg, channel = channel)
         plot <- eeg +
             geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
                 alpha = 0.3, fill = "red",
                 data = transform(areas, as.character(seq_len(nrow(areas)))),
                 inherit.aes = FALSE
-            ) + xlab("") + ylab(colnames(object@origin[-1][channel]))
+            ) + xlab("") + ylab(colnames(object@eeg@data[-1][channel]))
         return(plot)
     }
 )
 
 setGeneric(
-    "draw.points",
+    "plot.points",
     function(object, channel) {
-        standardGeneric("draw.points")
+        standardGeneric("plot.points")
     }
 )
 
+
+#' Plots only point anomalies in one of the EEG channels.
+#'
+#' @param object An Analysis object.
+#' @param channel An integer.
+#' @return A ggplot.
 setMethod(
-    "draw.points",
+    "plot.points",
     "analysis",
     function(object, channel) {
         points <- object@panoms %>%
             dplyr::filter(variate == channel)
-        point_values <- unlist(object@origin[-1][points$location, channel])
+        point_values <- unlist(object@eeg@data[-1][points$location, channel])
         points <- tibble(A = as_datetime(points$Time), B = point_values)
 
-        eeg <- draw.eeg(object, channel = channel)
+        eeg <- plot.channel(object@eeg, channel = channel)
         plot <- eeg +
             geom_point(data = points, aes(A, B), inherit.aes = FALSE, color = "red") +
-            xlab("") + ylab(colnames(object@origin[-1][channel]))
+            xlab("") + ylab(colnames(object@eeg@data[-1][channel]))
 
         return(plot)
     }
 )
 
 setGeneric(
-    "draw.anomalies",
+    "plot.anomalies",
     function(object, channel) {
-        standardGeneric("draw.anomalies")
+        standardGeneric("plot.anomalies")
     }
 )
 
+
+#' Plots both point and collective anomalies in one of the EEG channels.
+#'
+#' @param object An Analysis object.
+#' @param channel An integer.
+#' @return A ggplot.
 setMethod(
-    "draw.anomalies",
+    "plot.anomalies",
     "analysis",
     function(object, channel) {
         points <- object@panoms %>%
             dplyr::filter(variate == channel)
-        point_values <- unlist(object@origin[-1][points$location, channel])
+        point_values <- unlist(object@eeg@data[-1][points$location, channel])
         points <- tibble(A = as_datetime(points$Time), B = point_values)
 
         canoms <- object@canoms %>% dplyr::filter(variate == channel)
         areas <- tibble(
             xmin = as_datetime(canoms$Time),
-            xmax = as_datetime(object@origin$Time[canoms$end]),
+            xmax = as_datetime(object@eeg@data$Time[canoms$end]),
             ymin = -300, ymax = 300, alpha = 0.3
         )
 
-        eeg <- draw.eeg(object, channel = channel)
+        eeg <- plot.channel(object@eeg, channel = channel)
         plot <- eeg +
             geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
                 alpha = 0.3, fill = "red",
@@ -179,21 +181,29 @@ setMethod(
                 inherit.aes = FALSE
             ) +
             geom_point(data = points, aes(A, B), inherit.aes = FALSE, color = "red") +
-            xlab("") + ylab(colnames(object@origin[-1][channel]))
+            xlab("") + ylab(colnames(object@eeg@data[-1][channel]))
 
         return(plot)
     }
 )
 
+
+
 setGeneric(
-    "plot.channel",
+    "plot.channel.analysis",
     function(object, channel) {
-        standardGeneric("plot.channel")
+        standardGeneric("plot.channel.analysis")
     }
 )
 
+#' Wrapper function that plots an analyzed channel with
+#' any kind of anomalies in it.
+#'
+#' @param object An Analysis object.
+#' @param channel An integer.
+#' @return A ggplot.
 setMethod(
-    "plot.channel",
+    "plot.channel.analysis",
     "analysis",
     function(object, channel) {
         canoms <- object@canoms %>% dplyr::filter(variate == channel)
@@ -201,32 +211,36 @@ setMethod(
             dplyr::filter(variate == channel) %>%
             .$location
         if (nrow(canoms) == 0 & length(point_locs) == 0) {
-            return(draw.egg(object, channel))
+            return(plot.egg(object, channel))
         } else if (nrow(canoms) == 0) {
-            return(draw.points(object, channel))
+            return(plot.points(object, channel))
         } else {
-            return(draw.anomalies(object, channel))
+            return(plot.anomalies(object, channel))
         }
         return(plot)
     }
 )
 
 setGeneric(
-    "plot.channels",
+    "plot.channels.analysis",
     function(object) {
-        standardGeneric("plot.channels")
+        standardGeneric("plot.channels.analysis")
     }
 )
 
+#' Plots all channels with any kind of anomalies.
+#'
+#' @param object An Analysis object.
+#' @return A plot_grid object.
 setMethod(
-    "plot.channels",
+    "plot.channels.analysis",
     "analysis",
     function(object) {
         plots <- list()
         channels <- get.anomalous.channels(object)
         for (channel in channels)
         {
-            p <- plot.channel(object, channel)
+            p <- plot.channel.analysis(object, channel)
             plots[[channel]] <- p
         }
         return(plot_grid(plotlist = plots, align = "v", ncol = 1))
@@ -234,22 +248,31 @@ setMethod(
 )
 
 setGeneric(
-    "plot",
+    "plot.analysis",
     function(object, save = FALSE) {
-        standardGeneric("plot")
+        standardGeneric("plot.analysis")
     }
 )
 
+#' Wrapper and standard analysis plotting function.
+#' Plots all analyzed channels with the option of saving
+#' the plot.
+#'
+#' @param object An Analysis object.
+#' @param save A bool declaring whether to save the image in .png format or not.
+#'
+#' @return A plot_grid object.
 setMethod(
-    "plot",
+    "plot.analysis",
     "analysis",
     function(object, save = FALSE) {
-        anom_plot <- plot.channels(object)
+        anom_plot <- plot.channels.analysis(object)
         if (save == TRUE) {
-            start <- seconds_to_period(object@origin$Time[1]) %>% format.time()
-            end <- seconds_to_period(tail(object@origin$Time, 1)) %>% format.time()
+            dir.create("results")
+            start <- seconds_to_period(object@eeg@data$Time[1]) %>% format.time()
+            end <- seconds_to_period(tail(object@eeg@data$Time, 1)) %>% format.time()
             time <- paste(start, end, sep = " to ")
-            ggsave(paste("/home/santi/work/EEG-artifacts/images/", time, ".png", sep = ""), plot = anom_plot)
+            ggsave(paste("results/", time, ".png", sep = ""), plot = anom_plot)
         }
         return(anom_plot)
     }

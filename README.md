@@ -17,7 +17,7 @@
 
 ### Overview
 
-The aim of this document is to succinctly show how our automated artifact detection package works. This should be sufficient to allow other researchers to begin using the package.
+The aim of this document is to show how our automated artifact detection package works. This should be sufficient to allow other researchers to begin using the package.
 
 ### Installation
 
@@ -64,7 +64,7 @@ tenth_min_data < -partition.eeg(eeg, 60 * 10, 60 * 11)
 low_res < lower.res(tenth_min_data, 20)
 ```
 
-defines two new data sets. The first contains the raw tenth minute of the record; the latter, that same timespan with a resolution such that $5$ entries (instead of a hundred) make up a second. If we plot the F3-A2 channel of both sets, the difference is evident.
+defines two new data sets. The first contains the raw tenth minute of the record; the latter contains that same timespan with a resolution such that $5$ entries (instead of a hundred) make up a second. If we plot the F3-A2 channel of both sets, the difference is evident.
 
 ![Full resolution](https://i.ibb.co/PgP1S3P/plot.png)
 
