@@ -63,3 +63,7 @@ rsconnect/
 *.Rproj
 
 R/tests.R
+
+plot.svg
+
+results.csv

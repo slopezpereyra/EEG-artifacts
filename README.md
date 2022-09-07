@@ -1,6 +1,19 @@
 ﻿# EEG Automated Artifact Detection
 
+
+
 > :microscope: This software is an implementation of [Multivariate-CAPA](https://arxiv.org/abs/1806.01947) for EEG artifact detection.
+
+- [EEG Automated Artifact Detection](#eeg-automated-artifact-detection)
+		- [Overview](#overview)
+		- [Installation](#installation)
+		- [Loading EEG data](#loading-eeg-data)
+		- [Handling EEG data](#handling-eeg-data)
+		- [Anomaly detection](#anomaly-detection)
+			- [Example analyses](#example-analyses)
+				- [1. Eleventh minute](#1-eleventh-minute)
+				- [B. Seventeenth minute](#b-seventeenth-minute)
+	- [Analyzing the whole EEG](#analyzing-the-whole-eeg)
 
 ### Overview
 

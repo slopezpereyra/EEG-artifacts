@@ -5,7 +5,6 @@
 
 library(ggplot2)
 library(cowplot)
-library(lubridate)
 
 
 setClass("analysis",

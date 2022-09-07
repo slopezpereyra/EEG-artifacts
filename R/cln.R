@@ -4,23 +4,27 @@
 
 library(lubridate)
 
-# " Given an anomaly database, an anomaly index and a threshold in seconds,
-# " returns the time at which the anomaly occurred plus the threshold in seconds.
-# " The function is designed to be used in the context of removing anomalies
-# " that are statistically different but clustered in a short time-span
-# " (see function join_anomalous_clusters).
+# " Given an collective anomalies (or canoms) data frame,
+# " an index  i and a threshold in seconds, returns the time at which
+# ' anomaly canoms[i] occurred plus the threshold in seconds.
 # "
-# " @param anom_dfr Anomaly database
-# " @param index Anomaly index
+# " @param canoms Collective anomalies data frame, such as the @canoms attribute in an analysis object.
+# " @param i Anomaly index
 # " @param threshold Threshold in seconds
 # "
-# " @return
-thresh <- function(anom_df, index, threshold) {
-  time <- anom_df$Time[index]
+# " @return An integer. The time of occurence of anomaly canoms[i] plus threshold.
+thresh <- function(canoms, i, threshold) {
+  time <- canoms$Time[i]
   time_in_secs <- period_to_seconds(time)
   return(time_in_secs + threshold)
 }
 
+# " Given a lubridate time object s, returns a character formatted in the
+# " hours:minutes:seconds.
+# "
+# " @param s A lubridate time object.
+# "
+# " @return A character.
 format.time <- function(s) {
   formated_time <- paste(round(s@hour, 4), round(minute(s), 4),
     round(second(s)),
@@ -30,59 +34,70 @@ format.time <- function(s) {
 }
 
 
-# " Given a collective anomalies database, adds the formated
-# " time at which each anomaly occurred based on its position
-# " in the original EEG data.
+# " Given a canoms or panoms data frame, returns a vector containing
+# " the lubridate period objects corresponding to the time of occurrence,
+# " in the EEG record, of every anomaly of the data frame.
 # "
-# " @param Collective anomalies data frame
-# " @param index Data where anomalies were detected
+# " @param anoms A canoms or panoms data frame.
 # "
-# " @return
-get.time <- function(anom_df, data) {
-  return(seconds_to_period(data$Time[unlist(anom_df[1])]))
+# " @return A vector of lubridate periods
+get.time <- function(anoms, data) {
+  return(seconds_to_period(data$Time[unlist(anoms[1])]))
 }
 
-
-set_anomaly_epoch <- function(anom_df) {
-  if (nrow(anom_df) == 0) {
-    return(anom_df)
+# " Given a canoms or panoms data frame, returns an identical
+# " canoms or panoms with the inclusion of epoch and subepoch columns.
+# "
+# " @param anoms A canoms or panoms data frame.
+# "
+# " @return A data frame
+set_anomaly_epoch <- function(anoms) {
+  if (nrow(anoms) == 0) {
+    return(anoms)
   }
 
-  epoch <- anom_df$Time %>%
+  epoch <- anoms$Time %>%
     period_to_seconds() %/% 30
 
-  second <- anom_df$Time %>%
+  second <- anoms$Time %>%
     second()
   subepoch <- ((second - 30 * (second %/% 30)) %/% 5) + 1
 
-  anom_df$Epoch <- epoch
-  anom_df$Subepoch <- subepoch
-  return(anom_df)
+  anoms$Epoch <- epoch
+  anoms$Subepoch <- subepoch
+  return(anoms)
 }
 
-set.timevars <- function(anom_df, data) {
-  if (nrow(anom_df) == 0) {
-    return(anom_df)
+# " Given a canoms or panoms data frame and its origin, returns an identical
+# " canoms or panoms data frame with the inclusion of all time variables:
+# " Time, Epoch and Subepoch.
+# "
+# " @param anoms A canoms or panoms data frame.
+# " @data The data where anomalies were detected.
+# " @return A data frame
+set.timevars <- function(anoms, data) {
+  if (nrow(anoms) == 0) {
+    return(anoms)
   }
-  anom_df$Time <- get.time(anom_df, data)
-  anom_df <- set_anomaly_epoch(anom_df)
-  return(anom_df)
+  anoms$Time <- get.time(anoms, data)
+  anoms <- set_anomaly_epoch(anoms)
+  return(anoms)
 }
 
-# " Returns the maximum mean change from the range of mean
-# " changes that occurred in an anomalous cluster.
+# " Returns the maximum of all mean changes that occurred in
+# " an anomalous cluster.
 # "
-# " @param anom_df Collective anomalies dataframe
-# " @param start_points Start indexes of all clusters in anom_df
-# " @param threshold End indexes of all clusters in anom_df
+# " @param anom_df A canoms dataframe.
+# " @param start_points Start indexes of all clusters in canoms
+# " @param threshold End indexes of all clusters in anoms
 # "
-# " @return Vector containing maximum mean change of each anomaly in anom_df
-get.maxchange <- function(anom_df, start_points, end_points) {
+# " @return Vector containing maximum mean change of each anomaly in canoms
+get.maxchange <- function(canoms, start_points, end_points) {
   maxs <- list()
   for (n in seq_along(start_points)) {
     start <- start_points[n]
     end <- end_points[n]
-    mean_changes <- anom_df$mean.change[start:end]
+    mean_changes <- canoms$mean.change[start:end]
     maxs[[length(maxs) + 1]] <- round(max(mean_changes), 4)
   }
   # The values of get.maxchange are passed to cleaned
@@ -119,20 +134,24 @@ last.cluster <- function(in_cluster, clusters, start, end) {
   return(clusters)
 }
 
-
-detect.clusters <- function(anom_df, cluster_threshold) {
-
-  # clusters[[n]][m] accesses mth element in nth cluster
+# " Given a single-channel canoms data frame, returns a list of all
+# "  clusters of anomalies. Each element in the list is a pair of
+# " the form (s, e) containing the start and the end indexes of each cluster.
+# "
+# " @param canoms A canoms data frame with a single channel.
+# "
+# " @return A list of (s, e) pairs.
+detect.clusters <- function(canoms, cluster_threshold) {
   clusters <- list()
   start <- 1
 
-  for (n in 2:nrow(anom_df)) {
-    time <- anom_df$Time[n]
-    predecessor_time <- anom_df$Time[n - 1]
-    threshold <- thresh(anom_df, n - 1, cluster_threshold)
+  for (n in 2:nrow(canoms)) {
+    time <- canoms$Time[n]
+    predecessor_time <- canoms$Time[n - 1]
+    threshold <- thresh(canoms, n - 1, cluster_threshold)
     in_cluster <- is.clustered(predecessor_time, time, threshold)
 
-    if (n == nrow(anom_df)) { # Special clause needed for last element.
+    if (n == nrow(canoms)) { # Special clause needed for last element.
 
       clusters <- last.cluster(in_cluster, clusters, start, n)
       break
@@ -145,17 +164,33 @@ detect.clusters <- function(anom_df, cluster_threshold) {
   return(clusters)
 }
 
-join.clusters <- function(anom_df, clusters) {
+# " Given a single-variate canoms data frame, returns an equal size
+# " or smaller data frame where all anomalies belonging to the same
+# " cluster were reduced to a single anomaly.
+# "
+# " @param canoms A canoms data frame with a single channel.
+# " @param clusters A list of (s, e) pairs containing start and end indexes of all clusters in canoms.
+# "
+# " @return A canoms data frame.
+join.clusters <- function(canoms, clusters) {
   cluster_starts <- unlist(lapply(clusters, `[[`, 1))
   cluster_ends <- unlist(lapply(clusters, `[[`, 2))
 
-  joined <- anom_df[cluster_starts, ]
-  joined$end <- anom_df$end[cluster_ends]
-  joined$mean.change <- get.maxchange(anom_df, cluster_starts, cluster_ends)
+  joined <- canoms[cluster_starts, ]
+  joined$end <- canoms$end[cluster_ends]
+  joined$mean.change <- get.maxchange(canoms, cluster_starts, cluster_ends)
 
   return(joined)
 }
 
+# " Given a multi-channel canoms data frame, returns a formatted version of the data frame
+# " where all anomalies belonging to the same clusterwere reduced to a single
+# " anomaly in every record channel.
+# "
+# " @param canoms A canoms data frame.
+# " @param clusters A list of (s, e) pairs containing start and end indexes of all clusters in canoms.
+# "
+# " @return A canoms data frame.
 format.collectives <- function(anom_df, cluster_thresh) {
   if (nrow(anom_df) == 0) {
     return(anom_df)
@@ -172,5 +207,6 @@ format.collectives <- function(anom_df, cluster_thresh) {
     joined_channel_anoms <- join.clusters(channel_anoms, clusters_pos)
     subsets[[length(subsets) + 1]] <- joined_channel_anoms
   }
+  suppressMessages()
   return(subsets %>% reduce(full_join))
 }

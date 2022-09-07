@@ -3,28 +3,26 @@
 
 library(anomaly)
 library(methods)
+library(tidyverse)
 source("R/cln.R")
 source("R/analysis.r")
 source("R/eeg.R")
 
 
 # " Perform M-CAPA analysis on EEG data in a given range of seconds
-# " and return results dplyr::filtered by anomaly strength.
+# " and return results filtered by anomaly strength.
 # "
-# " @param df EEG data
+# " @param eeg An eeg object
 # " @param s First second of timespan to analyze
 # " @param e Last second of timespan to analyze
 # " @param res Resolution at which to perform analysis
-# "            (see lower.resolution function)
 # " @param alpha Threshold of strength significance for collective anomalies
 # " @param beta Threshold of strength significance for point anomalies
-# " @param thresh How many seconds anomaly n must be from anomaly (n - 1) to
-# "               consider them part of a same cluster?
-# " @param save_origin Return df along with results?
+# " @param thresh How many seconds collective anomaly n must be from
+# "               collective anomaly (n - 1) to consider them part of a same cluster?
 
-# " @return List containing collective anomaly data, point anomaly data
-# " @       and df if save_origin is true.
-analyze <- function(eeg, s, e, res = 1, alpha = 1, beta = 1, thresh = 3) {
+# " @return An analysis object
+analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3) {
   eeg <- eeg %>%
     partition.eeg(s, e) %>%
     lower.res(res)
@@ -53,27 +51,23 @@ analyze <- function(eeg, s, e, res = 1, alpha = 1, beta = 1, thresh = 3) {
 
 
 
-# " Performs stepwise M-CAPA analysis on EEG data, saving
-# " result plots for each step and writes a .csv data file
+# " Performs stepwise CAPA analysis on EEG data, saving
+# " result plots for each step and writing a .csv data file
 # " with every epoch/subepoch pair containing an anomaly.
 # "
-# " @param df EEG data
-# " @param s First second of timespan to analyze
-# " @param e Last second of timespan to analyze
-# " @param res Resolution at which to perform analysis
-# "            (see lower.resolution function)
+# " @param eeg An eeg object.
+# " @param step_size Size in seconds of the sequence of data analyized
+# " on each step.
+# " @param res Resolution at which to perform the analyses
 # " @param alpha Threshold of strength significance for collective anomalies
 # " @param beta Threshold of strength significance for point anomalies
 # " @param thresh How many seconds anomaly n must be from anomaly (n - 1) to
-# "               consider them part of a same cluster?
-# " @param save_origin Return df along with results?
+# "  consider them part of a same cluster?
 
-# " @return List containing collective anomaly data, point anomaly data
-# " @       and df if save_origin is true.
 
-analyize.stepwise <- function(eeg, step_size, res, alpha = 1, beta = 1) {
+analyize.stepwise <- function(eeg, step_size, res, alpha = 8, beta = 1, thresh = 3) {
   eeg_duration <- tail(eeg@data$Time, n = 1)
-  s <- 1
+  s <- eeg@data$Time[1]
   e <- s + step_size - 1
   steps <- nrow(eeg@data) %/% step_size
   epoch_data <- create.epoch.data()
@@ -85,7 +79,7 @@ analyize.stepwise <- function(eeg, step_size, res, alpha = 1, beta = 1) {
       break # For now only
       e <- nrow(df)
     }
-    analysis <- analyze(eeg, s, e, res, alpha, beta = beta, thresh = 3)
+    analysis <- analyze(eeg, s, e, res, alpha, beta = beta, thresh = thresh)
     if (has.anomalies(analysis)) {
       plot <- plot(analysis, save = TRUE)
     }

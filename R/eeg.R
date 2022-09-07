@@ -1,4 +1,3 @@
-library(tidyverse)
 library(signal)
 
 setClass("eeg",
@@ -138,6 +137,14 @@ setMethod(
     }
 )
 
+# " Read a .csv data file containing EEG data and an optionall
+# " signals file and return an eeg object. If the signals file is provided,
+# "  channel names are appropriately set.
+# "
+# " @param data_file .csv file containing eeg data.
+# " @param signals_file .csv file containing signal information
+# "
+# " @return An eeg object.
 load.eeg <- function(data_file, signals_file = NULL) {
     data <- read_csv(data_file)
     if (!is.null(signals_file)) {
@@ -152,6 +159,11 @@ load.eeg <- function(data_file, signals_file = NULL) {
     return(new("eeg", data = data, signals = signals))
 }
 
+
+# " Create an empty data frame to be filled with epoch-subepoch
+# " anomalous pairs during stepwise analysis.
+# "
+# " @return An empty dataframe.
 create.epoch.data <- function() {
     results <- tibble(
         epoch = numeric(),
@@ -163,6 +175,12 @@ create.epoch.data <- function() {
     return(results)
 }
 
+
+# " Update a data frame containing anomalous epoch-subepoch
+# " pairs given a certain analysis results.
+# "
+# " @return A data frame as defined by create.epoch.data().
+# " @return An analysis object.
 update.epochs <- function(epoch_data, analysis) {
     canoms <- analysis@canoms
     panoms <- analysis@panoms
