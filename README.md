@@ -91,7 +91,7 @@ The `analyze` function returns an `analysis` object. An `analysis` object has
 
 - a `@canoms` attribute: data frame of all collective anomalies;
 - a `@panoms` attribute: data frame of all point anomalies;
-- an `@origin` attribute: containing the original data upon which the analysis was conducted.
+- an `@eeg` attribute: containing the eeg upon which the analysis was conducted.
 
 The `analysis` class has numerous plotting methods, the most important of which is `plot(analysis)` (used to create the graphs of the forthcoming section).
 
@@ -107,8 +107,7 @@ Firstly, we will perform anomaly detection on the eleventh minute of data with $
 
 ```r
 analysis <- analyze(eeg, 60 * 11, 60 * 12, alpha = 8)
-plot(analysis)
-
+plot.analysis(analysis)
 ```
 
 ![Analysis](https://i.ibb.co/7KgzB77/analysis.png)
@@ -116,7 +115,7 @@ plot(analysis)
 The algorithm is finding a long artifact in the last ten seconds of data, while all channels also show anomalies around minute 11:15. If we are curious to see a particular channel, we can call a specific plot for it. Let us see what is going on with LOC-A2, the seventh channel.
 
 ```r
-draw.anomalies(analysis, channel = 7)
+plot.anomalies(analysis, channel = 7)
 ```
 
 ![LOC-A2](https://i.ibb.co/DgrQH7G/analyisis-c7.png)
@@ -140,4 +139,4 @@ For example, `analyze.stepwise(data, 30, res = 1)` would perform artifact detect
 
 The `analyize.stepwise` function saves the analysis plots of each separate analysis as `.png` files and also writes a single `.csv` spreadsheet containing each epoch-subepoch pair containing anomalies.
 
-Because the output of this function is large (dozens of `,png` images images and a `.csv` file), we will not show it here. But this is the function one should use when aiming at analyzing not a specific portion of the EEG, but its entirety.
+Because the output of this function is large (dozens of `.png` images images and a `.csv` file), we will not show it here. But this is the function one should use when aiming at analyzing not a specific portion of the EEG, but its entirety.
