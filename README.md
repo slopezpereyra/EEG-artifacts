@@ -139,4 +139,4 @@ For example, `analyze.stepwise(data, 30, res = 1)` would perform artifact detect
 
 The `analyize.stepwise` function saves the analysis plots of each separate analysis as `.png` files and also writes a single `.csv` spreadsheet containing each epoch-subepoch pair containing anomalies.
 
-Because the output of this function is large (dozens of `.png` images images and a `.csv` file), we will not show it here. But this is the function one should use when aiming at analyzing not a specific portion of the EEG, but its entirety.
+Because the output of this function is large (dozens of `.png` images images and a `.csv` file), we will not show it here. Suffices to say this is the function required to analyze a complete EEG record. For a better explanation of why stepwise (instead of direct) analysis is required, and the logic behind the algorithm, see [this document](https://github.com/slopezpereyra/EEG-artifacts/blob/main/markdowns/stepwise.md).
