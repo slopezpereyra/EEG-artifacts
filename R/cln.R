@@ -1,6 +1,6 @@
 # Scripts on this file are specially dedicated to cleaning
-# collective outlier data frames resulting from CAPA analysis.
-# (Functions are not dedicated to point anomalies data frames).
+# outlier data frames resulting from CAPA analysis (before they are
+# made part of an analysis object).
 
 library(lubridate)
 

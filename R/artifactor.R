@@ -20,7 +20,7 @@ source("R/analysis.r")
 #' @param alpha Threshold of strength significance for collective anomalies
 #' @param beta Threshold of strength significance for point anomalies
 #' @param thresh How many seconds collective anomaly n must be from
-#'               collective anomaly (n - 1) to consider them part of a same cluster?
+#' collective anomaly (n - 1) to consider them part of a same cluster?
 
 #' @return An analysis object
 analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3) {
@@ -67,19 +67,26 @@ analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3) {
 
 
 analyize.stepwise <- function(eeg, step_size, res, alpha = 8, beta = 1, thresh = 3) {
-  eeg_duration <- tail(eeg@data$Time, n = 1)
-  s <- eeg@data$Time[1]
-  e <- s + step_size - 1
-  steps <- nrow(eeg@data) %/% step_size
   epoch_data <- create.epoch.data()
+  s <- eeg@data$Time[1]
+  e <- s + step_size
+  eeg_duration <- tail(eeg@data$Time, n = 1) - s
+  steps <- eeg_duration %/% step_size
+  if (eeg_duration %% step_size != 0) {
+    steps <- steps + 1
+    r <- eeg_duration %% step_size
+  }
 
-  pb <- txtProgressBar(min = s, max = eeg_duration, style = 3) # Progress bar
+  pb <- txtProgressBar(
+    min = s, max = tail(eeg@data$Time, n = 1),
+    style = 3
+  ) # Progress bar
 
-  for (x in 1:steps) { # One step already done defining base
-    if (e > tail(eeg@data$Time, n = 1)) { # If this is the last step...
-      break # For now only
-      e <- nrow(df)
+  for (x in 1:(steps)) { # One step already done defining base
+    if (e > tail(eeg@data, n = 1)) {
+      e <- s + r
     }
+
     analysis <- analyze(eeg, s, e, res, alpha, beta = beta, thresh = thresh)
     if (has.anomalies(analysis)) {
       plot <- plot(analysis, save = TRUE)
