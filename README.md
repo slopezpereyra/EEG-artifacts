@@ -131,12 +131,12 @@ plot(analysis)
 
 ## Analyzing the whole EEG
 
-Lastly, our package provides the `analyze.stepwise(df, step_size, res, ...)` function. This function performs stepwise analysis on the whole EEG data frame passed as argument.
+Lastly, our package provides the `analyze.stepwise(eeg, step_size, res, ...)` function. This function performs stepwise analysis on the whole EEG data frame passed as argument.
 
 > :bulb: By stepwise analysis we mean the separate analysis of the sequences $a_0, a_1, a_2, ..., a_n$, where $a_i$ contains the values of the EEG from seconds $i \cdot s$ to $i(s+1)$, with $s =$ `step_size`.
 
-For example, `analyze.stepwise(data, 30, res = 1)` would perform artifact detection over the raw EEG by analyzing each of its thirty second epochs separately.
+For example, `analyze.stepwise(eeg, 30, res = 1)` would perform artifact detection over the raw EEG by analyzing each of its thirty second epochs separately.
 
 The `analyize.stepwise` function saves the analysis plots of each separate analysis as `.png` files and also writes a single `.csv` spreadsheet containing each epoch-subepoch pair containing anomalies.
 
-Because the output of this function is large (dozens of `.png` images images and a `.csv` file), we will not show it here. Suffices to say this is the function required to analyze a complete EEG record. For a better explanation of why stepwise (instead of direct) analysis is required, and the logic behind the algorithm, see [this document](https://github.com/slopezpereyra/EEG-artifacts/blob/main/markdowns/stepwise.md).
+Because the output of this function is large (dozens of `.png` images images and a `.csv` file), we will not show it here. Suffices to say this is the function required to analyze a complete EEG record. For an explanation of why stepwise (instead of direct) analysis is required, and the logic behind the algorithm, see [this document](https://github.com/slopezpereyra/EEG-artifacts/blob/main/markdowns/stepwise.md).
