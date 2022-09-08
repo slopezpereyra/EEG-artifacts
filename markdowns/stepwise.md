@@ -7,7 +7,7 @@ A valid question is that which interrogates about the need for stepwise analysis
 
 The starting point of CAPA analysis is to produce an estimation $\hat{\theta}$ of the parameters $\theta$ of the standard (or not anomalous) data. Such estimation is then used to infer epidemic changes in the distribution via minimization of the cost function 
 
-\\[ \sum \limits_{t\notin \cup \left[{\tilde{s}}_i+1,{\tilde{e}}_i\right]}\mathcal{C}\left({\mathbf{x}}_t,{\hat{\theta}}_0\right)+\sum \limits_{j=1}^{\hat{K}}\left[{\min}_{{\tilde{\theta}}_j}\left(\sum \limits_{t={\tilde{s}}_j+1}^{{\tilde{e}}_j}\mathcal{C}\left({\mathbf{x}}_t,{\tilde{\theta}}_j\right)\right)+\beta \right],\\]
+$$ \sum \limits_{t\notin \cup \left[{\tilde{s}}_i+1,{\tilde{e}}_i\right]}\mathcal{C}\left({\mathbf{x}}_t,{\hat{\theta}}_0\right)+\sum \limits_{j=1}^{\hat{K}}\left[{\min}_{{\tilde{\theta}}_j}\left(\sum \limits_{t={\tilde{s}}_j+1}^{{\tilde{e}}_j}\mathcal{C}\left({\mathbf{x}}_t,{\tilde{\theta}}_j\right)\right)+\beta \right], $$
 
 where $e_i - s_i \geq \hat{l}$, with $\hat{l}$ the minimum anomalous segment length, $\mathcal{C}$ some cost function and $\beta$ an adecuate penalty. (For more information, see the original paper by [Fisch, Eckley and Fearnhead](https://onlinelibrary.wiley.com/doi/full/10.1002/sam.11586).)
 
