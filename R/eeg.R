@@ -217,10 +217,10 @@ load.eeg <- function(data_file, signals_file = NULL) {
 create.epoch.data <- function() {
     results <- tibble(
         epoch = numeric(),
-        subepoch = numeric(),
-        channels = list(),
-        segment_strength = numeric(),
-        point_strength = numeric()
+        subepoch = numeric()
+        # channels = list(),
+        # segment_strength = numeric(),
+        # point_strength = numeric()
     )
     return(results)
 }
