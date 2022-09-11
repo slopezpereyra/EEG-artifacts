@@ -23,7 +23,8 @@ source("R/analysis.r")
 #' collective anomaly (n - 1) to consider them part of a same cluster?
 
 #' @return An analysis object
-analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3) {
+analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3, time = TRUE) {
+  start_time <- Sys.time()
   eeg <- eeg %>%
     partition.eeg(s, e) %>%
     lower.res(res)
@@ -47,6 +48,10 @@ analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3) {
     panoms = panoms,
     eeg = eeg
   )
+  end_time <- Sys.time()
+  if (time == TRUE) {
+    print(paste("Analysis completed in ", seconds_to_period(end_time - start_time)))
+  }
   return(results)
 }
 
@@ -67,6 +72,7 @@ analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3) {
 
 
 analyize.stepwise <- function(eeg, step_size, res, alpha = 8, beta = 1, thresh = 3) {
+  start_time <- Sys.time()
   epoch_data <- create.epoch.data()
   s <- eeg@data$Time[1]
   e <- s + step_size
@@ -87,7 +93,7 @@ analyize.stepwise <- function(eeg, step_size, res, alpha = 8, beta = 1, thresh =
       e <- s + r
     }
 
-    analysis <- analyze(eeg, s, e, res, alpha, beta = beta, thresh = thresh)
+    analysis <- analyze(eeg, s, e, res, alpha, beta = beta, thresh = thresh, time = FALSE)
     if (has.anomalies(analysis)) {
       plot <- plot(analysis, save = TRUE)
     }
@@ -97,4 +103,7 @@ analyize.stepwise <- function(eeg, step_size, res, alpha = 8, beta = 1, thresh =
     setTxtProgressBar(pb, s)
   }
   write_csv(epoch_data, "results/results.csv")
+  end_time <- Sys.time()
+  print(paste("Stepwise analysis completed in ", seconds_to_period(end_time - start_time)))
+  return(epoch_data)
 }
