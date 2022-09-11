@@ -7,7 +7,11 @@
 
 > :microscope: This software is an implementation of [Multivariate-CAPA](https://arxiv.org/abs/1806.01947) for EEG artifact detection.
 
+<<<<<<< HEAD
 > Developed at the [Laboratory for the Study of Sleep Slow-wave activity](https://www.med.upenn.edu/slowwavelab/) :last_quarter_moon_with_face:
+=======
+> Develoed at the [Laboratory for the Study of Sleep Slow-wave activity](https://www.med.upenn.edu/slowwavelab/) :last_quarter_moon_with_face:
+>>>>>>> main
   
 
 - [EEG Automated Artifact Detection](#eeg-automated-artifact-detection)
