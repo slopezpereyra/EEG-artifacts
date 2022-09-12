@@ -69,7 +69,6 @@ setGeneric(
 #'
 #' @param object An eeg object.
 #' @param n Filter frequency.
-#' @import signal
 #'
 #' @return A new filtered EEG object
 #' @export
@@ -137,7 +136,6 @@ setGeneric(
 #' @param channel An integer indicating index of channel to plot.
 #'
 #' @return A ggplot object.
-#' @import ggplot2
 #' @export
 setMethod(
     "plot.channel",
@@ -175,7 +173,6 @@ setGeneric(
 #' @param object An eeg object.
 #'
 #' @return A plot_grid object.
-#' @importFrom cowplot plot_grid
 #' @export
 setMethod(
     "plot.eeg",
@@ -199,7 +196,6 @@ setMethod(
 #' @param signals_file .csv file containing signal information
 #'
 #' @return An eeg object.
-#' @import tidyverse
 #' @export
 load.eeg <- function(data_file, signals_file = NULL) {
     data <- read_csv(data_file)
@@ -220,7 +216,6 @@ load.eeg <- function(data_file, signals_file = NULL) {
 #' anomalous pairs during stepwise analysis.
 #'
 #' @return An empty dataframe.
-#' @import tidyverse
 create.epoch.data <- function() {
     results <- tibble(
         epoch = numeric(),
@@ -238,7 +233,6 @@ create.epoch.data <- function() {
 #'
 #' @return A data frame as defined by create.epoch.data().
 #' @return An analysis object.
-#' @import tidyverse
 update.epochs <- function(epoch_data, analysis) {
     canoms <- analysis@canoms
     panoms <- analysis@panoms

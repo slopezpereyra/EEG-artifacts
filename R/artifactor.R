@@ -22,8 +22,6 @@ source("R/analysis.r")
 #' collective anomaly (n - 1) to consider them part of a same cluster?
 #' @param time bool Show process time?
 #' @return An analysis object
-#' @importFrom anomaly capa.mv
-#' @import tidyverse
 #' @export
 analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3, time = TRUE) {
   start_time <- Sys.time()

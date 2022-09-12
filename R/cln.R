@@ -12,7 +12,6 @@ library(lubridate)
 #' @param canoms Collective anomalies data frame, such as the @canoms attribute in an analysis object.
 #' @param i Anomaly index
 #' @param threshold Threshold in seconds
-#' @import lubridate
 #' @return An integer. The time of occurence of anomaly canoms[i] plus threshold.
 thresh <- function(canoms, i, threshold) {
   time <- canoms$Time[i]
@@ -26,7 +25,6 @@ thresh <- function(canoms, i, threshold) {
 #' @param s A lubridate time object.
 #'
 #' @return A character.
-#' @import lubridate
 format.time <- function(s) {
   formated_time <- paste(round(s@hour, 4), round(minute(s), 4),
     round(second(s)),
@@ -43,7 +41,6 @@ format.time <- function(s) {
 #' @param anoms A canoms or panoms data frame.
 #'
 #' @return A vector of lubridate periods
-#' @import lubridate
 get.time <- function(anoms, data) {
   return(seconds_to_period(data$Time[unlist(anoms[1])]))
 }
@@ -54,7 +51,6 @@ get.time <- function(anoms, data) {
 #' @param anoms A canoms or panoms data frame.
 #'
 #' @return A data frame
-#' @import lubridate
 set.anom.epoch <- function(anoms) {
   if (nrow(anoms) == 0) {
     return(anoms)
@@ -123,7 +119,6 @@ get.maxchange <- function(canoms, start_points, end_points) {
 #' anomalies must be to not be considered part of the same cluster.
 #'
 #' @return bool
-#' @import lubridate
 is.clustered <- function(previous_anom_time, time, threshold) {
   time_in_secs <- period_to_seconds(time)
   return(threshold - time_in_secs >= 0 | time == previous_anom_time)
