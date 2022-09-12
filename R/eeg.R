@@ -24,6 +24,7 @@ setMethod(
 
 #' NA omit for the EEG class that applies na.omit() to the data slot.
 #' @param object An EEG object.
+#' @export
 setMethod(
     "na.omit",
     "eeg",
@@ -80,6 +81,7 @@ setGeneric(
 #'
 #' @param object An eeg object.
 #' @param n Filter frequency.
+#' @import signal
 #'
 #' @return A new filtered EEG object
 #' @export
@@ -147,6 +149,7 @@ setGeneric(
 #' @param channel An integer indicating index of channel to plot.
 #'
 #' @return A ggplot object.
+#' @import ggplot2
 #' @export
 setMethod(
     "plot.channel",
@@ -184,6 +187,7 @@ setGeneric(
 #' @param object An eeg object.
 #'
 #' @return A plot_grid object.
+#' @importFrom cowplot plot_grid
 #' @export
 setMethod(
     "plot.eeg",

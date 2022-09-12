@@ -92,6 +92,7 @@ setGeneric(
 #'
 #' @param object An Analysis object.
 #' @param channel An integer.
+#' @import ggplot2
 #' @return A ggplot.
 setMethod(
     "plot.clusters",
@@ -131,6 +132,7 @@ setGeneric(
 #'
 #' @param object An Analysis object.
 #' @param channel An integer.
+#' @import ggplot2
 #' @return A ggplot.
 #' @export
 setMethod(
@@ -164,6 +166,7 @@ setGeneric(
 #'
 #' @param object An Analysis object.
 #' @param channel An integer.
+#' @import ggplot2
 #' @return A ggplot.
 #' @export
 setMethod(
@@ -210,6 +213,7 @@ setGeneric(
 #'
 #' @param object An Analysis object.
 #' @param channel An integer.
+#' @import ggplot2
 #' @return A ggplot.
 #' @export
 setMethod(
@@ -243,6 +247,7 @@ setGeneric(
 #'
 #' @param object An Analysis object.
 #' @return A plot_grid object.
+#' @importFrom cowplot plot_grid
 #' @export
 setMethod(
     "plot.channels.analysis",

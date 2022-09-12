@@ -4,6 +4,7 @@
 
 library(lubridate)
 
+#'
 #' Given an collective anomalies (or canoms) data frame,
 #' an index  i and a threshold in seconds, returns the time at which
 # ' anomaly canoms[i] occurred plus the threshold in seconds.

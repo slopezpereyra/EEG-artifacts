@@ -24,6 +24,7 @@ source("R/analysis.r")
 #' @param time bool Show process time?
 
 #' @return An analysis object
+#' @importFrom anomaly capa.mv
 #' @export
 analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3, time = TRUE) {
   start_time <- Sys.time()
