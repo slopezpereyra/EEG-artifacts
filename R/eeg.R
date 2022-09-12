@@ -24,6 +24,7 @@ setMethod(
 
 #' NA omit for the EEG class that applies na.omit() to the data slot.
 #' @param object An EEG object.
+#' @export
 setMethod(
     "na.omit",
     "eeg",
