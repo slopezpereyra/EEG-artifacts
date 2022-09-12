@@ -22,18 +22,6 @@ setMethod(
     }
 )
 
-#' NA omit for the EEG class that applies na.omit() to the data slot.
-#' @param object An EEG object.
-#' @export
-setMethod(
-    "na.omit",
-    "eeg",
-    function(object) {
-        df <- na.omit(object@data)
-        return(new("eeg", data = df, signals = object@signals))
-    }
-)
-
 #' @export
 setGeneric(
     "partition.eeg",
