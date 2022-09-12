@@ -5,7 +5,7 @@
 \title{Perform M-CAPA analysis on EEG data in a given range of seconds
 and return results filtered by anomaly strength.}
 \usage{
-analyze(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3)
+analyze(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3, time = TRUE)
 }
 \arguments{
 \item{eeg}{An eeg object}

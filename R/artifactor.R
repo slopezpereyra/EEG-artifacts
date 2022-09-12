@@ -14,15 +14,17 @@ source("R/analysis.r")
 #' and return results filtered by anomaly strength.
 #'
 #' @param eeg An eeg object
-#' @param s First second of timespan to analyze
-#' @param e Last second of timespan to analyze
-#' @param res Resolution at which to perform analysis
-#' @param alpha Threshold of strength significance for collective anomalies
-#' @param beta Threshold of strength significance for point anomalies
-#' @param thresh How many seconds collective anomaly n must be from
+#' @param s int First second of timespan to analyze
+#' @param e int Last second of timespan to analyze
+#' @param res int Resolution at which to perform analysis
+#' @param alpha float Threshold of strength significance for collective anomalies
+#' @param beta float Threshold of strength significance for point anomalies
+#' @param thresh int How many seconds collective anomaly n must be from
 #' collective anomaly (n - 1) to consider them part of a same cluster?
+#' @param time bool Show process time?
 
 #' @return An analysis object
+#' @export
 analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3, time = TRUE) {
   start_time <- Sys.time()
   eeg <- eeg %>%
@@ -69,8 +71,7 @@ analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3, time = 
 #' @param beta Threshold of strength significance for point anomalies
 #' @param thresh How many seconds anomaly n must be from anomaly (n - 1) to
 #'  consider them part of a same cluster?
-
-
+#' @export
 analyize.stepwise <- function(eeg, step_size, res, alpha = 8, beta = 1, thresh = 3) {
   start_time <- Sys.time()
   epoch_data <- create.epoch.data()
