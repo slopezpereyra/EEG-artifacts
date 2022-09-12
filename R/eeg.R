@@ -22,18 +22,6 @@ setMethod(
     }
 )
 
-#' NA omit for the EEG class that applies na.omit() to the data slot.
-#' @param object An EEG object.
-#' @export
-setMethod(
-    "na.omit",
-    "eeg",
-    function(object) {
-        df <- na.omit(object@data)
-        return(new("eeg", data = df, signals = object@signals))
-    }
-)
-
 #' @export
 setGeneric(
     "partition.eeg",
@@ -211,6 +199,7 @@ setMethod(
 #' @param signals_file .csv file containing signal information
 #'
 #' @return An eeg object.
+#' @import tidyverse
 #' @export
 load.eeg <- function(data_file, signals_file = NULL) {
     data <- read_csv(data_file)
@@ -231,6 +220,7 @@ load.eeg <- function(data_file, signals_file = NULL) {
 #' anomalous pairs during stepwise analysis.
 #'
 #' @return An empty dataframe.
+#' @import tidyverse
 create.epoch.data <- function() {
     results <- tibble(
         epoch = numeric(),
@@ -248,6 +238,7 @@ create.epoch.data <- function() {
 #'
 #' @return A data frame as defined by create.epoch.data().
 #' @return An analysis object.
+#' @import tidyverse
 update.epochs <- function(epoch_data, analysis) {
     canoms <- analysis@canoms
     panoms <- analysis@panoms
