@@ -10,6 +10,8 @@ set.timevars(anoms, data)
 }
 \arguments{
 \item{anoms}{A canoms or panoms data frame.}
+
+\item{data}{The data where anomalies were detected.}
 }
 \value{
 A data frame

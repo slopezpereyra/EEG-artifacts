@@ -3,6 +3,7 @@ library(signal)
 #' EEG class.
 #' @slot data A data frame containing EEG records
 #' @slot signals A data frame containing signal information (may be empty).
+#' @export
 setClass("eeg",
     slots = list(
         data = "data.frame",
@@ -12,6 +13,7 @@ setClass("eeg",
 
 #' Show method for the EEG class that prints the data slot.
 #' @param object An EEG object.
+#' @export
 setMethod(
     "show",
     "eeg",
@@ -31,6 +33,7 @@ setMethod(
     }
 )
 
+#' @export
 setGeneric(
     "partition.eeg",
     function(object, s, e) {
@@ -49,6 +52,7 @@ setGeneric(
 #'
 #' @return A new eeg whose data is the subset ranging from
 #' second s to e of the object's data attribute.
+#' @export
 setMethod(
     "partition.eeg",
     "eeg",
@@ -63,6 +67,7 @@ setMethod(
     }
 )
 
+#' @export
 setGeneric(
     "low.pass",
     function(object, n) {
@@ -77,6 +82,7 @@ setGeneric(
 #' @param n Filter frequency.
 #'
 #' @return A new filtered EEG object
+#' @export
 setMethod(
     "low.pass",
     "eeg",
@@ -90,6 +96,7 @@ setMethod(
     }
 )
 
+#' @export
 setGeneric(
     "lower.res",
     function(object, n) {
@@ -108,6 +115,7 @@ setGeneric(
 #' @param n An integer.
 #'
 #' @return A new filtered EEG object
+#' @export
 setMethod(
     "lower.res",
     "eeg",
@@ -124,6 +132,7 @@ setMethod(
     }
 )
 
+#' @export
 setGeneric(
     "plot.channel",
     function(object, channel) {
@@ -138,6 +147,7 @@ setGeneric(
 #' @param channel An integer indicating index of channel to plot.
 #'
 #' @return A ggplot object.
+#' @export
 setMethod(
     "plot.channel",
     "eeg",
@@ -160,6 +170,7 @@ setMethod(
     }
 )
 
+#' @export
 setGeneric(
     "plot.eeg",
     function(object) {
@@ -173,6 +184,7 @@ setGeneric(
 #' @param object An eeg object.
 #'
 #' @return A plot_grid object.
+#' @export
 setMethod(
     "plot.eeg",
     "eeg",
@@ -195,6 +207,7 @@ setMethod(
 #' @param signals_file .csv file containing signal information
 #'
 #' @return An eeg object.
+#' @export
 load.eeg <- function(data_file, signals_file = NULL) {
     data <- read_csv(data_file)
     if (!is.null(signals_file)) {

@@ -73,7 +73,7 @@ set.anom.epoch <- function(anoms) {
 #' Time, Epoch and Subepoch.
 #'
 #' @param anoms A canoms or panoms data frame.
-#' @data The data where anomalies were detected.
+#' @param data The data where anomalies were detected.
 #' @return A data frame
 set.timevars <- function(anoms, data) {
   if (nrow(anoms) == 0) {

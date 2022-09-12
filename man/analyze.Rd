@@ -5,23 +5,25 @@
 \title{Perform M-CAPA analysis on EEG data in a given range of seconds
 and return results filtered by anomaly strength.}
 \usage{
-analyze(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3)
+analyze(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3, time = TRUE)
 }
 \arguments{
 \item{eeg}{An eeg object}
 
-\item{s}{First second of timespan to analyze}
+\item{s}{int First second of timespan to analyze}
 
-\item{e}{Last second of timespan to analyze}
+\item{e}{int Last second of timespan to analyze}
 
-\item{res}{Resolution at which to perform analysis}
+\item{res}{int Resolution at which to perform analysis}
 
-\item{alpha}{Threshold of strength significance for collective anomalies}
+\item{alpha}{float Threshold of strength significance for collective anomalies}
 
-\item{beta}{Threshold of strength significance for point anomalies}
+\item{beta}{float Threshold of strength significance for point anomalies}
 
-\item{thresh}{How many seconds collective anomaly n must be from
+\item{thresh}{int How many seconds collective anomaly n must be from
 collective anomaly (n - 1) to consider them part of a same cluster?}
+
+\item{time}{bool Show process time?}
 }
 \value{
 An analysis object

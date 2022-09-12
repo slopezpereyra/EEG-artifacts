@@ -10,6 +10,7 @@ library(cowplot)
 #' @slot canoms A collective anomalies data frame.
 #' @slot signals A point anomalies data frame.
 #' @slot The eeg upon which analysis is conducted.
+#' @export
 setClass("analysis",
     slots = list(
         canoms = "data.frame",
@@ -21,6 +22,7 @@ setClass("analysis",
 #' Show method for the EEG class that calls View on the canoms panoms
 #' and eeg slots.
 #' @param object An Analysis object.
+#' @export
 setMethod(
     "show",
     "analysis",
@@ -31,6 +33,7 @@ setMethod(
     }
 )
 
+#' @export
 setGeneric(
     "has.anomalies",
     function(object, step, ...) {
@@ -42,6 +45,7 @@ setGeneric(
 #' @param object An Analysis object.
 #'
 #' @return bool
+#' @export
 setMethod(
     "has.anomalies",
     "analysis",
@@ -50,7 +54,7 @@ setMethod(
     }
 )
 
-
+#' @export
 setGeneric(
     "get.anomalous.channels",
     function(object, channel) {
@@ -64,6 +68,7 @@ setGeneric(
 #'
 #' @param object An Analysis object.
 #' @return A vector containing all anomalous channels in the analysis.
+#' @export
 setMethod(
     "get.anomalous.channels",
     "analysis",
@@ -113,6 +118,7 @@ setMethod(
     }
 )
 
+#' @export
 setGeneric(
     "plot.points",
     function(object, channel) {
@@ -126,6 +132,7 @@ setGeneric(
 #' @param object An Analysis object.
 #' @param channel An integer.
 #' @return A ggplot.
+#' @export
 setMethod(
     "plot.points",
     "analysis",
@@ -144,6 +151,7 @@ setMethod(
     }
 )
 
+#' @export
 setGeneric(
     "plot.anomalies",
     function(object, channel) {
@@ -157,6 +165,7 @@ setGeneric(
 #' @param object An Analysis object.
 #' @param channel An integer.
 #' @return A ggplot.
+#' @export
 setMethod(
     "plot.anomalies",
     "analysis",
@@ -188,7 +197,7 @@ setMethod(
 )
 
 
-
+#' @export
 setGeneric(
     "plot.channel.analysis",
     function(object, channel) {
@@ -202,6 +211,7 @@ setGeneric(
 #' @param object An Analysis object.
 #' @param channel An integer.
 #' @return A ggplot.
+#' @export
 setMethod(
     "plot.channel.analysis",
     "analysis",
@@ -221,6 +231,7 @@ setMethod(
     }
 )
 
+#' @export
 setGeneric(
     "plot.channels.analysis",
     function(object) {
@@ -232,6 +243,7 @@ setGeneric(
 #'
 #' @param object An Analysis object.
 #' @return A plot_grid object.
+#' @export
 setMethod(
     "plot.channels.analysis",
     "analysis",
@@ -247,6 +259,7 @@ setMethod(
     }
 )
 
+#' @export
 setGeneric(
     "plot.analysis",
     function(object, save = FALSE) {
@@ -262,6 +275,7 @@ setGeneric(
 #' @param save A bool declaring whether to save the image in .png format or not.
 #'
 #' @return A plot_grid object.
+#' @export
 setMethod(
     "plot.analysis",
     "analysis",
