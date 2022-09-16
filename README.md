@@ -73,8 +73,10 @@ For example, after previously exporting an EDF file named `test` in a .csv forma
 
 ```r
 eeg <- load.eeg("test_data.txt",
-				"test_signals.txt") %>%
-				na.omit()
+				"test_signals.txt")
+				
+eeg@data <- na.omit(eeg@data)
+eeg@data[10:14] <- NULL # Remove non-cranial channels
 View(eeg@data)
 ```
 
@@ -105,7 +107,7 @@ For example,
   
 
 ```r
-tenth_min_data <  -partition.eeg(eeg, 60  *  10, 60  *  11)
+tenth_min_data <  partition.eeg(eeg, 60  *  10, 60  *  11)
 low_res < lower.res(tenth_min_data, 20)
 ```
 
