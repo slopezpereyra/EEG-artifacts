@@ -1,6 +1,15 @@
 Package: artifactor
 Type: Package
-Title: Automated Artifact Detection for EEG data using
+Title: Automated Artifact Detection for EEG data
+Author: Santiago López Pereyra
+Description: Automated artifact detection for EEG data using multivariate CAPA analysis.
 Version: 0.0.1.0
 Encoding: UTF-8
+Imports:
+    tidyverse,
+    ggplot2,
+    lubridate,
+    signal,
+    cowplot,
+    anomaly
 RoxygenNote: 7.2.1
