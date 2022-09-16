@@ -5,7 +5,7 @@ Author: Santiago López Pereyra
 Description: Automated artifact detection for EEG data using multivariate CAPA analysis.
 Version: 0.0.1.0
 Encoding: UTF-8
-Imports:
+Depends:
     tidyverse,
     ggplot2,
     lubridate,
