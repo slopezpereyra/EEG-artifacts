@@ -67,3 +67,5 @@ R/tests.R
 plot.svg
 
 results.csv
+
+R/template.r
