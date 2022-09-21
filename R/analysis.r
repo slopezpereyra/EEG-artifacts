@@ -99,9 +99,6 @@ setMethod(
     function(object, channel) {
         canoms <- object@canoms %>%
             dplyr::filter(variate == channel)
-        # mutate(
-        #    start = as_datetime(object@eeg@data$Time[object@canoms$start])
-        # )
         areas <- tibble(
             xmin = as_datetime(canoms$Time),
             xmax = as_datetime(object@eeg@data$Time[canoms$end]),
@@ -144,7 +141,10 @@ setMethod(
 
         eeg <- plot.channel(object@eeg, channel = channel)
         plot <- eeg +
-            geom_point(data = points, aes(A, B), inherit.aes = FALSE, color = "red") +
+            geom_point(
+                data = points, aes(A, B),
+                inherit.aes = FALSE, color = "red"
+            ) +
             xlab("") + ylab(colnames(object@eeg@data[-1][channel]))
 
         return(plot)
@@ -189,7 +189,10 @@ setMethod(
                 data = transform(areas, as.character(1:nrow(areas))),
                 inherit.aes = FALSE
             ) +
-            geom_point(data = points, aes(A, B), inherit.aes = FALSE, color = "red") +
+            geom_point(
+                data = points, aes(A, B),
+                inherit.aes = FALSE, color = "red"
+            ) +
             xlab("") + ylab(colnames(object@eeg@data[-1][channel]))
 
         return(plot)
