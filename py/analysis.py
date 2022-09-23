@@ -198,27 +198,6 @@ class Analysis():
         fig.update_layout(showlegend=False, height=1200)
         return (fig)
 
-#     def plot_anoms(self):
-
-#         traces = []
-#         x = self.eeg["Time"]
-#         for i in range(1, self.nchans + 1):
-#             df = self.set_for_plot(i).drop(["Time"], axis=1)
-#             trace = go.Scatter(
-#                 x=x,
-#                 y=df["anoms"],
-#                 mode="markers",
-#                 marker=dict(opacity=0.4,
-#                             size=df.fillna(0)["strength"])
-#             )
-#             traces.append(trace)
-
-#         # df = self.set_for_plot(channel)
-#         # df = df.fillna(0)
-#         fig = go.Figure(data=traces)
-#         return fig
-# # Helpers
-
 
 def filt_plotting_data(df, alpha):
     df["anoms"] = np.where(df["strength"] <= alpha, np.nan, df["anoms"])
