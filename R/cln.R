@@ -207,5 +207,9 @@ format.collectives <- function(anom_df, cluster_thresh) {
     joined_channel_anoms <- join.clusters(channel_anoms, clusters_pos)
     subsets[[length(subsets) + 1]] <- joined_channel_anoms
   }
-  return(subsets %>% reduce(full_join))
+  return(subsets %>% reduce(full_join, by = c(
+    "start", "end", "variate",
+    "start.lag", "end.lag", "mean.change",
+    "test.statistic", "Time", "Epoch", "Subepoch"
+  )))
 }

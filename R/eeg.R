@@ -56,6 +56,31 @@ setMethod(
     }
 )
 
+setGeneric(
+    "get.epoch.displacement",
+    function(object, epoch) {
+        standardGeneric("get.epoch.displacement")
+    }
+)
+
+
+#' Given an eeg object, determine the number of values
+#' that make up epoch seconds.
+#'
+#' @param object An eeg object.
+#' @param epoch A time in seconds.
+#'
+#' @return An integer representing the number of values
+#' that make up a time-frame of length epoch.
+#' @export
+setMethod(
+    "get.epoch.displacement",
+    "eeg",
+    function(object, epoch) {
+        return(which(object@data["Time"] == epoch))
+    }
+)
+
 #' @export
 setGeneric(
     "low.pass",

@@ -8,28 +8,97 @@ from plotly.subplots import make_subplots
 
 class Analysis():
 
-    def __init__(self, eeg, panoms, canoms):
-        self.eeg = self._preprocess(eeg.copy())
-        self.panoms = panoms.copy()
-        self.canoms = canoms.copy()
-        self.chans = self.eeg.columns.to_list()[1:]
-        self.nchans = len(self.chans)
+    def __init__(self, eeg, canoms, panoms):
+        self.eeg = eeg
+        self.panoms = panoms
+        self.canoms = canoms
         self.plot_data = self.set_plot_data()
 
-    def _preprocess(self, eeg):
-        # The factor adjusts for datetime conversion from
-        # data coming from the R artifactor package.
-        eeg["Time"] = pd.to_datetime(eeg["Time"] * 1000000000)
-        return (eeg)
+    @staticmethod
+    def filt_plotting_data(df, alpha):
+        """Filters plotting data by anomaly strength.
+
+        Args:
+            df (DataFrame): Plotting data.
+            alpha (_type_): Strength threshold.
+
+        Returns:
+            DataFrame: Subset of df satisfying that anomalies be greater or
+            equal than alpha.
+        """
+        df["anoms"] = np.where(df["strength"] <= alpha, np.nan, df["anoms"])
+        return (df)
+
+    @staticmethod
+    def alpha_update(dfs, fig_data, alpha):
+        """Updates plotting data of all channels
+        in some plotly's figure data according to
+        anomaly strength. 
+
+        Args:
+            dfs (list): List containing plot data of all channels.
+            fig_data (Dictionary): Data attribute of a plotly Figure object.
+            alpha (_type_): Anomaly threshold.
+        Returns:
+            list: A list of values to serve as updated plotting traces.
+        """
+        n = len(fig_data)
+        anom_dfs = [Analysis.filt_plotting_data(
+            x, alpha)["anoms"].tolist() for x in dfs]
+        eegs = [x.iloc[:, 1].tolist() for x in dfs]
+        result = [None] * n
+        result[::2] = eegs
+        result[1::2] = anom_dfs
+        return (result)
 
     def get_max_strength(self, rounded=False):
+        """Gets maximum anomaly strength in the analysis.
+
+        Args:
+            rounded (bool, optional): Round up the maximum value? Defaults to False.
+
+        Returns:
+            float: Maximum anomaly strength in the analysis.
+        """
         s = max(self.panoms["strength"] + self.canoms["mean.change"])
         s = math.ceil(s / 10) * 10 if rounded else s
         return s
 
+    def tsubs(self, s, e):
+        """Time-based subsetting function that applies to the EEG data,
+        the collective anomalies data and the point anomalies data
+        simultaneously.
+
+        Args:
+            s (float): Starting time
+            e (float): Ending time
+
+        Returns:
+            tuple: EEG data, collective and point anomalies data, 
+            all subsetted from time s to e.
+        """
+        eeg = self.eeg.tsubs(s, e)
+        canoms = self.canoms[self.canoms["_Time"].between(s, e)]
+        panoms = self.panoms[self.panoms["_Time"].between(s, e)]
+
+        return (eeg, canoms, panoms)
+
     def set_for_plot(self, channel, joint=True):
+        """Structures analysis data for the purposes of plotting.
+
+        Args:
+            channel (int): Channel column index
+            joint (bool, optional): Should collective and point anomalies be stored
+            a in a single column? Defaults to True. If false, two different columns
+            are created for the two anomaly types.
+
+        Returns:
+            DataFrame: A data frame containing a channel's EEG data
+            and all info pertaining to its anomalies.
+
+        """
         # Remove unwanted channels
-        eeg = self.eeg.iloc[:, [0, channel]]
+        eeg = self.eeg.data.iloc[:, [0, channel]]
         canoms = self.canoms[self.canoms["variate"] == channel]
         panoms = self.panoms[self.panoms["variate"] == channel]
 
@@ -56,6 +125,19 @@ class Analysis():
         return eeg
 
     def plot_channel(self, channel, knob=True, views=True, marker_size=5):
+        """Plots an analyzed channel.
+
+        Args:
+            channel (int): Channel's column index.
+            knob (bool, optional): Include a slider to filter anomalies by 
+            strength? Defaults to True.
+            views (bool, optional): Include buttons that frame the channel view
+            to specific time-intervals? Defaults to True.
+            marker_size (int, optional): Size of anomaly markers. Defaults to 5.
+
+        Returns:
+            Figure (plotly): A plotly figure representing a channel an its anomalies.
+        """
 
         # Set plotting data
         df = self.set_for_plot(channel)
@@ -74,7 +156,7 @@ class Analysis():
             for i in range(0, round(np.nanmax(df["strength"])) + 2):
                 step = dict(
                     method='restyle',
-                    args=[{'y': [filt_plotting_data(df, i)["anoms"].tolist()]}, [
+                    args=[{'y': [Analysis.filt_plotting_data(df, i)["anoms"].tolist()]}, [
                         1, 2]],
                     label=i
                 )
@@ -121,21 +203,34 @@ class Analysis():
         return (fig)
 
     def set_plot_data(self):
+        """Sets plotting data of all channels. This method is called
+        on initialization so as to perform the heavy computation only
+        once.
+
+        Returns:
+            list: List containing plotting data of each EEG channel.
+        """
         dfs = []
-        for i in range(1, self.nchans + 1):
+        for i in range(1, self.eeg.nchans + 1):
             df = self.set_for_plot(i)
             dfs.append(df)
         return dfs
 
     def plot_analysis(self):
+        """Plots all anomalous channels.
 
-        fig = make_subplots(rows=self.nchans, cols=1,
+        Returns:
+            Figure (plotly): Plotly figure representing all
+            analyzed channels.
+        """
+
+        fig = make_subplots(rows=self.eeg.nchans, cols=1,
                             shared_xaxes=True,
                             shared_yaxes=True,
-                            row_titles=self.chans)
+                            row_titles=self.eeg.chans)
 
         # Add traces and store subplots plot data
-        for i in range(1, self.nchans + 1):
+        for i in range(1, self.eeg.nchans + 1):
             analysis = self.plot_channel(i, False, False,
                                          marker_size=2.5)
             fig.add_trace(analysis.data[0], row=i, col=1)
@@ -147,7 +242,8 @@ class Analysis():
         for i in range(1, self.get_max_strength(True) + 1, 10):
             step = dict(
                 method='restyle',
-                args=[{"y":  alpha_update(self.plot_data, fig.data, i)}],
+                args=[{"y":  Analysis.alpha_update(
+                    self.plot_data, fig.data, i)}],
                 label=i
             )
             steps.append(step)
@@ -165,10 +261,10 @@ class Analysis():
             sliders=sliders
         )
 
-        vis_list = [None] * self.nchans * 2
-        vis_list[::2] = [True] * self.nchans
-        vis_list[1::2] = [False] * self.nchans
-        raw_vis_list = [True] * self.nchans * 2
+        vis_list = [None] * self.eeg.nchans * 2
+        vis_list[::2] = [True] * self.eeg.nchans
+        vis_list[1::2] = [False] * self.eeg.nchans
+        raw_vis_list = [True] * self.eeg.nchans * 2
         fig.update_layout(
             updatemenus=[
                 dict(
@@ -197,19 +293,3 @@ class Analysis():
 
         fig.update_layout(showlegend=False, height=1200)
         return (fig)
-
-
-def filt_plotting_data(df, alpha):
-    df["anoms"] = np.where(df["strength"] <= alpha, np.nan, df["anoms"])
-    return (df)
-
-
-def alpha_update(dfs, fig_data, alpha):
-    n = len(fig_data)
-    anom_dfs = [filt_plotting_data(x, alpha)["anoms"].tolist() for x in dfs]
-    eegs = [x.iloc[:, 1].tolist() for x in dfs]
-    result = [None] * n
-    result[::2] = eegs
-    result[1::2] = anom_dfs
-
-    return (result)
