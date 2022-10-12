@@ -5,6 +5,9 @@
 
 library(ggplot2)
 library(cowplot)
+library(reticulate)
+source("R/eeg.R")
+source_python("inst/python/iplotter.py")
 
 #' Analysis class.
 #' @slot canoms A collective anomalies data frame.
@@ -136,6 +139,7 @@ setMethod(
     function(object, channel) {
         points <- object@panoms %>%
             dplyr::filter(variate == channel)
+        point_values <- unlist(object@eeg@data[-1][points$location, channel])
         point_values <- unlist(object@eeg@data[-1][points$location, channel])
         points <- tibble(A = as_datetime(points$Time), B = point_values)
 
@@ -292,5 +296,143 @@ setMethod(
             ggsave(paste("results/", time, ".png", sep = ""), plot = anom_plot)
         }
         return(anom_plot)
+    }
+)
+
+
+
+#' @export
+setGeneric(
+    "set.chan.iplot.data",
+    function(object, chan) {
+        standardGeneric("set.chan.iplot.data")
+    }
+)
+
+#' Formats a channel's analysis results to a data frame
+#' specifically designed for interactive plotting using
+#' Python's plotly library.
+#'
+#' @param object An Analysis object.
+#' @param chan The channel to be formatted for intercative plotting.
+#'
+#' @return A tibble.
+#' @export
+setMethod(
+    "set.chan.iplot.data",
+    "analysis",
+    function(object, chan) {
+        df <- object@eeg@data[, c(1, (chan + 1))]
+        df[, c("anoms", "strength")] <- NA
+        canoms <- object@canoms %>% dplyr::filter(variate == chan)
+        panoms <- object@panoms %>% dplyr::filter(variate == chan)
+        # Set point anomalies appropriately
+        point_locations <- unlist(panoms$location)
+        point_values <- unlist(df[panoms$location, 2])
+        point_strengths <- unlist(panoms$strength)
+        df$anoms[point_locations] <- point_values
+        df$strength[point_locations] <- point_strengths
+        # Set channel anomalies
+        canoms_positions <- list()
+        canoms_strengths <- list()
+        for (i in seq_len(nrow(canoms))) {
+            if (canoms[i, ][["end"]] > nrow(df)) {
+                break
+            }
+            start_end <- canoms[i, ][["start"]]:canoms[i, ][["end"]]
+            strengths <- rep(canoms[i, ][["mean.change"]], length(start_end))
+            canoms_positions <- append(canoms_positions, start_end)
+            canoms_strengths <- append(canoms_strengths, strengths)
+        }
+        canoms_positions <- unlist(canoms_positions)
+        canoms_strengths <- unlist(canoms_strengths)
+        canom_values <- unlist(df[canoms_positions, 2])
+
+        # canom_values <- df[canoms_positions, 2] %>%
+        #    as.list() %>%
+        df$anoms[canoms_positions] <- canom_values
+        df$strength[canoms_positions] <- canoms_strengths
+        return(df)
+    }
+)
+
+
+#' @export
+setGeneric(
+    "set.iplot.data",
+    function(object, save = FALSE) {
+        standardGeneric("set.iplot.data")
+    }
+)
+
+
+#' Sets the necessary data frame for interactive analysis plotting using
+#' Python's plotly library.
+#'
+#' @param object An Analysis object.
+#' @param save A bool declaring whether to save the resulting
+#' data frame in in .csv format or not.
+#'
+#' @return A tibble.
+#' @export
+setMethod(
+    "set.iplot.data",
+    "analysis",
+    function(object, save = FALSE) {
+        nchans <- length(object@eeg@data[-1])
+        df <- set.chan.iplot.data(object, 1)
+        for (chan in 2:nchans) {
+            iplot_data <- set.chan.iplot.data(object, chan)
+            iplot_data$Time <- NULL
+            df <- df %>% bind_cols(iplot_data)
+        }
+        if (save == TRUE) {
+            write_csv(df, "iplot_data.csv")
+        }
+        return(df)
+    }
+)
+
+#' @export
+setGeneric(
+    "iplot.analysis",
+    function(object, data = NULL, s, e, n_resample = as.integer(2), save = TRUE, show = FALSE) {
+        standardGeneric("iplot.analysis")
+    }
+)
+
+
+#' Creates an interactive plotly plot depicting the analysis.
+#' Since interactive analysis plotting may be expensive, the
+#' plotly figure may be saved into an .html file for re-use.
+#'
+#' @param object An Analysis object.
+#' @param data (Optional) A data frame of format specified by the
+#' set.iplot.data method, or a string with the path to a .csv stored
+#' representation of such data frame. If none is provided, the iplot
+#' data is created on method call.
+#' @param s Initial second of the plot.
+#' @param e Final second of the plot.
+#' @param n_resample Integer indicating downsampling decimation.
+#' If n is given, only one every n values are plotted. This should
+#' be set to higher values (5 or 10) for very large plots (for example,
+#' plots depicting a whole hour or more). Defaults to two.
+#' @param save Save .html plot?
+#' @param show Show the plot in browser?
+#'
+#' format or not.
+#'
+#' @return A plot_grid object.
+#' @export
+setMethod(
+    "iplot.analysis",
+    "analysis",
+    function(object, data = NULL, s, e, n_resample = as.integer(2), save = TRUE, show = FALSE) {
+        if (is.character(data)) {
+            data <- read_csv(data)
+        } else if (is.null(data)) {
+            data <- set.iplot.data(object)
+        }
+        plot_analysis(data, s = s, e = e, save = save, n_resample = as.integer(n_resample))
     }
 )

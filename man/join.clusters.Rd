@@ -11,7 +11,8 @@ join.clusters(canoms, clusters)
 \arguments{
 \item{canoms}{A canoms data frame with a single channel.}
 
-\item{clusters}{A list of (s, e) pairs containing start and end indexes of all clusters in canoms.}
+\item{clusters}{A list of (s, e) pairs containing start and end
+indexes of all clusters in canoms.}
 }
 \value{
 A canoms data frame.

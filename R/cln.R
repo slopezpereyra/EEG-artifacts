@@ -169,7 +169,8 @@ detect.clusters <- function(canoms, cluster_threshold) {
 #' cluster were reduced to a single anomaly.
 #'
 #' @param canoms A canoms data frame with a single channel.
-#' @param clusters A list of (s, e) pairs containing start and end indexes of all clusters in canoms.
+#' @param clusters A list of (s, e) pairs containing start and end
+#' indexes of all clusters in canoms.
 #'
 #' @return A canoms data frame.
 join.clusters <- function(canoms, clusters) {
@@ -183,12 +184,13 @@ join.clusters <- function(canoms, clusters) {
   return(joined)
 }
 
-#' Given a multi-channel canoms data frame, returns a formatted version of the data frame
-#' where all anomalies belonging to the same clusterwere reduced to a single
-#' anomaly in every record channel.
+#' Given a multi-channel canoms data frame, returns a formatted
+#' version of the data frame where all anomalies belonging to the
+#' same clusterwere reduced to a single anomaly in every record channel.
 #'
 #' @param canoms A canoms data frame.
-#' @param clusters A list of (s, e) pairs containing start and end indexes of all clusters in canoms.
+#' @param clusters A list of (s, e) pairs containing start and end indexes
+#' of all clusters in canoms.
 #'
 #' @return A canoms data frame.
 format.collectives <- function(anom_df, cluster_thresh) {
