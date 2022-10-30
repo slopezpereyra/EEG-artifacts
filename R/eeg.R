@@ -314,6 +314,7 @@ update.epochs <- function(epoch_data, analysis) {
 # )
 
 
+<<<<<<< HEAD
 # #' @export
 # setGeneric(
 #     "callf",
@@ -332,3 +333,23 @@ update.epochs <- function(epoch_data, analysis) {
 #         some_callable_f(object@data)
 #     }
 # )
+=======
+#' @export
+setGeneric(
+    "callf",
+    function(object) {
+        standardGeneric("callf")
+    }
+)
+
+
+#' @export
+setMethod(
+    "callf",
+    "eeg",
+    function(object) {
+        # Python function
+        some_callable_f(object@data)
+    }
+)
+>>>>>>> main
