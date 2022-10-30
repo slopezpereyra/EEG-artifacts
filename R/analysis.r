@@ -5,9 +5,7 @@
 
 library(ggplot2)
 library(cowplot)
-library(reticulate)
 source("R/eeg.R")
-source_python("inst/python/iplotter.py")
 
 #' Analysis class.
 #' @slot canoms A collective anomalies data frame.

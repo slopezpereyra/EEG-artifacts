@@ -18,7 +18,6 @@ iplot.analysis <- NULL
         `artifactor::install_py_dependencies()` first")
     }
 
-    print("Setting IPLOTTER function")
     iplotter <- reticulate::import_from_path(module = "iplotter", path = system.file("python", package = packageName()))
     iplot.eeg <<- iplotter$plot_eeg
     iplot.analysis <<- iplotter$plot_analysis
