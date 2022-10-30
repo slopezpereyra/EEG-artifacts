@@ -1,3 +1,6 @@
+iplot.eeg <- NULL
+callf <- NULL
+
 .onLoad <- function(libname, pkgname) {
     question <- "Install Python dependencies? Downloads numpy,
                 pandas, plotly and ploty_resampler if the packages are missing.
@@ -14,4 +17,9 @@
         message("To use interactive plotting, run
         `artifactor::install_py_dependencies()` first")
     }
+
+    print("Setting IPLOTTER function")
+    iplotter <- reticulate::import_from_path(module = "iplotter", path = system.file("python", package = packageName()))
+    iplot.eeg <<- iplotter$plot_eeg
+    callf <<- iplotter$some_callable_f
 }

@@ -281,37 +281,37 @@ update.epochs <- function(epoch_data, analysis) {
 }
 
 
-#' @export
-setGeneric(
-    "iplot.eeg",
-    function(object, s = -1, e = -1, joint = FALSE, save = TRUE, show = FALSE) {
-        standardGeneric("iplot.eeg")
-    }
-)
+# #' @export
+# setGeneric(
+#     "iplot.eeg",
+#     function(object, s = -1, e = -1, joint = FALSE, save = TRUE, show = FALSE) {
+#         standardGeneric("iplot.eeg")
+#     }
+# )
 
-#' Given an eeg object, draw an interactive visualization
-#' of all channels.
-#'
-#' @param object An eeg object.
-#' @param s Starting second of the plot. Defaults to -1, which
-#' means the starting second of the plot will be that of the EEG.
-#' @param e Last second of the plot. Defaults to -1, which
-#' means the last second of the plot will be that of the EEG.
-#' @param joint Should channels be drawn one on top of the other?
-#' Defaults to false.
-#' @param object Save an .html file with the plot? Defaults to True.
-#' @param object Immediately show the plot after creating it? Defaults
-#' to False.
-#'
-#' @export
-setMethod(
-    "iplot.eeg",
-    "eeg",
-    function(object, s = -1, e = -1, joint = FALSE, save = TRUE, show = FALSE) {
-        # Python function
-        plot_eeg(object@data, s = s, e = e, joint = joint, save = save, show = show)
-    }
-)
+# #' Given an eeg object, draw an interactive visualization
+# #' of all channels.
+# #'
+# #' @param object An eeg object.
+# #' @param s Starting second of the plot. Defaults to -1, which
+# #' means the starting second of the plot will be that of the EEG.
+# #' @param e Last second of the plot. Defaults to -1, which
+# #' means the last second of the plot will be that of the EEG.
+# #' @param joint Should channels be drawn one on top of the other?
+# #' Defaults to false.
+# #' @param object Save an .html file with the plot? Defaults to True.
+# #' @param object Immediately show the plot after creating it? Defaults
+# #' to False.
+# #'
+# #' @export
+# setMethod(
+#     "iplot.eeg",
+#     "eeg",
+#     function(object, s = -1, e = -1, joint = FALSE, save = TRUE, show = FALSE) {
+#         # Python function
+#         plot_eeg(object@data, s = s, e = e, joint = joint, save = save, show = show)
+#     }
+# )
 
 
 #' @export
