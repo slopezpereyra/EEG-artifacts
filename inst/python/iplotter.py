@@ -405,3 +405,8 @@ def plot_eeg(df, s=-1, e=-1, joint=False, save=False, show=False):
     if show:
         fig.show()
     return fig
+
+
+def some_callable_f(dataframe):
+    print("I am definitely callable!")
+    print(dataframe.columns)

@@ -312,3 +312,23 @@ setMethod(
         plot_eeg(object@data, s = s, e = e, joint = joint, save = save, show = show)
     }
 )
+
+
+#' @export
+setGeneric(
+    "callf",
+    function(object) {
+        standardGeneric("callf")
+    }
+)
+
+
+#' @export
+setMethod(
+    "callf",
+    "eeg",
+    function(object) {
+        # Python function
+        some_callable_f(object@data)
+    }
+)
