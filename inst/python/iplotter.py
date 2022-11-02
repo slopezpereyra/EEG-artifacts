@@ -169,7 +169,7 @@ def plot_channel(df, channel, s=-1, e=-1, knob=True, views=True, marker_size=5, 
     x1, y1 = df["Time"], df.iloc[:, 2]
 
     traces = [go.Scattergl(x=x0, y=y0, line=dict(width=1, color="black")),
-              go.Scattergl(x=x1, y=y1, mode='lines+markers', line=dict(color="red", width=0.8),
+              go.Scattergl(x=x1, y=y1, mode='markers', line=dict(color="red", width=0.8),
                            marker=dict(size=marker_size), visible=True, name="anoms")]
     if resample:
         fig = FigureResampler(go.Figure(data=traces))
@@ -224,7 +224,7 @@ def plot_channel(df, channel, s=-1, e=-1, knob=True, views=True, marker_size=5, 
     return (fig)
 
 
-def plot_analysis(df, s=-1, e=-1, n_resample=2, marker_size=2.5, show=False, save=False, return_fig=False):
+def plot_analysis(df, s=-1, e=-1, n_resample=2, marker_size=3, show=False, save=False, return_fig=False):
     """Plot all channels in a given analysis.
 
     Args:
