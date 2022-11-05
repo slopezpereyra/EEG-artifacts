@@ -57,6 +57,34 @@ setMethod(
     }
 )
 
+#' @export
+setGeneric(
+    "resample_eeg",
+    function(object, n) {
+        standardGeneric("resample_eeg")
+    }
+)
+
+#' Given an eeg object and an integer n,
+#' subset the EEG's data by keeping only one every
+#' n values and return a new EEG with the subsetted data.
+#'
+#' Logically, the new EEG will have a length of 1/n
+#' the length of the subsetted EEG.
+#'
+#' @param object An eeg object.
+#' @param n An integer.
+#'
+#' @return A new filtered EEG object
+#' @export
+setMethod(
+    "resample_eeg",
+    "eeg",
+    function(object, n) {
+        df <- object@data[seq(1, nrow(object@data), n), ]
+        return(new("eeg", data = df, signals = object@signals))
+    }
+)
 
 #' @export
 setGeneric(
@@ -160,35 +188,6 @@ setMethod(
             object@data[-1][chan] <- lowp
         }
         return(object)
-    }
-)
-
-#' @export
-setGeneric(
-    "resample_eeg",
-    function(object, n) {
-        standardGeneric("resample_eeg")
-    }
-)
-
-#' Given an eeg object and an integer n,
-#' subset the EEG's data by keeping only one every
-#' n values and return a new EEG with the subsetted data.
-#'
-#' Logically, the new EEG will have a length of 1/n
-#' the length of the subsetted EEG.
-#'
-#' @param object An eeg object.
-#' @param n An integer.
-#'
-#' @return A new filtered EEG object
-#' @export
-setMethod(
-    "resample_eeg",
-    "eeg",
-    function(object, n) {
-        df <- object@data[seq(1, nrow(eeg@data), n), ]
-        return(new("eeg", data = df, signals = object@signals))
     }
 )
 
