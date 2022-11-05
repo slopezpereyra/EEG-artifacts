@@ -5,7 +5,7 @@
 library(lubridate)
 
 #'
-#' Given an collective anomalies (or canoms) data frame,
+#' Given a collective anomalies (or canoms) data frame,
 #' an index  i and a threshold in seconds, returns the time at which
 # ' anomaly canoms[i] occurred plus the threshold in seconds.
 #'
@@ -25,7 +25,7 @@ thresh <- function(canoms, i, threshold) {
 #' @param s A lubridate time object.
 #'
 #' @return A character.
-format.time <- function(s) {
+format_time <- function(s) {
   formated_time <- paste(round(s@hour, 4), round(minute(s), 4),
     round(second(s)),
     sep = ":"
@@ -41,7 +41,7 @@ format.time <- function(s) {
 #' @param anoms A canoms or panoms data frame.
 #'
 #' @return A vector of lubridate periods
-get.time <- function(anoms, data) {
+get_time <- function(anoms, data) {
   return(seconds_to_period(data$Time[unlist(anoms[1])]))
 }
 
@@ -51,7 +51,7 @@ get.time <- function(anoms, data) {
 #' @param anoms A canoms or panoms data frame.
 #'
 #' @return A data frame
-set.anom.epoch <- function(anoms) {
+set_anom_epoch <- function(anoms) {
   if (nrow(anoms) == 0) {
     return(anoms)
   }
@@ -75,12 +75,12 @@ set.anom.epoch <- function(anoms) {
 #' @param anoms A canoms or panoms data frame.
 #' @param data The data where anomalies were detected.
 #' @return A data frame
-set.timevars <- function(anoms, data) {
+set_timevars <- function(anoms, data) {
   if (nrow(anoms) == 0) {
     return(anoms)
   }
-  anoms$Time <- get.time(anoms, data)
-  anoms <- set.anom.epoch(anoms)
+  anoms$Time <- get_time(anoms, data)
+  anoms <- set_anom_epoch(anoms)
   return(anoms)
 }
 
@@ -92,7 +92,7 @@ set.timevars <- function(anoms, data) {
 #' @param threshold End indexes of all clusters in anoms
 #'
 #' @return Vector containing maximum mean change of each anomaly in canoms
-get.maxchange <- function(canoms, start_points, end_points) {
+get_anom_maxims <- function(canoms, start_points, end_points) {
   maxs <- list()
   for (n in seq_along(start_points)) {
     start <- start_points[n]
@@ -100,7 +100,7 @@ get.maxchange <- function(canoms, start_points, end_points) {
     mean_changes <- canoms$mean.change[start:end]
     maxs[[length(maxs) + 1]] <- round(max(mean_changes), 4)
   }
-  # The values of get.maxchange are passed to cleaned
+  # The values of get_anom_maxims are passed to cleaned
   # mean.change columns in anomaly data frames. Unlisting
   # is therefore necessary to avoid the column type is the
   # same in data frames that underwent cleaning and data frames
@@ -119,12 +119,12 @@ get.maxchange <- function(canoms, start_points, end_points) {
 #' anomalies must be to not be considered part of the same cluster.
 #'
 #' @return bool
-is.clustered <- function(previous_anom_time, time, threshold) {
+is_clustered <- function(previous_anom_time, time, threshold) {
   time_in_secs <- period_to_seconds(time)
   return(threshold - time_in_secs >= 0 | time == previous_anom_time)
 }
 
-last.cluster <- function(in_cluster, clusters, start, end) {
+last_cluster <- function(in_cluster, clusters, start, end) {
   if (in_cluster == TRUE) {
     clusters[[length(clusters) + 1]] <- c(start, end)
   } else {
@@ -141,7 +141,7 @@ last.cluster <- function(in_cluster, clusters, start, end) {
 #' @param canoms A canoms data frame with a single channel.
 #'
 #' @return A list of (s, e) pairs.
-detect.clusters <- function(canoms, cluster_threshold) {
+detect_clusters <- function(canoms, cluster_threshold) {
   clusters <- list()
   start <- 1
 
@@ -149,11 +149,11 @@ detect.clusters <- function(canoms, cluster_threshold) {
     time <- canoms$Time[n]
     predecessor_time <- canoms$Time[n - 1]
     threshold <- thresh(canoms, n - 1, cluster_threshold)
-    in_cluster <- is.clustered(predecessor_time, time, threshold)
+    in_cluster <- is_clustered(predecessor_time, time, threshold)
 
     if (n == nrow(canoms)) { # Special clause needed for last element.
 
-      clusters <- last.cluster(in_cluster, clusters, start, n)
+      clusters <- last_cluster(in_cluster, clusters, start, n)
       break
     }
     if (in_cluster == FALSE) { # If anomaly in cluster
@@ -173,13 +173,13 @@ detect.clusters <- function(canoms, cluster_threshold) {
 #' indexes of all clusters in canoms.
 #'
 #' @return A canoms data frame.
-join.clusters <- function(canoms, clusters) {
+join_clusters <- function(canoms, clusters) {
   cluster_starts <- unlist(lapply(clusters, `[[`, 1))
   cluster_ends <- unlist(lapply(clusters, `[[`, 2))
 
   joined <- canoms[cluster_starts, ]
   joined$end <- canoms$end[cluster_ends]
-  joined$mean.change <- get.maxchange(canoms, cluster_starts, cluster_ends)
+  joined$mean.change <- get_anom_maxims(canoms, cluster_starts, cluster_ends)
 
   return(joined)
 }
@@ -193,7 +193,7 @@ join.clusters <- function(canoms, clusters) {
 #' of all clusters in canoms.
 #'
 #' @return A canoms data frame.
-format.collectives <- function(anom_df, cluster_thresh) {
+format_collectives <- function(anom_df, cluster_thresh) {
   if (nrow(anom_df) == 0) {
     return(anom_df)
   }
@@ -205,8 +205,8 @@ format.collectives <- function(anom_df, cluster_thresh) {
       subsets[[length(subsets) + 1]] <- channel_anoms
       next
     }
-    clusters_pos <- detect.clusters(channel_anoms, cluster_thresh)
-    joined_channel_anoms <- join.clusters(channel_anoms, clusters_pos)
+    clusters_pos <- detect_clusters(channel_anoms, cluster_thresh)
+    joined_channel_anoms <- join_clusters(channel_anoms, clusters_pos)
     subsets[[length(subsets) + 1]] <- joined_channel_anoms
   }
   return(subsets %>% reduce(full_join, by = c(

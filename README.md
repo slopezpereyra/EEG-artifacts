@@ -72,7 +72,7 @@ For example, after previously exporting an EDF file named `test` in a .csv forma
   
 
 ```r
-eeg <- load.eeg("test_data.txt",
+eeg <- load_eeg("test_data.txt",
 				"test_signals.txt")
 				
 eeg@data <- na.omit(eeg@data)
@@ -94,11 +94,11 @@ The `load_eeg` function returns an `eeg` object containing the `@data` and `@sig
 
   
 
-Due to the size of EEG data, it may be desirable to work with only a subset of the record, or a low resolution version of it. This is accomplished via the `partition.eeg(eeg, start, end)` and `lower.res(eeg, n)` functions.
+Due to the size of EEG data, it may be desirable to work with only a subset of the record, or a low resolution version of it. This is accomplished via the `eeg.resample_eegeeg(eeg, start, end)` and `resample_eeg(eeg, n)` functions.
 
   
 
-`partition.eeg` is a sub-setting function that extracts a time period of data in seconds. `lower.res` is a function that reduces the data by keeping only one very $n$th values. It is _similar_ to applying a low-pass filter, but only in the sense that it reduces the number of events per unit of time.
+`eeg.resample_eegeeg` is a sub-setting function that extracts a time period of data in seconds. `resample_eeg` is a function that reduces the data by keeping only one very $n$th values. It is _similar_ to applying a low-pass filter, but only in the sense that it reduces the number of events per unit of time.
 
   
 
@@ -107,8 +107,8 @@ For example,
   
 
 ```r
-tenth_min_data <  partition.eeg(eeg, 60  *  10, 60  *  11)
-low_res < lower.res(tenth_min_data, 20)
+tenth_min_data <  eeg.resample_eegeeg(eeg, 60  *  10, 60  *  11)
+low_res < resample_eeg(tenth_min_data, 20)
 ```
 
   
@@ -125,13 +125,13 @@ Artifact rejection analysis may be conducted on any of the two formats, with an 
 
   
 
-Keep in mind that lowering the data resolution is not mathematically equivalent to performing a low-pass filter. If one should want to apply a low-pass filter, then the `low.pass(eeg, n)` function should be called, where a $\frac{1}{n} \text{Hz}$ [Butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter) is applied to all channels. For example,
+Keep in mind that lowering the data resolution is not mathematically equivalent to performing a low-pass filter. If one should want to apply a low-pass filter, then the `low_pass(eeg, n)` function should be called, where a $\frac{1}{n} \text{Hz}$ [Butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter) is applied to all channels. For example,
 
   
 
 ```r
-minute <- partition.eeg(eeg, 60, 120) # Second minute of record
-low_pass_minute <- low.pass(minute, 20) # Apply 0.05Hz filter
+minute <- eeg.resample_eegeeg(eeg, 60, 120) # Second minute of record
+low_pass_minute <- low_pass(minute, 20) # Apply 0.05Hz filter
 ```
 
   
@@ -144,7 +144,7 @@ defines two `eeg` objects containing the second minute of record, the latter wit
 
   
 
-> :bulb: Note that, while performing analysis on low-resolution data is faster, that is not the case with low-pass filtered data. The reason is that `lower.res(eeg, n)` reduces the amount of values in the record by a factor of $\frac{1}{n}$, while the `low.pass` returns an `eeg` object with the same number of records. In other words, `lower.res` is a subsetting function, while `low.pass` is a matrix transformation.
+> :bulb: Note that, while performing analysis on low-resolution data is faster, that is not the case with low-pass filtered data. The reason is that `resample_eeg(eeg, n)` reduces the amount of values in the record by a factor of $\frac{1}{n}$, while the `low_pass` returns an `eeg` object with the same number of records. In other words, `resample_eeg` is a subsetting function, while `low_pass` is a matrix transformation.
 
   
 
@@ -194,7 +194,7 @@ Firstly, we will perform anomaly detection on the eleventh minute of data with $
 
 ```r
 analysis <- analyze(eeg, 60  *  11, 60  *  12, alpha  =  8)
-plot.analysis(analysis)
+plot_analysis(analysis)
 ```
 
   
@@ -209,7 +209,7 @@ The algorithm is finding a long artifact in the last ten seconds of data, while 
   
 
 ```r
-plot.anomalies(analysis, channel  =  7)
+plot_anoms(analysis, channel  =  7)
 ```
 
   
@@ -224,7 +224,7 @@ plot.anomalies(analysis, channel  =  7)
 
 ```r
 analysis <- analyze(eeg, 17  *  60, 18  *  60, alpha  =  8)
-plot.analysis(analysis)
+plot_analysis(analysis)
 ```
 
   
@@ -255,7 +255,7 @@ The function has a double output:
 Because the output of this function is large (dozens of `.png` images images and a `.csv` file), we will showcase it with a small amount of data; namely, the first five minutes of record of our test EEG. During this period, the subject was requested to perform certain motor activities, like gnashing his teeths and moving his legs. Because of this, the record contains a good deal of anomalous segments. These are technically not articats —for they were purposeful—, but still serve as example.
 
 ```r
-first_five_mins <- partition.eeg(eeg, 0, 5  *  60)
+first_five_mins <- eeg.resample_eegeeg(eeg, 0, 5  *  60)
 results <- analyize.stepwise(first_five_mins, 60, res  =  1)
 ```
 The console outputs the time it took for the analysis to complete. In this case, the five minutes were done in $\approx10.5$ seconds. 

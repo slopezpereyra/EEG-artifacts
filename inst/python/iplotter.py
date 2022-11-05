@@ -15,7 +15,7 @@ def get_chan_data(df, chan):
 
     Args:
         df (DataFrame): An analysis dataframe as formatted by
-        artifactor's set.iplot.data method.
+        artifactor's set_for_iplot method.
         chan (int): Channel whose data will be retrieved.
 
     Returns:
@@ -33,7 +33,7 @@ def count_channels(df):
 
     Args:
         df (DataFrame): An analysis dataframe as formatted by
-        artifactor's set.iplot.data method.
+        artifactor's set_for_iplot method.
 
     Returns:
         int: Number of EEG channels in df.
@@ -46,7 +46,7 @@ def get_chan_names(df):
 
     Args:
         df (DataFrame): An analysis dataframe as formatted by
-        artifactor's set.iplot.data method.
+        artifactor's set_for_iplot method.
 
     Returns:
         list: List of EEG channel names in df.
@@ -62,7 +62,7 @@ def get_max_strength(df):
 
     Args:
         df (DataFrame): An analysis dataframe as formatted by
-        artifactor's set.iplot.data method.
+        artifactor's set_for_iplot method.
 
     Returns:
         float: Maximum anomaly strength in the analysis.
@@ -93,7 +93,7 @@ def filter_data_by_alpha(df, alpha):
 
     Args:
         df (DataFrame): An analysis dataframe as formatted by
-        artifactor's set.iplot.data method.
+        artifactor's set_for_iplot method.
         alpha (float): Strength threshold.
 
     Returns:
@@ -114,7 +114,7 @@ def update_fig_by_alpha(df, fig_data, alpha):
     Args:
         df DataFrame: The analysis dataframe used for the 
         analysis plot. It is always a dataframe of the form
-        specified by artifactor's set.iplot.data method.
+        specified by artifactor's set_for_iplot method.
         fig_data (dictionary): The analysis plot figure's data.
         alpha (float): Strength threshold
 
@@ -140,7 +140,7 @@ def update_fig_by_alpha(df, fig_data, alpha):
     return (result)
 
 
-def plot_channel(df, channel, s=-1, e=-1, knob=True, views=True, marker_size=5, resample=False):
+def iplot_channel(df, channel, s=-1, e=-1, knob=True, views=True, marker_size=5, resample_eeg=False):
     """Plots an analyzed channel.
 
     Args:
@@ -152,7 +152,7 @@ def plot_channel(df, channel, s=-1, e=-1, knob=True, views=True, marker_size=5, 
         views (bool, optional): Include buttons that frame the channel view
         to specific time-intervals? Defaults to True.
         marker_size (int, optional): Size of anomaly markers. Defaults to 5.
-        resample(bool, optional): Resample the EEG for faster processing?
+        resample_eeg(bool, optional): resample_eeg the EEG for faster processing?
 
     Returns:
         Figure (plotly): A plotly figure representing a channel an its anomalies.
@@ -171,8 +171,8 @@ def plot_channel(df, channel, s=-1, e=-1, knob=True, views=True, marker_size=5, 
     traces = [go.Scattergl(x=x0, y=y0, line=dict(width=1, color="black")),
               go.Scattergl(x=x1, y=y1, mode='markers', line=dict(color="red", width=0.8),
                            marker=dict(size=marker_size), visible=True, name="anoms")]
-    if resample:
-        fig = FigureResampler(go.Figure(data=traces))
+    if resample_eeg:
+        fig = Figureresample_eegr(go.Figure(data=traces))
     else:
         fig = go.Figure(data=traces)
     if knob:
@@ -224,17 +224,17 @@ def plot_channel(df, channel, s=-1, e=-1, knob=True, views=True, marker_size=5, 
     return (fig)
 
 
-def plot_analysis(df, s=-1, e=-1, n_resample=2, marker_size=3, show=False, save=False, return_fig=False):
+def iplot_analysis(df, s=-1, e=-1, n_resample_eeg=2, marker_size=3, show=False, save=False, return_fig=False):
     """Plot all channels in a given analysis.
 
     Args:
         df (DataFrame): An analysis dataframe as formatted by
-        artifactor's set.iplot.data method.
+        artifactor's set_for_iplot method.
         s (int, optional): Initial second of the plot. Defaults to -1, which means
         the first second of the given analysis.
         e (int, optional): Last second of the plot. Defaults to -1,
         meaning the last second of the given analysis.
-        n_resample (int, optional): Integer setting downsample decimation. If n,
+        n_resample_eeg (int, optional): Integer setting downsample decimation. If n,
         the only one every n values are plotted. Defaults to 2 and should be set
         to higher values for large analysis.
         marker_size (float, optional): Size of the red markers that signal
@@ -251,7 +251,7 @@ def plot_analysis(df, s=-1, e=-1, n_resample=2, marker_size=3, show=False, save=
         _type_: _description_
     """
 
-    df = df.iloc[::n_resample, :]
+    df = df.iloc[::n_resample_eeg, :]
     nchans = count_channels(df)
     names = get_chan_names(df).tolist()
     fig = make_subplots(rows=nchans, cols=1,
@@ -262,8 +262,8 @@ def plot_analysis(df, s=-1, e=-1, n_resample=2, marker_size=3, show=False, save=
 
     # Add traces
     for i in range(1, nchans + 1):
-        analysis = plot_channel(df, i, s, e, False, False,
-                                marker_size=marker_size)
+        analysis = iplot_channel(df, i, s, e, False, False,
+                                 marker_size=marker_size)
         fig.add_trace(analysis.data[0], row=i, col=1)
         fig.append_trace(analysis.data[1], row=i, col=1)
 
@@ -327,7 +327,7 @@ def plot_analysis(df, s=-1, e=-1, n_resample=2, marker_size=3, show=False, save=
         fig.show()
     if save:
         fig.write_html(
-            "analysis_{}_to_{}_nresample={}.html".format(str(s), str(e), str(n_resample)))
+            "analysis_{}_to_{}_nresample_eeg={}.html".format(str(s), str(e), str(n_resample_eeg)))
     # This function is designed to be used in the R package artifactor. To avoid lurking
     # Python objects in the R environment, the function should not return a plotly figure
     # when called from R. Therefore, this conditional return logic is justified.
@@ -335,9 +335,9 @@ def plot_analysis(df, s=-1, e=-1, n_resample=2, marker_size=3, show=False, save=
         return (fig)
 
 
-def plot_eeg(df, s=-1, e=-1, joint=False, save=False, show=False):
+def iplot_eeg(df, s=-1, e=-1, joint=False, save=False, show=False):
 
-    register_plotly_resampler(mode='auto', default_n_shown_samples=100000)
+    register_plotly_resample_eegr(mode='auto', default_n_shown_samples=100000)
 
     if (s == -1 or e == -1):
         s, e = df["Time"].iloc[0], df["Time"].iloc[-1]

@@ -26,20 +26,20 @@ source("R/analysis.r")
 analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3, time = TRUE) {
   start_time <- Sys.time()
   eeg <- eeg %>%
-    partition.eeg(s, e) %>%
-    lower.res(res)
+    subset_eeg(s, e) %>%
+    resample(res)
 
   analysis <- capa.mv(eeg@data[-1], type = "mean")
 
   canoms <- collective_anomalies(analysis) %>%
     dplyr::filter(mean.change >= alpha) %>%
-    set.timevars(data = eeg@data) %>%
-    format.collectives(thresh) %>%
+    set_timevars(data = eeg@data) %>%
+    format_collectives(thresh) %>%
     as_tibble()
 
   panoms <- point_anomalies(analysis) %>%
     dplyr::filter(strength >= beta) %>%
-    set.timevars(data = eeg@data) %>%
+    set_timevars(data = eeg@data) %>%
     as_tibble()
 
 
@@ -66,13 +66,13 @@ analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3, time = 
 #'  take them both as a single anomaly?
 #' @return An analysis object.
 #' @export
-stepwise.analysis <- function(eeg, step_size, res=1, alpha = 8, beta = 1, thresh = 3, write = FALSE) {
+stepwise_analysis <- function(eeg, step_size, res = 1, alpha = 8, beta = 1, thresh = 3, write = FALSE) {
 
   # Variable initialization
   start_time <- Sys.time()
   # Epoch-related variables:
-  epoch_displacement <- get.epoch.displacement(eeg, step_size)
-  epoch_data <- create.epoch.data()
+  epoch_displacement <- get_samples_in_epoch(eeg, step_size)
+  epoch_data <- create_epoch_data()
   # Variables for stepwise Iteration.
   s <- eeg@data$Time[1]
   e <- s + step_size
@@ -121,7 +121,7 @@ stepwise.analysis <- function(eeg, step_size, res=1, alpha = 8, beta = 1, thresh
       panoms["location"] <- panoms["location"] + x_displacement
       all_panoms[[pos]] <- panoms
     }
-    epoch_data <- update.epochs(epoch_data, analysis)
+    epoch_data <- update_epochs(epoch_data, analysis)
     s <- e
     e <- e + step_size
     setTxtProgressBar(pb, s)

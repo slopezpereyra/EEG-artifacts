@@ -1,4 +1,5 @@
 library(signal)
+library(rsleep)
 
 #' EEG class.
 #' @slot data A data frame containing EEG records
@@ -24,9 +25,9 @@ setMethod(
 
 #' @export
 setGeneric(
-    "partition.eeg",
+    "subset_eeg",
     function(object, s, e) {
-        standardGeneric("partition.eeg")
+        standardGeneric("subset_eeg")
     }
 )
 
@@ -43,7 +44,7 @@ setGeneric(
 #' second s to e of the object's data attribute.
 #' @export
 setMethod(
-    "partition.eeg",
+    "subset_eeg",
     "eeg",
     function(object, s, e) {
         s_ind <- which(object@data$Time == s)
@@ -56,12 +57,42 @@ setMethod(
     }
 )
 
+
+#' @export
 setGeneric(
-    "get.epoch.displacement",
-    function(object, epoch) {
-        standardGeneric("get.epoch.displacement")
+    "get_epoch",
+    function(object, which_epoch, epoch = 30) {
+        standardGeneric("get_epoch")
     }
 )
+
+#' Returns new eeg whose data is a subset of given eeg
+#' on the given epoch. Epoch counts begin with 0.
+#'
+#' This function wraps a specific call of subset_eeg.
+#'
+#' @param object An eeg object.
+#' @param which_epoch What epoch to subset.
+#' @param epoch How many seconds make up an epoch? Defaults to 30.
+#'
+#' @return A new eeg whose data is the requested epoch.
+#' @export
+setMethod(
+    "get_epoch",
+    "eeg",
+    function(object, which_epoch, epoch = 30) {
+        subset_eeg(object, epoch * (which_epoch), epoch * (which_epoch + 1))
+    }
+)
+
+#' @export
+setGeneric(
+    "get_samples_in_epoch",
+    function(object, epoch) {
+        standardGeneric("get_samples_in_epoch")
+    }
+)
+
 
 
 #' Given an eeg object, determine the number of values
@@ -74,18 +105,40 @@ setGeneric(
 #' that make up a time-frame of length epoch.
 #' @export
 setMethod(
-    "get.epoch.displacement",
+    "get_samples_in_epoch",
     "eeg",
     function(object, epoch) {
         return(which(object@data["Time"] == epoch))
     }
 )
 
+
+setGeneric(
+    "get_sampling_frequency",
+    function(object) {
+        standardGeneric("get_sampling_frequency")
+    }
+)
+
+#' Returns sampling frequency
+#'
+#' @param object An eeg object.
+#'
+#' @return An number, the sampling frequency
+#' @export
+setMethod(
+    "get_sampling_frequency",
+    "eeg",
+    function(object) {
+        return(get_samples_in_epoch(object, 1) - 1)
+    }
+)
+
 #' @export
 setGeneric(
-    "low.pass",
+    "low_pass",
     function(object, n) {
-        standardGeneric("low.pass")
+        standardGeneric("low_pass")
     }
 )
 
@@ -98,7 +151,7 @@ setGeneric(
 #' @return A new filtered EEG object
 #' @export
 setMethod(
-    "low.pass",
+    "low_pass",
     "eeg",
     function(object, n) {
         for (chan in 1:(ncol(object@data) - 1)) {
@@ -112,9 +165,9 @@ setMethod(
 
 #' @export
 setGeneric(
-    "lower.res",
+    "resample_eeg",
     function(object, n) {
-        standardGeneric("lower.res")
+        standardGeneric("resample_eeg")
     }
 )
 
@@ -131,26 +184,19 @@ setGeneric(
 #' @return A new filtered EEG object
 #' @export
 setMethod(
-    "lower.res",
+    "resample_eeg",
     "eeg",
     function(object, n) {
-        i <- c(1) # Include one since following computation skips it.
-        if (n == 1) {
-            return(object)
-        }
-        for (x in seq_len(nrow(object@data) / n)) {
-            i <- append(i, x * n + 1)
-        }
-        lowered <- object@data[i, ]
-        return(new("eeg", data = lowered, signals = object@signals))
+        df <- object@data[seq(1, nrow(eeg@data), n), ]
+        return(new("eeg", data = df, signals = object@signals))
     }
 )
 
 #' @export
 setGeneric(
-    "plot.channel",
+    "plot_channel",
     function(object, channel) {
-        standardGeneric("plot.channel")
+        standardGeneric("plot_channel")
     }
 )
 
@@ -163,7 +209,7 @@ setGeneric(
 #' @return A ggplot object.
 #' @export
 setMethod(
-    "plot.channel",
+    "plot_channel",
     "eeg",
     function(object, channel) {
         y <- object@data[-1][channel]
@@ -186,9 +232,9 @@ setMethod(
 
 #' @export
 setGeneric(
-    "plot.eeg",
+    "plot_eeg",
     function(object) {
-        standardGeneric("plot.eeg")
+        standardGeneric("plot_eeg")
     }
 )
 
@@ -200,12 +246,12 @@ setGeneric(
 #' @return A plot_grid object.
 #' @export
 setMethod(
-    "plot.eeg",
+    "plot_eeg",
     "eeg",
     function(object) {
         plots <- list()
         for (channel in 1:(ncol(object@data) - 1)) {
-            p <- plot.channel(object, channel)
+            p <- plot_channel(object, channel)
             plots[[channel]] <- p
         }
 
@@ -222,7 +268,7 @@ setMethod(
 #'
 #' @return An eeg object.
 #' @export
-load.eeg <- function(data_file, signals_file = NULL) {
+load_eeg <- function(data_file, signals_file = NULL) {
     data <- read_csv(data_file)
     if (!is.null(signals_file)) {
         signals <- read_csv(signals_file)
@@ -241,10 +287,10 @@ load.eeg <- function(data_file, signals_file = NULL) {
 #' anomalous pairs during stepwise analysis.
 #'
 #' @return An empty dataframe.
-create.epoch.data <- function() {
+create_epoch_data <- function() {
     results <- tibble(
-        epoch = numeric(),
-        subepoch = numeric()
+        Epoch = numeric(),
+        Subepoch = numeric()
         # channels = list(),
         # segment_strength = numeric(),
         # point_strength = numeric()
@@ -256,9 +302,9 @@ create.epoch.data <- function() {
 #' Update a data frame containing anomalous epoch-subepoch
 #' pairs given a certain analysis results.
 #'
-#' @return A data frame as defined by create.epoch.data().
+#' @return A data frame as defined by create_epoch_data().
 #' @return An analysis object.
-update.epochs <- function(epoch_data, analysis) {
+update_epochs <- function(epoch_data, analysis) {
     canoms <- analysis@canoms
     panoms <- analysis@panoms
 
@@ -270,9 +316,73 @@ update.epochs <- function(epoch_data, analysis) {
     chans <- union(unique(canoms$variate), unique(panoms$variate))
 
     epoch_data <- add_row(epoch_data,
-        epoch = unlist(lapply(epoch_list, `[[`, 1)),
-        subepoch = unlist(lapply(epoch_list, `[[`, 2))
+        Epoch = unlist(lapply(epoch_list, `[[`, 1)),
+        Subepoch = unlist(lapply(epoch_list, `[[`, 2))
     )
 
     return(epoch_data)
 }
+
+
+#' @export
+setGeneric(
+    "get_channel_psd",
+    function(object, channel, method = "welch") {
+        standardGeneric("get_channel_psd")
+    }
+)
+
+#' Given an eeg object, determine the number of values
+#' that make up epoch seconds.
+#'
+#' @param object An eeg object.
+#' @param epoch A time in seconds.
+#'
+#' @return An integer representing the number of values
+#' that make up a time-frame of length epoch.
+#' @export
+setMethod(
+    "get_channel_psd",
+    "eeg",
+    function(object, channel, method = "welch") {
+        vec <- unlist(object@data[channel])
+        if (method == "welch") {
+            periodogram <- pwelch(vec, get_sampling_frequency(eeg))
+        } else if (method == "asm") { # Adaptive sine multitaper
+            periodogram <- psm(vec, get_sampling_frequency(eeg))
+        }
+        return(periodogram)
+    }
+)
+
+#' @export
+setGeneric(
+    "psd",
+    function(object, method = "welch") {
+        standardGeneric("psd")
+    }
+)
+
+#' Given an eeg object, determine the number of values
+#' that make up epoch seconds.
+#'
+#' @param object An eeg object.
+#' @param epoch A time in seconds.
+#'
+#' @return An integer representing the number of values
+#' that make up a time-frame of length epoch.
+#' @export
+setMethod(
+    "psd",
+    "eeg",
+    function(object, method = "welch") {
+        df <- as.tibble(get_channel_psd(object, 2, method))
+        for (chan in 3:(ncol(object@data) - 1)) {
+            df <- add_column(df, get_channel_psd(object, chan, method)[2], .name_repair = "unique")
+        }
+        names <- colnames(object@data)
+        names[1] <- "Frequency"
+        colnames(df) <- names
+        return(df)
+    }
+)

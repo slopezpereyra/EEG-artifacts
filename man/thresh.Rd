@@ -2,7 +2,7 @@
 % Please edit documentation in R/cln.R
 \name{thresh}
 \alias{thresh}
-\title{Given an collective anomalies (or canoms) data frame,
+\title{Given a collective anomalies (or canoms) data frame,
 an index  i and a threshold in seconds, returns the time at which}
 \usage{
 thresh(canoms, i, threshold)
@@ -18,6 +18,6 @@ thresh(canoms, i, threshold)
 An integer. The time of occurence of anomaly canoms[i] plus threshold.
 }
 \description{
-Given an collective anomalies (or canoms) data frame,
+Given a collective anomalies (or canoms) data frame,
 an index  i and a threshold in seconds, returns the time at which
 }
