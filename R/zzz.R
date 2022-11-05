@@ -1,5 +1,5 @@
-iplot.eeg <- NULL
-iplot.analysis <- NULL
+iplot_eeg <- NULL
+iplot_analysis <- NULL
 
 .onLoad <- function(libname, pkgname) {
     question <- "Install Python dependencies? Downloads numpy,
@@ -19,6 +19,6 @@ iplot.analysis <- NULL
     }
 
     iplotter <- reticulate::import_from_path(module = "iplotter", path = system.file("python", package = packageName()))
-    iplot.eeg <<- iplotter$plot_eeg
-    iplot.analysis <<- iplotter$plot_analysis
+    iplot_eeg <<- iplotter$iplot_eeg
+    iplot_analysis <<- iplotter$iplot_analysis
 }

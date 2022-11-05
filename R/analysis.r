@@ -36,9 +36,9 @@ setMethod(
 
 #' @export
 setGeneric(
-    "has.anomalies",
+    "has_anoms",
     function(object, step, ...) {
-        standardGeneric("has.anomalies")
+        standardGeneric("has_anoms")
     }
 )
 
@@ -48,7 +48,7 @@ setGeneric(
 #' @return bool
 #' @export
 setMethod(
-    "has.anomalies",
+    "has_anoms",
     "analysis",
     function(object) {
         return(nrow(object@canoms) > 0 | nrow(object@panoms) > 0)
@@ -57,9 +57,9 @@ setMethod(
 
 #' @export
 setGeneric(
-    "get.anomalous.channels",
+    "get_anomalous_channels",
     function(object, channel) {
-        standardGeneric("get.anomalous.channels")
+        standardGeneric("get_anomalous_channels")
     }
 )
 
@@ -71,7 +71,7 @@ setGeneric(
 #' @return A vector containing all anomalous channels in the analysis.
 #' @export
 setMethod(
-    "get.anomalous.channels",
+    "get_anomalous_channels",
     "analysis",
     function(object) {
         chans <- union(
@@ -83,9 +83,9 @@ setMethod(
 )
 
 setGeneric(
-    "plot.clusters",
+    "plot_clusters",
     function(object, channel) {
-        standardGeneric("plot.clusters")
+        standardGeneric("plot_clusters")
     }
 )
 
@@ -95,7 +95,7 @@ setGeneric(
 #' @param channel An integer.
 #' @return A ggplot.
 setMethod(
-    "plot.clusters",
+    "plot_clusters",
     "analysis",
     function(object, channel) {
         canoms <- object@canoms %>%
@@ -105,7 +105,7 @@ setMethod(
             xmax = as_datetime(object@eeg@data$Time[canoms$end]),
             ymin = -315, ymax = 315, alpha = 0.3
         )
-        eeg <- plot.channel(object@eeg, channel = channel)
+        eeg <- plot_channel(object@eeg, channel = channel)
         plot <- eeg +
             geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
                 alpha = 0.3, fill = "red",
@@ -118,9 +118,9 @@ setMethod(
 
 #' @export
 setGeneric(
-    "plot.points",
+    "plot_points",
     function(object, channel) {
-        standardGeneric("plot.points")
+        standardGeneric("plot_points")
     }
 )
 
@@ -132,7 +132,7 @@ setGeneric(
 #' @return A ggplot.
 #' @export
 setMethod(
-    "plot.points",
+    "plot_points",
     "analysis",
     function(object, channel) {
         points <- object@panoms %>%
@@ -141,7 +141,7 @@ setMethod(
         point_values <- unlist(object@eeg@data[-1][points$location, channel])
         points <- tibble(A = as_datetime(points$Time), B = point_values)
 
-        eeg <- plot.channel(object@eeg, channel = channel)
+        eeg <- plot_channel(object@eeg, channel = channel)
         plot <- eeg +
             geom_point(
                 data = points, aes(A, B),
@@ -155,9 +155,9 @@ setMethod(
 
 #' @export
 setGeneric(
-    "plot.anomalies",
+    "plot_anoms",
     function(object, channel) {
-        standardGeneric("plot.anomalies")
+        standardGeneric("plot_anoms")
     }
 )
 
@@ -169,7 +169,7 @@ setGeneric(
 #' @return A ggplot.
 #' @export
 setMethod(
-    "plot.anomalies",
+    "plot_anoms",
     "analysis",
     function(object, channel) {
         points <- object@panoms %>%
@@ -184,7 +184,7 @@ setMethod(
             ymin = -300, ymax = 300, alpha = 0.3
         )
 
-        eeg <- plot.channel(object@eeg, channel = channel)
+        eeg <- plot_channel(object@eeg, channel = channel)
         plot <- eeg +
             geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
                 alpha = 0.3, fill = "red",
@@ -204,9 +204,9 @@ setMethod(
 
 #' @export
 setGeneric(
-    "plot.channel.analysis",
+    "plot_analyzed_channel",
     function(object, channel) {
-        standardGeneric("plot.channel.analysis")
+        standardGeneric("plot_analyzed_channel")
     }
 )
 
@@ -218,7 +218,7 @@ setGeneric(
 #' @return A ggplot.
 #' @export
 setMethod(
-    "plot.channel.analysis",
+    "plot_analyzed_channel",
     "analysis",
     function(object, channel) {
         canoms <- object@canoms %>% dplyr::filter(variate == channel)
@@ -228,9 +228,9 @@ setMethod(
         if (nrow(canoms) == 0 & length(point_locs) == 0) {
             return(plot.egg(object, channel))
         } else if (nrow(canoms) == 0) {
-            return(plot.points(object, channel))
+            return(plot_points(object, channel))
         } else {
-            return(plot.anomalies(object, channel))
+            return(plot_anoms(object, channel))
         }
         return(plot)
     }
@@ -238,9 +238,9 @@ setMethod(
 
 #' @export
 setGeneric(
-    "plot.channels.analysis",
+    "plot_analyzed_channels",
     function(object) {
-        standardGeneric("plot.channels.analysis")
+        standardGeneric("plot_analyzed_channels")
     }
 )
 
@@ -250,14 +250,14 @@ setGeneric(
 #' @return A plot_grid object.
 #' @export
 setMethod(
-    "plot.channels.analysis",
+    "plot_analyzed_channels",
     "analysis",
     function(object) {
         plots <- list()
-        channels <- get.anomalous.channels(object)
+        channels <- get_anomalous_channels(object)
         for (channel in channels)
         {
-            p <- plot.channel.analysis(object, channel)
+            p <- plot_analyzed_channel(object, channel)
             plots[[channel]] <- p
         }
         return(plot_grid(plotlist = plots, align = "v", ncol = 1))
@@ -266,9 +266,9 @@ setMethod(
 
 #' @export
 setGeneric(
-    "plot.analysis",
+    "plot_analysis",
     function(object, save = FALSE) {
-        standardGeneric("plot.analysis")
+        standardGeneric("plot_analysis")
     }
 )
 
@@ -282,10 +282,10 @@ setGeneric(
 #' @return A plot_grid object.
 #' @export
 setMethod(
-    "plot.analysis",
+    "plot_analysis",
     "analysis",
     function(object, save = FALSE) {
-        anom_plot <- plot.channels.analysis(object)
+        anom_plot <- plot_analyzed_channels(object)
         if (save == TRUE) {
             dir.create("results")
             start <- seconds_to_period(object@eeg@data$Time[1]) %>% format.time()
@@ -301,9 +301,9 @@ setMethod(
 
 #' @export
 setGeneric(
-    "set.chan.iplot.data",
+    "set_chan_for_iplot",
     function(object, chan) {
-        standardGeneric("set.chan.iplot.data")
+        standardGeneric("set_chan_for_iplot")
     }
 )
 
@@ -317,7 +317,7 @@ setGeneric(
 #' @return A tibble.
 #' @export
 setMethod(
-    "set.chan.iplot.data",
+    "set_chan_for_iplot",
     "analysis",
     function(object, chan) {
         df <- object@eeg@data[, c(1, (chan + 1))]
@@ -357,9 +357,9 @@ setMethod(
 
 #' @export
 setGeneric(
-    "set.iplot.data",
+    "set_for_iplot",
     function(object, save = FALSE) {
-        standardGeneric("set.iplot.data")
+        standardGeneric("set_for_iplot")
     }
 )
 
@@ -374,13 +374,13 @@ setGeneric(
 #' @return A tibble.
 #' @export
 setMethod(
-    "set.iplot.data",
+    "set_for_iplot",
     "analysis",
     function(object, save = FALSE) {
         nchans <- length(object@eeg@data[-1])
-        df <- set.chan.iplot.data(object, 1)
+        df <- set_chan_for_iplot(object, 1)
         for (chan in 2:nchans) {
-            iplot_data <- set.chan.iplot.data(object, chan)
+            iplot_data <- set_chan_for_iplot(object, chan)
             iplot_data$Time <- NULL
             df <- df %>% bind_cols(iplot_data)
         }
