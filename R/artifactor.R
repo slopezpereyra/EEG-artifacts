@@ -27,7 +27,7 @@ analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3, time = 
   start_time <- Sys.time()
   eeg <- eeg %>%
     subset_eeg(s, e) %>%
-    resample(res)
+    resample_eeg(res)
 
   analysis <- capa.mv(eeg@data[-1], type = "mean")
 
