@@ -337,7 +337,7 @@ def iplot_analysis(df, s=-1, e=-1, n_resample=2, marker_size=3, show=False, save
 
 def iplot_eeg(df, s=-1, e=-1, joint=False, save=False, show=False):
 
-    register_plotly_resample(mode='auto', default_n_shown_samples=100000)
+    register_plotly_resampler(mode='auto', default_n_shown_samples=100000)
 
     if (s == -1 or e == -1):
         s, e = df["Time"].iloc[0], df["Time"].iloc[-1]

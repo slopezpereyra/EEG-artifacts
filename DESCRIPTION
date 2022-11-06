@@ -12,5 +12,6 @@ Depends:
     signal,
     cowplot,
     anomaly,
-    reticulate
+    reticulate,
+    rsleep
 RoxygenNote: 7.2.1
