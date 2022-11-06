@@ -1,4 +1,3 @@
-# This SOP is designed for students at the lab.
 
 # ------------------------------------
 #
@@ -28,7 +27,7 @@ library(artifactor)
 # read the EEG data you've exported from EDFReader. 
 # To load EEG data, execute the following command.
 
-eeg <- load_eeg("test_data.txt", "test_signals.txt")
+eeg <- load_eeg("test_eeg.csv")
 
 # Now the variable "eeg" holds an eeg object. You can access its data by
 # writing "eeg@data". For example, execute the following command
