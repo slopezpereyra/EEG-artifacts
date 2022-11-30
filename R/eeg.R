@@ -23,6 +23,30 @@ setMethod(
     }
 )
 
+
+#' Read a .csv data file containing EEG data and an optionall
+#' signals file and return an eeg object. If the signals file is provided,
+#'  channel names are appropriately set.
+#'
+#' @param data_file .csv file containing eeg data.
+#' @param signals_file .csv file containing signal information
+#'
+#' @return An eeg object.
+#' @export
+load_eeg <- function(data_file, signals_file = NULL) {
+    data <- read_csv(data_file)
+    if (!is.null(signals_file)) {
+        signals <- read_csv(signals_file)
+        colnames(data)[-1] <- signals$Label %>%
+            str_remove("EEG ") %>%
+            str_remove("EOG")
+    } else {
+        signals <- tibble()
+    }
+
+    return(new("eeg", data = data, signals = signals))
+}
+
 #' @export
 setGeneric(
     "subset_eeg",
@@ -75,7 +99,7 @@ setGeneric(
 #' @param object An eeg object.
 #' @param n An integer.
 #'
-#' @return A new filtered EEG object
+#' @return An EEG object
 #' @export
 setMethod(
     "resample_eeg",
@@ -158,7 +182,8 @@ setMethod(
     "get_sampling_frequency",
     "eeg",
     function(object) {
-        return(get_samples_in_epoch(object, 1) - 1)
+        delta_t <- object@data$Time[2] - object@data$Time[1]
+        return(1 / delta_t)
     }
 )
 
@@ -183,14 +208,81 @@ setMethod(
     "eeg",
     function(object, n) {
         for (chan in 1:(ncol(object@data) - 1)) {
-            bf <- butter(3, 1 / n) # 1/n Hz low-pass filter
-            lowp <- signal::filter(bf, unlist(object@data[-1][chan]))
-            object@data[-1][chan] <- lowp
+            fs <- get_sampling_frequency(object)
+            fs <- get_sampling_frequency(object)
+            fpass <- n
+            wpass <- fpass / (fs / 2) # Nyquist
+            but <- gsignal::butter(3, wpass, "low")
+            highp <- gsignal::filter(but, unlist(object@data[-1][chan]))
+            object@data[-1][chan] <- highp
         }
         return(object)
     }
 )
 
+#' @export
+setGeneric(
+    "high_pass",
+    function(object, n) {
+        standardGeneric("high_pass")
+    }
+)
+
+#' Given an eeg object and a numeric frequency n,
+#' applies a 1/n Hz low-pass Butterworth filter.
+#'
+#' @param object An eeg object.
+#' @param n Filter frequency.
+#'
+#' @return A new filtered EEG object
+#' @export
+setMethod(
+    "high_pass",
+    "eeg",
+    function(object, n) {
+        for (chan in 1:(ncol(object@data) - 1)) {
+            fs <- get_sampling_frequency(object)
+            fs <- get_sampling_frequency(object)
+            fpass <- n
+            wpass <- fpass / (fs / 2) # Nyquist
+            but <- gsignal::butter(3, wpass, "high")
+            highp <- gsignal::filter(but, unlist(object@data[-1][chan]))
+            object@data[-1][chan] <- highp
+        }
+        return(object)
+    }
+)
+#' @export
+setGeneric(
+    "bandpass",
+    function(object, l, h) {
+        standardGeneric("bandpass")
+    }
+)
+
+#' Given an eeg object and a numeric frequency n,
+#' applies a 1/n Hz low-pass Butterworth filter.
+#'
+#' @param object An eeg object.
+#' @param n Filter frequency.
+#'
+#' @return A new filtered EEG object
+#' @export
+setMethod(
+    "bandpass",
+    "eeg",
+    function(object, l, h) {
+        for (chan in 1:(ncol(object@data) - 1)) {
+            fs <- get_sampling_frequency(object)
+            fpass <- c(l, h)
+            wpass <- fpass / (fs / 2) # Nyquist
+            but <- gsignal::butter(5, wpass, "pass")
+            pass <- gsignal::filter(but, unlist(object@data[-1][chan]))
+            object@data[-1][chan] <- pass
+        }
+        return(object)
+    }
+)
 #' @export
 setGeneric(
     "plot_channel",
@@ -255,94 +347,5 @@ setMethod(
         }
 
         return(plot_grid(plotlist = plots, align = "v", ncol = 1))
-    }
-)
-
-#' Read a .csv data file containing EEG data and an optionall
-#' signals file and return an eeg object. If the signals file is provided,
-#'  channel names are appropriately set.
-#'
-#' @param data_file .csv file containing eeg data.
-#' @param signals_file .csv file containing signal information
-#'
-#' @return An eeg object.
-#' @export
-load_eeg <- function(data_file, signals_file = NULL) {
-    data <- read_csv(data_file)
-    if (!is.null(signals_file)) {
-        signals <- read_csv(signals_file)
-        colnames(data)[-1] <- signals$Label %>%
-            str_remove("EEG ") %>%
-            str_remove("EOG")
-    } else {
-        signals <- tibble()
-    }
-
-    return(new("eeg", data = data, signals = signals))
-}
-
-
-
-
-#' @export
-setGeneric(
-    "get_channel_psd",
-    function(object, channel, method = "welch") {
-        standardGeneric("get_channel_psd")
-    }
-)
-
-#' Given an eeg object, determine the number of values
-#' that make up epoch seconds.
-#'
-#' @param object An eeg object.
-#' @param epoch A time in seconds.
-#'
-#' @return An integer representing the number of values
-#' that make up a time-frame of length epoch.
-#' @export
-setMethod(
-    "get_channel_psd",
-    "eeg",
-    function(object, channel, method = "welch") {
-        vec <- unlist(object@data[channel])
-        if (method == "welch") {
-            periodogram <- pwelch(vec, get_sampling_frequency(eeg))
-        } else if (method == "asm") { # Adaptive sine multitaper
-            periodogram <- psm(vec, get_sampling_frequency(eeg))
-        }
-        return(periodogram)
-    }
-)
-
-#' @export
-setGeneric(
-    "psd",
-    function(object, method = "welch") {
-        standardGeneric("psd")
-    }
-)
-
-#' Given an eeg object, determine the number of values
-#' that make up epoch seconds.
-#'
-#' @param object An eeg object.
-#' @param epoch A time in seconds.
-#'
-#' @return An integer representing the number of values
-#' that make up a time-frame of length epoch.
-#' @export
-setMethod(
-    "psd",
-    "eeg",
-    function(object, method = "welch") {
-        df <- as.tibble(get_channel_psd(object, 2, method))
-        for (chan in 3:(ncol(object@data) - 1)) {
-            df <- add_column(df, get_channel_psd(object, chan, method)[2], .name_repair = "unique")
-        }
-        names <- colnames(object@data)
-        names[1] <- "Frequency"
-        colnames(df) <- names
-        return(df)
     }
 )
