@@ -1,4 +1,4 @@
-library(signal)
+library(gsignal)
 library(rsleep)
 
 #' EEG class.

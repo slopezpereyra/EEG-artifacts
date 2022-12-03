@@ -31,7 +31,7 @@ update_epochs <- function(epoch_data, analysis) {
 
     epochs <- union(collective_epochs, point_epochs)
     epoch_list <- lapply(strsplit(epochs, " "), as.numeric)
-    chans <- union(unique(canoms$variate), unique(panoms$variate))
+    #chans <- union(unique(canoms$variate), unique(panoms$variate))
 
     epoch_data <- add_row(epoch_data,
         Epoch = unlist(lapply(epoch_list, `[[`, 1)),
@@ -40,3 +40,32 @@ update_epochs <- function(epoch_data, analysis) {
 
     return(epoch_data)
 }
+
+
+#' @export
+setGeneric(
+    "extract_epochs",
+    function(object) {
+        standardGeneric("extract_epochs")
+    }
+)
+
+#' data attribute is such subset.
+#'
+#' @param object An eeg object.
+#' @param s Starting time of the subset in seconds.
+#' @param e Ending time of the subset in seconds.
+#'
+#' @return A new eeg whose data is the subset ranging from
+#' second s to e of the object's data attribute.
+#' @export
+setMethod(
+    "extract_epochs",
+    "analysis",
+    function(object) {
+        df <- create_epoch_data()
+        df <- update_epochs(df, object)
+        return(df)
+
+    }
+)

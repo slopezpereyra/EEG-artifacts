@@ -1,4 +1,4 @@
-
+source("R/misc.R")
 
 # Scripts on this file are dedicated to plotting EEG data
 # and M-CAPA analysis results.
@@ -82,165 +82,52 @@ setMethod(
     }
 )
 
-setGeneric(
-    "plot_clusters",
-    function(object, channel) {
-        standardGeneric("plot_clusters")
-    }
-)
-
-#' Plots only collective anomalies in one of the EEG channels.
-#'
-#' @param object An Analysis object.
-#' @param channel An integer.
-#' @return A ggplot.
-setMethod(
-    "plot_clusters",
-    "analysis",
-    function(object, channel) {
-        canoms <- object@canoms %>%
-            dplyr::filter(variate == channel)
-        areas <- tibble(
-            xmin = as_datetime(canoms$Time),
-            xmax = as_datetime(object@eeg@data$Time[canoms$end]),
-            ymin = -315, ymax = 315, alpha = 0.3
-        )
-        eeg <- plot_channel(object@eeg, channel = channel)
-        plot <- eeg +
-            geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-                alpha = 0.3, fill = "red",
-                data = transform(areas, as.character(seq_len(nrow(areas)))),
-                inherit.aes = FALSE
-            ) + xlab("") + ylab(colnames(object@eeg@data[-1][channel]))
-        return(plot)
-    }
-)
 
 #' @export
 setGeneric(
-    "plot_points",
-    function(object, channel) {
-        standardGeneric("plot_points")
+    "plot_analysis_channel",
+    function(object, chan, size) {
+        standardGeneric("plot_analysis_channel")
     }
 )
 
 
-#' Plots only point anomalies in one of the EEG channels.
-#'
-#' @param object An Analysis object.
-#' @param channel An integer.
-#' @return A ggplot.
 #' @export
 setMethod(
-    "plot_points",
+    "plot_analysis_channel",
     "analysis",
-    function(object, channel) {
-        points <- object@panoms %>%
-            dplyr::filter(variate == channel)
-        point_values <- unlist(object@eeg@data[-1][points$location, channel])
-        point_values <- unlist(object@eeg@data[-1][points$location, channel])
-        points <- tibble(A = as_datetime(points$Time), B = point_values)
+    function(object, chan, size = 1) {
+        canoms <- dplyr::filter(object@canoms, variate == chan)
+        panoms <- dplyr::filter(object@panoms, variate == chan)
+        data <- object@eeg@data
 
-        eeg <- plot_channel(object@eeg, channel = channel)
-        plot <- eeg +
+        # Get all times between start time and end time of each canom
+        intervals <- mapply(function(x, y) data[x:y, 1], canoms$start, canoms$end)
+        intervals <- union(intervals, panoms$Time)
+        # Get all indexes between start and end of canoms
+        locations <- mapply(function(x, y) x:y, canoms$start, canoms$end)
+        # Unite with point anomalies
+        locations <- union(unlist(locations), unlist(panoms$location))
+        time_of_anomalies <- as_datetime(unlist(intervals))
+        values <- unlist(data[locations, chan + 1])
+        df <- tibble(A = time_of_anomalies, B = values)
+
+        eeg <- plot_channel(object@eeg, channel = chan)
+        p <- eeg +
             geom_point(
-                data = points, aes(A, B),
-                inherit.aes = FALSE, color = "red"
-            ) +
-            xlab("") + ylab(colnames(object@eeg@data[-1][channel]))
-
-        return(plot)
+                data = df, aes(A, B),
+                inherit.aes = FALSE, color = "red",
+                size = size
+            )
+        return(p)
     }
 )
 
 #' @export
 setGeneric(
-    "plot_anoms",
-    function(object, channel) {
-        standardGeneric("plot_anoms")
-    }
-)
-
-
-#' Plots both point and collective anomalies in one of the EEG channels.
-#'
-#' @param object An Analysis object.
-#' @param channel An integer.
-#' @return A ggplot.
-#' @export
-setMethod(
-    "plot_anoms",
-    "analysis",
-    function(object, channel) {
-        points <- object@panoms %>%
-            dplyr::filter(variate == channel)
-        point_values <- unlist(object@eeg@data[-1][points$location, channel])
-        points <- tibble(A = as_datetime(points$Time), B = point_values)
-
-        canoms <- object@canoms %>% dplyr::filter(variate == channel)
-        areas <- tibble(
-            xmin = as_datetime(canoms$Time),
-            xmax = as_datetime(object@eeg@data$Time[canoms$end]),
-            ymin = -300, ymax = 300, alpha = 0.3
-        )
-
-        eeg <- plot_channel(object@eeg, channel = channel)
-        plot <- eeg +
-            geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-                alpha = 0.3, fill = "red",
-                data = transform(areas, as.character(1:nrow(areas))),
-                inherit.aes = FALSE
-            ) +
-            geom_point(
-                data = points, aes(A, B),
-                inherit.aes = FALSE, color = "red"
-            ) +
-            xlab("") + ylab(colnames(object@eeg@data[-1][channel]))
-
-        return(plot)
-    }
-)
-
-
-#' @export
-setGeneric(
-    "plot_analyzed_channel",
-    function(object, channel) {
-        standardGeneric("plot_analyzed_channel")
-    }
-)
-
-#' Wrapper function that plots an analyzed channel with
-#' any kind of anomalies in it.
-#'
-#' @param object An Analysis object.
-#' @param channel An integer.
-#' @return A ggplot.
-#' @export
-setMethod(
-    "plot_analyzed_channel",
-    "analysis",
-    function(object, channel) {
-        canoms <- object@canoms %>% dplyr::filter(variate == channel)
-        point_locs <- object@panoms %>%
-            dplyr::filter(variate == channel) %>%
-            .$location
-        if (nrow(canoms) == 0 & length(point_locs) == 0) {
-            return(plot.egg(object, channel))
-        } else if (nrow(canoms) == 0) {
-            return(plot_points(object, channel))
-        } else {
-            return(plot_anoms(object, channel))
-        }
-        return(plot)
-    }
-)
-
-#' @export
-setGeneric(
-    "plot_analyzed_channels",
-    function(object) {
-        standardGeneric("plot_analyzed_channels")
+    "plot_analysis",
+    function(object, size) {
+        standardGeneric("plot_analysis")
     }
 )
 
@@ -250,50 +137,17 @@ setGeneric(
 #' @return A plot_grid object.
 #' @export
 setMethod(
-    "plot_analyzed_channels",
+    "plot_analysis",
     "analysis",
-    function(object) {
+    function(object, size = 1) {
         plots <- list()
         channels <- get_anomalous_channels(object)
         for (channel in channels)
         {
-            p <- plot_analyzed_channel(object, channel)
+            p <- plot_analysis_channel(object, channel, size = size)
             plots[[channel]] <- p
         }
         return(plot_grid(plotlist = plots, align = "v", ncol = 1))
-    }
-)
-
-#' @export
-setGeneric(
-    "plot_analysis",
-    function(object, save = FALSE) {
-        standardGeneric("plot_analysis")
-    }
-)
-
-#' Wrapper and standard analysis plotting function.
-#' Plots all analyzed channels with the option of saving
-#' the plot.
-#'
-#' @param object An Analysis object.
-#' @param save A bool declaring whether to save the image in .png format or not.
-#'
-#' @return A plot_grid object.
-#' @export
-setMethod(
-    "plot_analysis",
-    "analysis",
-    function(object, save = FALSE) {
-        anom_plot <- plot_analyzed_channels(object)
-        if (save == TRUE) {
-            dir.create("results")
-            start <- seconds_to_period(object@eeg@data$Time[1]) %>% format.time()
-            end <- seconds_to_period(tail(object@eeg@data$Time, 1)) %>% format.time()
-            time <- paste(start, end, sep = " to ")
-            ggsave(paste("results/", time, ".png", sep = ""), plot = anom_plot)
-        }
-        return(anom_plot)
     }
 )
 
@@ -388,5 +242,66 @@ setMethod(
             write_csv(df, "iplot_data.csv")
         }
         return(df)
+    }
+)
+
+
+#' @export
+setGeneric(
+    "standardize_strengths",
+    function(object) {
+        standardGeneric("standardize_strengths")
+    }
+)
+
+
+#' Performs z-score normalization to canoms mean change
+#' and panoms strength columns.
+#'
+#'
+#' @return An analysis object.
+#' @export
+setMethod(
+    "standardize_strengths",
+    "analysis",
+    function(object) {
+        cstandard <- znormalization(object@canoms$mean.change)
+        pstandard <- znormalization(object@panoms$strength)
+        object@panoms$strength <- pstandard
+        object@canoms$mean.change <- cstandard
+        return(object)
+    }
+)
+#' @export
+setGeneric(
+    "merge",
+    function(object, an) {
+        standardGeneric("merge")
+    }
+)
+
+
+#' Merges two analysis into one
+#'
+#' @param object An analysis object
+#' @param an The analysis object being merged into the first
+#'
+#' @return An analysis object.
+#' @export
+setMethod(
+    "merge",
+    "analysis",
+    function(object, an) {
+        canoms <- full_join(object@canoms, an@canoms)
+        panoms <- full_join(object@panoms, an@panoms)
+
+        data <- full_join(object@eeg@data, an@eeg@data)
+        eeg <- new("eeg", data = data)
+
+        return(new("analysis",
+            canoms = canoms,
+            panoms = panoms,
+            eeg = eeg
+        ))
     }
 )
