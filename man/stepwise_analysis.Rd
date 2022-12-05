@@ -4,15 +4,7 @@
 \alias{stepwise_analysis}
 \title{Performs stepwise (or epoch by epoch) CAPA analysis on EEG data.}
 \usage{
-stepwise_analysis(
-  eeg,
-  step_size,
-  res = 1,
-  alpha = 8,
-  beta = 1,
-  thresh = 3,
-  write = FALSE
-)
+stepwise_analysis(eeg, step_size, res = 1, alpha = 8, beta = 1, write = FALSE)
 }
 \arguments{
 \item{eeg}{An eeg object.}
@@ -24,9 +16,6 @@ stepwise_analysis(
 \item{alpha}{Threshold of strength significance for collective anomalies.}
 
 \item{beta}{Threshold of strength significance for point anomalies.}
-
-\item{thresh}{How many seconds anomaly n must be from anomaly (n - 1) to
-take them both as a single anomaly?}
 }
 \value{
 An analysis object.

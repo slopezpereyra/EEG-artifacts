@@ -2,22 +2,16 @@
 % Please edit documentation in R/analysis.r
 \name{plot_analysis,analysis-method}
 \alias{plot_analysis,analysis-method}
-\title{Wrapper and standard analysis plotting function.
-Plots all analyzed channels with the option of saving
-the plot.}
+\title{Plots all channels with any kind of anomalies.}
 \usage{
-\S4method{plot_analysis}{analysis}(object, save = FALSE)
+\S4method{plot_analysis}{analysis}(object, size = 1)
 }
 \arguments{
 \item{object}{An Analysis object.}
-
-\item{save}{A bool declaring whether to save the image in .png format or not.}
 }
 \value{
 A plot_grid object.
 }
 \description{
-Wrapper and standard analysis plotting function.
-Plots all analyzed channels with the option of saving
-the plot.
+Plots all channels with any kind of anomalies.
 }

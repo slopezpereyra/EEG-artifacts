@@ -1,25 +1,27 @@
 source("R/artifactor.R")
 library(reshape2)
 library(rsleep)
+library(gsignal)
+
 
 #' @export
 setGeneric(
-    "eeg",
-    function(object, channel, n) {
+    "spectogram",
+    function(object, channel, hcolors) {
         standardGeneric("spectogram")
     }
 )
 
+#' Produces the spectogram of an EEG object.
+#' @param object The EEG object to be analyzed.
+#' @param channel The channel to be analyzed.
 setMethod(
     "spectogram",
     "eeg",
-    function(object, channel, n = 0) {
+    function(object, channel, hcolors = 10) {
         fs <- get_sampling_frequency(object)
-        if (n == 0) {
-            n <- fs
-        }
-        x <- gsignal::specgram(unlist(object@data[channel + 1]), fs = fs, n = n)
-        plot(x, col = grDevices::heat.colors(10))
+        x <- gsignal::specgram(unlist(object@data[channel + 1]), fs = fs)
+        plot(x, col = grDevices::heat.colors(hcolors))
     }
 )
 
@@ -90,7 +92,7 @@ plot_psd <- function(psd, xlim = 30) {
     tall_format <- melt(psd, id.vars = "Fqc")
     p <- ggplot(tall_format, aes(Fqc, value, col = variable)) +
         geom_line() +
-        xlim <- c(0, xlim)
+        xlim(c(0, xlim))
     #    geom_vline(xintercept = 4, linetype = "dashed") +
     #    geom_vline(xintercept = 7, linetype = "dashed") +
     #    geom_vline(xintercept = 12, linetype = "dashed") +

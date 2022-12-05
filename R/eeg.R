@@ -55,10 +55,8 @@ setGeneric(
     }
 )
 
-#' Given an eeg object, determine the subset of
-#' its data attribute that contains records from
-#' second s to e, and return a new eeg object whose
-#' data attribute is such subset.
+#' Subsets an EEG object from second s to e and
+#' returns new EEG object whose data is that subset.
 #'
 #' @param object An eeg object.
 #' @param s Starting time of the subset in seconds.
@@ -118,8 +116,8 @@ setGeneric(
     }
 )
 
-#' Returns new eeg whose data is a subset of given eeg
-#' on the given epoch. Epoch counts begin with 0.
+#' Returns new eeg object whose data is a subset of given eeg
+#' on the given epoch.
 #'
 #' This function wraps a specific call of subset_eeg.
 #'
@@ -133,7 +131,7 @@ setMethod(
     "get_epoch",
     "eeg",
     function(object, which_epoch, epoch = 30) {
-        subset_eeg(object, epoch * (which_epoch), epoch * (which_epoch + 1))
+        subset_eeg(object, epoch * (which_epoch - 1), epoch * (which_epoch))
     }
 )
 
@@ -172,7 +170,7 @@ setGeneric(
     }
 )
 
-#' Returns sampling frequency
+#' Returns sampling frequency of the EEG object
 #'
 #' @param object An eeg object.
 #'
@@ -196,10 +194,10 @@ setGeneric(
 )
 
 #' Given an eeg object and a numeric frequency n,
-#' applies a 1/n Hz low-pass Butterworth filter.
+#' applies a low-pass Butterworth filter.
 #'
 #' @param object An eeg object.
-#' @param n Filter frequency.
+#' @param n Filter frequency in Hz
 #'
 #' @return A new filtered EEG object
 #' @export
@@ -229,10 +227,10 @@ setGeneric(
 )
 
 #' Given an eeg object and a numeric frequency n,
-#' applies a 1/n Hz low-pass Butterworth filter.
+#' applies high pass Butterworth filter.
 #'
 #' @param object An eeg object.
-#' @param n Filter frequency.
+#' @param n Filter frequency in Hz.
 #'
 #' @return A new filtered EEG object
 #' @export
@@ -261,10 +259,11 @@ setGeneric(
 )
 
 #' Given an eeg object and a numeric frequency n,
-#' applies a 1/n Hz low-pass Butterworth filter.
+#' applies a bandpass filter.
 #'
 #' @param object An eeg object.
-#' @param n Filter frequency.
+#' @param l lower bound in Hz
+#' @param h higher bound in Hz
 #'
 #' @return A new filtered EEG object
 #' @export

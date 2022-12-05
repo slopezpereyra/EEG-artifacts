@@ -17,13 +17,13 @@ source("R/analysis.r")
 #' @param res int Resolution at which to perform analysis
 #' @param alpha float Threshold of strength significance for collective anomalies
 #' @param beta float Threshold of strength significance for point anomalies
-#' @param thresh int How many seconds collective anomaly n must be from
-#' collective anomaly (n - 1) to consider them part of a same cluster?
 #' @param time bool Show process time?
 #' @return An analysis object
 #' @export
 #'
-analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 0, time = TRUE) {
+analyze <- function(eeg, s = -1, e = -1, res = 1, alpha = 8, beta = 1, time = TRUE) {
+    s <- ifelse(s != -1, s, eeg@data$Time[1])
+    e <- ifelse(e != -1, e, tail(eeg@data$Time, n = 1))
     start_time <- Sys.time()
     eeg <- eeg %>%
         subset_eeg(s, e) %>%
@@ -34,7 +34,6 @@ analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 0, time = 
     canoms <- collective_anomalies(analysis) %>%
         dplyr::filter(mean.change >= alpha) %>%
         set_timevars(data = eeg@data) %>%
-        format_collectives(thresh) %>%
         as_tibble()
 
     panoms <- point_anomalies(analysis) %>%
@@ -50,7 +49,7 @@ analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 0, time = 
     )
     end_time <- Sys.time()
     if (time) {
-        print(paste("Analysis completed in ", seconds_to_period(end_time - start_time)))
+        print(paste("Analysis completed in ", (end_time - start_time), " seconds"))
     }
     return(results)
 }
@@ -62,11 +61,9 @@ analyze <- function(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 0, time = 
 #' @param res Resolution at which to perform the analyses. Defaults to 1.
 #' @param alpha Threshold of strength significance for collective anomalies.
 #' @param beta Threshold of strength significance for point anomalies.
-#' @param thresh How many seconds anomaly n must be from anomaly (n - 1) to
-#'  take them both as a single anomaly?
 #' @return An analysis object.
 #' @export
-stepwise_analysis <- function(eeg, step_size, res = 1, alpha = 8, beta = 1, thresh = 3, write = FALSE) {
+stepwise_analysis <- function(eeg, step_size, res = 1, alpha = 8, beta = 1, write = FALSE) {
 
     # Variables for stepwise Iteration.
     s <- eeg@data$Time[1]
@@ -78,14 +75,14 @@ stepwise_analysis <- function(eeg, step_size, res = 1, alpha = 8, beta = 1, thre
         r <- eeg_duration %% step_size
     }
 
-    an <- analyze(eeg, s, e, alpha = alpha, beta = beta, thresh = thresh)
+    an <- analyze(eeg, s, e, alpha = alpha, beta = beta)
     s <- e
     e <- e + step_size
     for (x in 2:steps) {
         if (e > tail(eeg@data["Time"], n = 1)) {
             e <- s + r
         }
-        analysis <- analyze(eeg, s, e, res, alpha, beta = beta, thresh = thresh)
+        analysis <- analyze(eeg, s, e, res, alpha, beta = beta)
         an <- merge(an, analysis)
         s <- e
         e <- e + step_size

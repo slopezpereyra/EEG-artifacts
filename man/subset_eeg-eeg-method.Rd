@@ -2,10 +2,8 @@
 % Please edit documentation in R/eeg.R
 \name{subset_eeg,eeg-method}
 \alias{subset_eeg,eeg-method}
-\title{Given an eeg object, determine the subset of
-its data attribute that contains records from
-second s to e, and return a new eeg object whose
-data attribute is such subset.}
+\title{Subsets an EEG object from second s to e and
+returns new EEG object whose data is that subset.}
 \usage{
 \S4method{subset_eeg}{eeg}(object, s, e)
 }
@@ -21,8 +19,6 @@ A new eeg whose data is the subset ranging from
 second s to e of the object's data attribute.
 }
 \description{
-Given an eeg object, determine the subset of
-its data attribute that contains records from
-second s to e, and return a new eeg object whose
-data attribute is such subset.
+Subsets an EEG object from second s to e and
+returns new EEG object whose data is that subset.
 }

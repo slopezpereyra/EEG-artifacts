@@ -4,6 +4,7 @@ source("R/misc.R")
 # and M-CAPA analysis results.
 
 library(ggplot2)
+library(lubridate)
 library(cowplot)
 source("R/eeg.R")
 
@@ -249,14 +250,14 @@ setMethod(
 #' @export
 setGeneric(
     "standardize_strengths",
-    function(object) {
+    function(object, f) {
         standardGeneric("standardize_strengths")
     }
 )
 
 
-#' Performs z-score normalization to canoms mean change
-#' and panoms strength columns.
+#' Normalizes point and collective anomalies' strengths
+#' given a normalizing function f.
 #'
 #'
 #' @return An analysis object.
@@ -264,9 +265,9 @@ setGeneric(
 setMethod(
     "standardize_strengths",
     "analysis",
-    function(object) {
-        cstandard <- znormalization(object@canoms$mean.change)
-        pstandard <- znormalization(object@panoms$strength)
+    function(object, f) {
+        cstandard <- f(object@canoms$mean.change)
+        pstandard <- f(object@panoms$strength)
         object@panoms$strength <- pstandard
         object@canoms$mean.change <- cstandard
         return(object)
@@ -302,6 +303,41 @@ setMethod(
             canoms = canoms,
             panoms = panoms,
             eeg = eeg
+        ))
+    }
+)
+
+#' @export
+setGeneric(
+    "sfilter",
+    function(object, x, f = minmax_normalization) {
+        standardGeneric("sfilter")
+    }
+)
+
+
+#' Filters an analysis object so as to keep only those
+#' anomalies whose strength is greater than x.
+#'
+#' @param object An analysis object
+#' @param x The strength threshold
+#' @param f A function used to standardize strengths (otherwise collective and point
+#' anomalies are incomparable). Defaults to min-max normalization.
+#'
+#' @return An analysis object.
+#' @export
+setMethod(
+    "sfilter",
+    "analysis",
+    function(object, x, f = minmax_normalization) {
+        standardized <- standardize_strengths(object, f)
+        canoms <- standardized@canoms %>% dplyr::filter(mean.change >= x)
+        panoms <- standardized@panoms %>% dplyr::filter(strength >= x)
+
+        return(new("analysis",
+            canoms = canoms,
+            panoms = panoms,
+            eeg = object@eeg
         ))
     }
 )

@@ -5,7 +5,7 @@
 \title{Perform M-CAPA analysis on EEG data in a given range of seconds
 and return results filtered by anomaly strength.}
 \usage{
-analyze(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3, time = TRUE)
+analyze(eeg, s = -1, e = -1, res = 1, alpha = 8, beta = 1, time = TRUE)
 }
 \arguments{
 \item{eeg}{An eeg object}
@@ -19,9 +19,6 @@ analyze(eeg, s, e, res = 1, alpha = 8, beta = 1, thresh = 3, time = TRUE)
 \item{alpha}{float Threshold of strength significance for collective anomalies}
 
 \item{beta}{float Threshold of strength significance for point anomalies}
-
-\item{thresh}{int How many seconds collective anomaly n must be from
-collective anomaly (n - 1) to consider them part of a same cluster?}
 
 \item{time}{bool Show process time?}
 }

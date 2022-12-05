@@ -14,7 +14,7 @@ n values and return a new EEG with the subsetted data.}
 \item{n}{An integer.}
 }
 \value{
-A new filtered EEG object
+An EEG object
 }
 \description{
 Logically, the new EEG will have a length of 1/n

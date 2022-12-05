@@ -2,7 +2,7 @@
 % Please edit documentation in R/eeg.R
 \name{get_sampling_frequency,eeg-method}
 \alias{get_sampling_frequency,eeg-method}
-\title{Returns sampling frequency}
+\title{Returns sampling frequency of the EEG object}
 \usage{
 \S4method{get_sampling_frequency}{eeg}(object)
 }
@@ -13,5 +13,5 @@
 An number, the sampling frequency
 }
 \description{
-Returns sampling frequency
+Returns sampling frequency of the EEG object
 }

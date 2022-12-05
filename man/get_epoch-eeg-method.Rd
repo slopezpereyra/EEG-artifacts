@@ -2,8 +2,8 @@
 % Please edit documentation in R/eeg.R
 \name{get_epoch,eeg-method}
 \alias{get_epoch,eeg-method}
-\title{Returns new eeg whose data is a subset of given eeg
-on the given epoch. Epoch counts begin with 0.}
+\title{Returns new eeg object whose data is a subset of given eeg
+on the given epoch.}
 \usage{
 \S4method{get_epoch}{eeg}(object, which_epoch, epoch = 30)
 }

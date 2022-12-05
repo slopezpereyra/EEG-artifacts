@@ -3,8 +3,7 @@
 \name{get_time}
 \alias{get_time}
 \title{Given a canoms or panoms data frame, returns a vector containing
-the lubridate period objects corresponding to the time of occurrence,
-in the EEG record, of every anomaly of the data frame.}
+the time of occurrence of each anomaly on the EEG record.}
 \usage{
 get_time(anoms, data)
 }
@@ -12,10 +11,9 @@ get_time(anoms, data)
 \item{anoms}{A canoms or panoms data frame.}
 }
 \value{
-A vector of lubridate periods
+A numeric vector
 }
 \description{
 Given a canoms or panoms data frame, returns a vector containing
-the lubridate period objects corresponding to the time of occurrence,
-in the EEG record, of every anomaly of the data frame.
+the time of occurrence of each anomaly on the EEG record.
 }
