@@ -68,6 +68,7 @@ stepwise_analysis <- function(eeg, step_size, res = 1, alpha = 8, beta = 1, writ
     # Variables for stepwise Iteration.
     s <- eeg@data$Time[1]
     e <- s + step_size
+    measures_per_step <- which(eeg@data$Time == s + step_size)
     eeg_duration <- tail(eeg@data$Time, n = 1) - s
     steps <- eeg_duration %/% step_size
     if (eeg_duration %% step_size != 0) {
@@ -83,6 +84,12 @@ stepwise_analysis <- function(eeg, step_size, res = 1, alpha = 8, beta = 1, writ
             e <- s + r
         }
         analysis <- analyze(eeg, s, e, res, alpha, beta = beta)
+        # Ensure point locations match the original EEG and no the
+        # step subset.
+        displacement <- (x - 1) * measures_per_step
+        analysis@panoms[1] <- analysis@panoms[1] + displacement
+        analysis@canoms[1] <- analysis@canoms[1] + displacement
+        analysis@canoms[2] <- analysis@canoms[2] + displacement
         an <- merge(an, analysis)
         s <- e
         e <- e + step_size

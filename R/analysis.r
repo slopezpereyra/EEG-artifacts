@@ -102,14 +102,11 @@ setMethod(
         panoms <- dplyr::filter(object@panoms, variate == chan)
         data <- object@eeg@data
 
-        # Get all times between start time and end time of each canom
-        intervals <- mapply(function(x, y) data[x:y, 1], canoms$start, canoms$end)
-        intervals <- union(intervals, panoms$Time)
         # Get all indexes between start and end of canoms
         locations <- mapply(function(x, y) x:y, canoms$start, canoms$end)
         # Unite with point anomalies
         locations <- union(unlist(locations), unlist(panoms$location))
-        time_of_anomalies <- as_datetime(unlist(intervals))
+        time_of_anomalies <- as_datetime(unlist(data[locations, 1]))
         values <- unlist(data[locations, chan + 1])
         df <- tibble(A = time_of_anomalies, B = values)
 
