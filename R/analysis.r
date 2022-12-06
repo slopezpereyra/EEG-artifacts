@@ -84,10 +84,40 @@ setMethod(
 )
 
 
+
+#' @export
+setGeneric(
+    "set_plot_data",
+    function(object, chan) {
+        standardGeneric("set_plot_data")
+    }
+)
+
+
+#' @export
+setMethod(
+    "set_plot_data",
+    "analysis",
+    function(object, chan) {
+        canoms <- dplyr::filter(object@canoms, variate == chan)
+        panoms <- dplyr::filter(object@panoms, variate == chan)
+        data <- object@eeg@data
+        # Get all indexes between start and end of canoms
+        locations <- mapply(function(x, y) x:y, canoms$start, canoms$end)
+        # Unite with point anomalies
+        locations <- union(unlist(locations), unlist(panoms$location))
+        time_of_anomalies <- as_datetime(unlist(data[locations, 1]))
+        values <- unlist(data[locations, chan + 1])
+        df <- tibble(A = time_of_anomalies, B = values)
+        return(df)
+    }
+)
+
+
 #' @export
 setGeneric(
     "plot_analysis_channel",
-    function(object, chan, size) {
+    function(object, chan, size = 0.2) {
         standardGeneric("plot_analysis_channel")
     }
 )
@@ -97,18 +127,8 @@ setGeneric(
 setMethod(
     "plot_analysis_channel",
     "analysis",
-    function(object, chan, size = 1) {
-        canoms <- dplyr::filter(object@canoms, variate == chan)
-        panoms <- dplyr::filter(object@panoms, variate == chan)
-        data <- object@eeg@data
-
-        # Get all indexes between start and end of canoms
-        locations <- mapply(function(x, y) x:y, canoms$start, canoms$end)
-        # Unite with point anomalies
-        locations <- union(unlist(locations), unlist(panoms$location))
-        time_of_anomalies <- as_datetime(unlist(data[locations, 1]))
-        values <- unlist(data[locations, chan + 1])
-        df <- tibble(A = time_of_anomalies, B = values)
+    function(object, chan, size = 0.2) {
+        df = set_plot_data(object, chan, size = size)
 
         eeg <- plot_channel(object@eeg, channel = chan)
         p <- eeg +
@@ -124,7 +144,7 @@ setMethod(
 #' @export
 setGeneric(
     "plot_analysis",
-    function(object, size) {
+    function(object, size = 0.2) {
         standardGeneric("plot_analysis")
     }
 )
@@ -137,7 +157,7 @@ setGeneric(
 setMethod(
     "plot_analysis",
     "analysis",
-    function(object, size = 1) {
+    function(object, size = 0.2) {
         plots <- list()
         channels <- get_anomalous_channels(object)
         for (channel in channels)
