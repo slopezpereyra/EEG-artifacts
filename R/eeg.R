@@ -23,6 +23,37 @@ setMethod(
     }
 )
 
+# ---------- EEG Generics ------------
+
+#' @export
+setGeneric("plot_channel", function(object, channel) standardGeneric("plot_channel"))
+
+#' @export
+setGeneric("bandpass", function(object, l, h) standardGeneric("bandpass"))
+
+#' @export
+setGeneric("high_pass", function(object, n) standardGeneric("high_pass"))
+
+#' @export
+setGeneric("subset_eeg", function(object, s, e) standardGeneric("subset_eeg"))
+
+#' @export
+setGeneric("resample_eeg", function(object, n) standardGeneric("resample_eeg"))
+
+#' @export
+setGeneric("get_epoch", function(object, which_epoch, epoch = 30) standardGeneric("get_epoch"))
+
+#' @export
+setGeneric("get_samples_in_epoch", function(object, epoch) standardGeneric("get_samples_in_epoch"))
+
+#' @export
+setGeneric("get_sampling_frequency", function(object) standardGeneric("get_sampling_frequency"))
+
+#' @export
+setGeneric("low_pass", function(object, n) standardGeneric("low_pass"))
+
+#' @export
+setGeneric("remove_epoch", function(object, epoch) standardGeneric("remove_epoch"))
 
 #' Read a .csv data file containing EEG data and an optionall
 #' signals file and return an eeg object. If the signals file is provided,
@@ -47,13 +78,6 @@ load_eeg <- function(data_file, signals_file = NULL) {
     return(new("eeg", data = data, signals = signals))
 }
 
-#' @export
-setGeneric(
-    "subset_eeg",
-    function(object, s, e) {
-        standardGeneric("subset_eeg")
-    }
-)
 
 #' Subsets an EEG object from second s to e and
 #' returns new EEG object whose data is that subset.
@@ -79,13 +103,7 @@ setMethod(
     }
 )
 
-#' @export
-setGeneric(
-    "resample_eeg",
-    function(object, n) {
-        standardGeneric("resample_eeg")
-    }
-)
+
 
 #' Given an eeg object and an integer n,
 #' subset the EEG's data by keeping only one every
@@ -107,15 +125,6 @@ setMethod(
         return(new("eeg", data = df, signals = object@signals))
     }
 )
-
-#' @export
-setGeneric(
-    "get_epoch",
-    function(object, which_epoch, epoch = 30) {
-        standardGeneric("get_epoch")
-    }
-)
-
 #' Returns new eeg object whose data is a subset of given eeg
 #' on the given epoch.
 #'
@@ -135,15 +144,6 @@ setMethod(
     }
 )
 
-#' @export
-setGeneric(
-    "get_samples_in_epoch",
-    function(object, epoch) {
-        standardGeneric("get_samples_in_epoch")
-    }
-)
-
-
 
 #' Given an eeg object, determine the number of values
 #' that make up epoch seconds.
@@ -162,14 +162,6 @@ setMethod(
     }
 )
 
-
-setGeneric(
-    "get_sampling_frequency",
-    function(object) {
-        standardGeneric("get_sampling_frequency")
-    }
-)
-
 #' Returns sampling frequency of the EEG object
 #'
 #' @param object An eeg object.
@@ -185,13 +177,6 @@ setMethod(
     }
 )
 
-#' @export
-setGeneric(
-    "low_pass",
-    function(object, n) {
-        standardGeneric("low_pass")
-    }
-)
 
 #' Given an eeg object and a numeric frequency n,
 #' applies a low-pass Butterworth filter.
@@ -218,13 +203,7 @@ setMethod(
     }
 )
 
-#' @export
-setGeneric(
-    "high_pass",
-    function(object, n) {
-        standardGeneric("high_pass")
-    }
-)
+
 
 #' Given an eeg object and a numeric frequency n,
 #' applies high pass Butterworth filter.
@@ -250,13 +229,7 @@ setMethod(
         return(object)
     }
 )
-#' @export
-setGeneric(
-    "bandpass",
-    function(object, l, h) {
-        standardGeneric("bandpass")
-    }
-)
+
 
 #' Given an eeg object and a numeric frequency n,
 #' applies a bandpass filter.
@@ -282,13 +255,7 @@ setMethod(
         return(object)
     }
 )
-#' @export
-setGeneric(
-    "plot_channel",
-    function(object, channel) {
-        standardGeneric("plot_channel")
-    }
-)
+
 
 #' Given an eeg object and a channel integer n,
 #' plots EEG record of the nth channel.
@@ -320,14 +287,6 @@ setMethod(
     }
 )
 
-#' @export
-setGeneric(
-    "plot_eeg",
-    function(object) {
-        standardGeneric("plot_eeg")
-    }
-)
-
 #' Given an eeg object, plot all the EEG channels
 #' in a vertical single-column layout.
 #'
@@ -336,15 +295,35 @@ setGeneric(
 #' @return A plot_grid object.
 #' @export
 setMethod(
-    "plot_eeg",
+    "plot",
     "eeg",
-    function(object) {
+    function(x) {
         plots <- list()
-        for (channel in 1:(ncol(object@data) - 1)) {
-            p <- plot_channel(object, channel)
+        for (channel in 1:(ncol(x@data) - 1)) {
+            p <- plot_channel(x, channel)
             plots[[channel]] <- p
         }
 
         return(plot_grid(plotlist = plots, align = "v", ncol = 1))
+    }
+)
+
+#' Given an eeg object and an epoch, removes
+#' all samples from that epoch from the EEG data.
+#'
+#' Notice that the extremes of the epoch are kept.
+#'
+#' @param object An eeg object.
+#' @param epoch An natural number
+#' @return An EEG object.
+#' @export
+setMethod(
+    "remove_epoch",
+    "eeg",
+    function(object, epoch) {
+        s_ind <- which(object@data$Time == 30 * (epoch - 1)) + 1
+        e_ind <- which(object@data$Time == 30 * epoch) - 1
+        df <- object@data[-c(s_ind:e_ind), ]
+        return(new("eeg", data = df, signals = object@signals))
     }
 )

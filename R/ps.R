@@ -5,12 +5,14 @@ library(gsignal)
 
 
 #' @export
-setGeneric(
-    "spectogram",
-    function(object, channel, hcolors) {
-        standardGeneric("spectogram")
-    }
-)
+setGeneric("spectogram", function(object, channel, hcolors) standardGeneric("spectogram"))
+
+#' @export
+setGeneric("psd", function(object, method = "welch") standardGeneric("psd"))
+
+#' @export
+setGeneric("get_channel_psd", function(object, channel) standardGeneric("get_channel_psd"))
+
 
 #' Produces the spectogram of an EEG object.
 #' @param object The EEG object to be analyzed.
@@ -24,15 +26,6 @@ setMethod(
         plot(x, col = grDevices::heat.colors(hcolors))
     }
 )
-
-#' @export
-setGeneric(
-    "get_channel_psd",
-    function(object, channel) {
-        standardGeneric("get_channel_psd")
-    }
-)
-
 #' Given an eeg object and a channel's column index,
 #' compute the power spectrum density of  the channel
 #' using Welch's method.
@@ -52,14 +45,6 @@ setMethod(
         fs <- get_sampling_frequency(object)
         periodogram <- rsleep::pwelch(vec, sRate = fs)
         return(as_tibble(periodogram))
-    }
-)
-
-#' @export
-setGeneric(
-    "psd",
-    function(object, method = "welch") {
-        standardGeneric("psd")
     }
 )
 

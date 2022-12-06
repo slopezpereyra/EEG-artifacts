@@ -31,7 +31,7 @@ update_epochs <- function(epoch_data, analysis) {
 
     epochs <- union(collective_epochs, point_epochs)
     epoch_list <- lapply(strsplit(epochs, " "), as.numeric)
-    #chans <- union(unique(canoms$variate), unique(panoms$variate))
+    # chans <- union(unique(canoms$variate), unique(panoms$variate))
 
     epoch_data <- add_row(epoch_data,
         Epoch = unlist(lapply(epoch_list, `[[`, 1)),
@@ -43,12 +43,7 @@ update_epochs <- function(epoch_data, analysis) {
 
 
 #' @export
-setGeneric(
-    "extract_epochs",
-    function(object) {
-        standardGeneric("extract_epochs")
-    }
-)
+setGeneric("extract_epochs", function(object) standardGeneric("extract_epochs"))
 
 #' data attribute is such subset.
 #'
@@ -66,6 +61,5 @@ setMethod(
         df <- create_epoch_data()
         df <- update_epochs(df, object)
         return(df)
-
     }
 )

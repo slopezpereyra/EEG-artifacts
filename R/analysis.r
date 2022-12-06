@@ -21,6 +21,41 @@ setClass("analysis",
     )
 )
 
+# --------- Analysis Generics -------------
+
+#' @export
+setGeneric(
+    "set_chan_for_iplot", function(object, chan) standardGeneric("set_chan_for_iplot")
+)
+
+#' @export
+setGeneric("has_anoms", function(object) standardGeneric("has_anoms"))
+
+#' @export
+setGeneric("get_anomalous_channels", function(object, channel) standardGeneric("get_anomalous_channels"))
+
+#' @export
+setGeneric("set_plot_data", function(object, chan) standardGeneric("set_plot_data"))
+
+#' @export
+setGeneric("plot_analysis_channel", function(object, chan, size = 0.2) standardGeneric("plot_analysis_channel"))
+
+#' @export
+setGeneric("plot_analysis", function(object, size = 0.2) standardGeneric("plot_analysis"))
+
+#' @export
+setGeneric("set_for_iplot", function(object, save = FALSE) standardGeneric("set_for_iplot"))
+
+#' @export
+setGeneric("standardize_strengths", function(object, f) standardGeneric("standardize_strengths"))
+
+#' @export
+setGeneric("sfilter", function(object, x, f = minmax_normalization) standardGeneric("sfilter"))
+
+#' @export
+setGeneric("merge", function(object, an) standardGeneric("merge"))
+
+
 #' Show method for the EEG class that calls View on the canoms panoms
 #' and eeg slots.
 #' @param object An Analysis object.
@@ -35,14 +70,6 @@ setMethod(
     }
 )
 
-#' @export
-setGeneric(
-    "has_anoms",
-    function(object, step, ...) {
-        standardGeneric("has_anoms")
-    }
-)
-
 #' Check if either canoms or panoms are non-empty data frames.
 #' @param object An Analysis object.
 #'
@@ -53,14 +80,6 @@ setMethod(
     "analysis",
     function(object) {
         return(nrow(object@canoms) > 0 | nrow(object@panoms) > 0)
-    }
-)
-
-#' @export
-setGeneric(
-    "get_anomalous_channels",
-    function(object, channel) {
-        standardGeneric("get_anomalous_channels")
     }
 )
 
@@ -86,15 +105,6 @@ setMethod(
 
 
 #' @export
-setGeneric(
-    "set_plot_data",
-    function(object, chan) {
-        standardGeneric("set_plot_data")
-    }
-)
-
-
-#' @export
 setMethod(
     "set_plot_data",
     "analysis",
@@ -113,14 +123,6 @@ setMethod(
     }
 )
 
-
-#' @export
-setGeneric(
-    "plot_analysis_channel",
-    function(object, chan, size = 0.2) {
-        standardGeneric("plot_analysis_channel")
-    }
-)
 
 
 #' @export
@@ -141,28 +143,20 @@ setMethod(
     }
 )
 
-#' @export
-setGeneric(
-    "plot_analysis",
-    function(object, size = 0.2) {
-        standardGeneric("plot_analysis")
-    }
-)
-
 #' Plots all channels with any kind of anomalies.
 #'
 #' @param object An Analysis object.
 #' @return A plot_grid object.
 #' @export
 setMethod(
-    "plot_analysis",
+    "plot",
     "analysis",
-    function(object, size = 0.2) {
+    function(x) {
         plots <- list()
-        channels <- get_anomalous_channels(object)
+        channels <- get_anomalous_channels(x)
         for (channel in channels)
         {
-            p <- plot_analysis_channel(object, channel, size = size)
+            p <- plot_analysis_channel(x, channel, size = 0.2)
             plots[[channel]] <- p
         }
         return(plot_grid(plotlist = plots, align = "v", ncol = 1))
@@ -170,14 +164,6 @@ setMethod(
 )
 
 
-
-#' @export
-setGeneric(
-    "set_chan_for_iplot",
-    function(object, chan) {
-        standardGeneric("set_chan_for_iplot")
-    }
-)
 
 #' Formats a channel's analysis results to a data frame
 #' specifically designed for interactive plotting using
@@ -224,14 +210,6 @@ setMethod(
 )
 
 
-#' @export
-setGeneric(
-    "set_for_iplot",
-    function(object, save = FALSE) {
-        standardGeneric("set_for_iplot")
-    }
-)
-
 
 #' Sets the necessary data frame for interactive analysis plotting using
 #' Python's plotly library.
@@ -261,13 +239,6 @@ setMethod(
 )
 
 
-#' @export
-setGeneric(
-    "standardize_strengths",
-    function(object, f) {
-        standardGeneric("standardize_strengths")
-    }
-)
 
 
 #' Normalizes point and collective anomalies' strengths
@@ -287,14 +258,6 @@ setMethod(
         return(object)
     }
 )
-#' @export
-setGeneric(
-    "merge",
-    function(object, an) {
-        standardGeneric("merge")
-    }
-)
-
 
 #' Merges two analysis into one
 #'
@@ -321,13 +284,6 @@ setMethod(
     }
 )
 
-#' @export
-setGeneric(
-    "sfilter",
-    function(object, x, f = minmax_normalization) {
-        standardGeneric("sfilter")
-    }
-)
 
 
 #' Filters an analysis object so as to keep only those
