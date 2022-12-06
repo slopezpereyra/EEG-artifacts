@@ -128,7 +128,7 @@ setMethod(
     "plot_analysis_channel",
     "analysis",
     function(object, chan, size = 0.2) {
-        df = set_plot_data(object, chan, size = size)
+        df <- set_plot_data(object, chan)
 
         eeg <- plot_channel(object@eeg, channel = chan)
         p <- eeg +
@@ -217,9 +217,6 @@ setMethod(
         canoms_positions <- unlist(canoms_positions)
         canoms_strengths <- unlist(canoms_strengths)
         canom_values <- unlist(df[canoms_positions, 2])
-
-        # canom_values <- df[canoms_positions, 2] %>%
-        #    as.list() %>%
         df$anoms[canoms_positions] <- canom_values
         df$strength[canoms_positions] <- canoms_strengths
         return(df)
