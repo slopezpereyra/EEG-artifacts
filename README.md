@@ -1,10 +1,12 @@
 ﻿
-# Computational EEG analysis
+# EEG Computational Toolkit
   
 
 > :last_quarter_moon_with_face: Developed at the [Laboratory for the Study of Sleep Slow-wave activity](https://www.med.upenn.edu/slowwavelab/)
 
-- [Computational EEG analysis](#computational-eeg-analysis)
+A scientific package for computational EEG analysis.
+
+- [EEG Computational Toolkit](#eeg-computational-toolkit)
     - [Requirements](#requirements)
     - [Installation](#installation)
     - [Loading EEG data](#loading-eeg-data)
