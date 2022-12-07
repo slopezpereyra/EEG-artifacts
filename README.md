@@ -66,7 +66,7 @@ We can produce static or interactive plots to get a look at our EEG record. For 
 
 ```
 epoch <- get_epoch(eeg, 30)
-plot_eeg(epoch)
+plot(epoch)
 ```
 ![enter image description here](https://i.ibb.co/0X4GG8T/Screenshot-from-2022-12-05-13-12-17.png)
 
