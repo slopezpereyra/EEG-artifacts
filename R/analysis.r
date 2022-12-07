@@ -1,11 +1,8 @@
-source("R/misc.R")
+source("R/norm_functions.R")
 
 # Scripts on this file are dedicated to plotting EEG data
 # and M-CAPA analysis results.
 
-library(ggplot2)
-library(lubridate)
-library(cowplot)
 source("R/eeg.R")
 
 #' Analysis class.
@@ -116,9 +113,9 @@ setMethod(
         locations <- mapply(function(x, y) x:y, canoms$start, canoms$end)
         # Unite with point anomalies
         locations <- union(unlist(locations), unlist(panoms$location))
-        time_of_anomalies <- as_datetime(unlist(data[locations, 1]))
+        time_of_anomalies <- lubridate::as_datetime(unlist(data[locations, 1]))
         values <- unlist(data[locations, chan + 1])
-        df <- tibble(A = time_of_anomalies, B = values)
+        df <- tibble::tibble(A = time_of_anomalies, B = values)
         return(df)
     }
 )
@@ -134,8 +131,8 @@ setMethod(
 
         eeg <- plot_channel(object@eeg, channel = chan)
         p <- eeg +
-            geom_point(
-                data = df, aes(A, B),
+            ggplot2::geom_point(
+                data = df, ggplot2::aes(A, B),
                 inherit.aes = FALSE, color = "red",
                 size = size
             )
@@ -159,7 +156,7 @@ setMethod(
             p <- plot_analysis_channel(x, channel, size = 0.2)
             plots[[channel]] <- p
         }
-        return(plot_grid(plotlist = plots, align = "v", ncol = 1))
+        return(cowplot::plot_grid(plotlist = plots, align = "v", ncol = 1))
     }
 )
 
@@ -229,10 +226,10 @@ setMethod(
         for (chan in 2:nchans) {
             iplot_data <- set_chan_for_iplot(object, chan)
             iplot_data$Time <- NULL
-            df <- df %>% bind_cols(iplot_data)
+            df <- df %>% dplyr::bind_cols(iplot_data)
         }
         if (save == TRUE) {
-            write_csv(df, "iplot_data.csv")
+            readr::write_csv(df, "iplot_data.csv")
         }
         return(df)
     }
@@ -270,10 +267,10 @@ setMethod(
     "merge",
     "analysis",
     function(object, an) {
-        canoms <- full_join(object@canoms, an@canoms)
-        panoms <- full_join(object@panoms, an@panoms)
+        canoms <- dplyr::full_join(object@canoms, an@canoms)
+        panoms <- dplyr::full_join(object@panoms, an@panoms)
 
-        data <- full_join(object@eeg@data, an@eeg@data)
+        data <- dplyr::full_join(object@eeg@data, an@eeg@data)
         eeg <- new("eeg", data = data)
 
         return(new("analysis",

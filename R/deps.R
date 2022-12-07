@@ -1,4 +1,3 @@
-library(reticulate)
 
 #' Install Python dependencies.
 #' @export

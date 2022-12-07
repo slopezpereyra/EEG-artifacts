@@ -1,8 +1,4 @@
 source("R/artifactor.R")
-library(reshape2)
-library(rsleep)
-library(gsignal)
-
 
 #' @export
 setGeneric("spectogram", function(object, channel, hcolors) standardGeneric("spectogram"))
@@ -44,7 +40,7 @@ setMethod(
         vec <- unlist(object@data[channel])
         fs <- get_sampling_frequency(object)
         periodogram <- rsleep::pwelch(vec, sRate = fs)
-        return(as_tibble(periodogram))
+        return(tibble::as_tibble(periodogram))
     }
 )
 
@@ -63,7 +59,7 @@ setMethod(
     function(object) {
         df <- get_channel_psd(object, 2)
         for (chan in 3:(ncol(object@data) - 1)) {
-            df <- add_column(df, get_channel_psd(object, chan)[2], .name_repair = "unique")
+            df <- tibble::add_column(df, get_channel_psd(object, chan)[2], .name_repair = "unique")
         }
         names <- colnames(object@data)
         names[1] <- "Fqc"
@@ -74,9 +70,9 @@ setMethod(
 
 #' @export
 plot_psd <- function(psd, xlim = 30) {
-    tall_format <- melt(psd, id.vars = "Fqc")
-    p <- ggplot(tall_format, aes(Fqc, value, col = variable)) +
-        geom_line() +
+    tall_format <- reshape2::melt(psd, id.vars = "Fqc")
+    p <- ggplot2::ggplot(tall_format, ggplot2::aes(Fqc, value, col = variable)) +
+        ggplot2::geom_line() +
         xlim(c(0, xlim))
     #    geom_vline(xintercept = 4, linetype = "dashed") +
     #    geom_vline(xintercept = 7, linetype = "dashed") +

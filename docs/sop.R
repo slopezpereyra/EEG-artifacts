@@ -86,7 +86,7 @@ resampled_eeg@data
 # that subset. We can do this in one line.
  
 fifth_minute <- subset_eeg(resampled_eeg, 300, 360)
-plot_eeg(fifth_minute)
+plot(fifth_minute)
 
 # You should see a plot appear in the RStudio "Plots" section.
 # Click "Zoom", right above the plot, to take a better look.
@@ -123,7 +123,7 @@ an <- stepwise_analysis(sbs, 60)
 
 # Make a static plot of the analysis:
 # does it appear in the Plots pannel?
-plot_analysis(an)
+plot(an)
 
 # The following command may take a while to complete.
 # After completion, a web page showing an interactive plot

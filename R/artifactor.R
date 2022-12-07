@@ -1,9 +1,7 @@
 # Scripts on this file are dedicated to performing M-CAPA analysis
 # on EEG data.
 
-library(anomaly)
 library(methods)
-library(tidyverse)
 source("R/eeg.R")
 source("R/cln.R")
 source("R/analysis.r")
@@ -29,17 +27,17 @@ analyze <- function(eeg, s = -1, e = -1, res = 1, alpha = 8, beta = 1, time = TR
         subset_eeg(s, e) %>%
         resample_eeg(res)
 
-    analysis <- capa.mv(eeg@data[-1], type = "mean")
+    analysis <- anomaly::capa.mv(eeg@data[-1], type = "mean")
 
-    canoms <- collective_anomalies(analysis) %>%
+    canoms <- anomaly::collective_anomalies(analysis) %>%
         dplyr::filter(mean.change >= alpha) %>%
         set_timevars(data = eeg@data) %>%
-        as_tibble()
+        tibble::as_tibble()
 
-    panoms <- point_anomalies(analysis) %>%
+    panoms <- anomaly::point_anomalies(analysis) %>%
         dplyr::filter(strength >= beta) %>%
         set_timevars(data = eeg@data) %>%
-        as_tibble()
+        tibble::as_tibble()
 
 
     results <- new("analysis",

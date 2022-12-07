@@ -13,5 +13,6 @@ Depends:
     cowplot,
     anomaly,
     reticulate,
-    rsleep
+    rsleep,
+    stringr
 RoxygenNote: 7.2.1

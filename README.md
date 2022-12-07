@@ -29,7 +29,7 @@ In order to perform automated artifact detection, we need to install the `artifa
   
 
 ```r
-devtools::install_github("slopezpereyra/EEG-artifacts")
+devtools::install_github("slopezpereyra/EEG-toolkit")
 ```
 ### Loading EEG data
 

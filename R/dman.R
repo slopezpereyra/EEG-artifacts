@@ -5,7 +5,7 @@
 #' @return An empty dataframe.
 #' @export
 create_epoch_data <- function() {
-    results <- tibble(
+    results <- tibble::tibble(
         Epoch = numeric(),
         Subepoch = numeric()
         # channels = list(),
@@ -33,7 +33,7 @@ update_epochs <- function(epoch_data, analysis) {
     epoch_list <- lapply(strsplit(epochs, " "), as.numeric)
     # chans <- union(unique(canoms$variate), unique(panoms$variate))
 
-    epoch_data <- add_row(epoch_data,
+    epoch_data <- tibble::add_row(epoch_data,
         Epoch = unlist(lapply(epoch_list, `[[`, 1)),
         Subepoch = unlist(lapply(epoch_list, `[[`, 2))
     )

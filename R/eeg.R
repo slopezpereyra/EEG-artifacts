@@ -1,6 +1,4 @@
-library(gsignal)
-library(rsleep)
-
+library(dplyr)
 #' EEG class.
 #' @slot data A data frame containing EEG records
 #' @slot signals A data frame containing signal information (may be empty).
@@ -55,7 +53,9 @@ setGeneric("low_pass", function(object, n) standardGeneric("low_pass"))
 #' @export
 setGeneric("remove_epoch", function(object, epoch) standardGeneric("remove_epoch"))
 
+
 #' Read a .csv data file containing EEG data and an optionall
+#'
 #' signals file and return an eeg object. If the signals file is provided,
 #'  channel names are appropriately set.
 #'
@@ -65,14 +65,14 @@ setGeneric("remove_epoch", function(object, epoch) standardGeneric("remove_epoch
 #' @return An eeg object.
 #' @export
 load_eeg <- function(data_file, signals_file = NULL) {
-    data <- read_csv(data_file)
+    data <- readr::read_csv(data_file)
     if (!is.null(signals_file)) {
-        signals <- read_csv(signals_file)
+        signals <- readr::read_csv(signals_file)
         colnames(data)[-1] <- signals$Label %>%
-            str_remove("EEG ") %>%
-            str_remove("EOG")
+            stringr::str_remove("EEG ") %>%
+            stringr::str_remove("EOG")
     } else {
-        signals <- tibble()
+        signals <- tiblbe::tibble()
     }
 
     return(new("eeg", data = data, signals = signals))
@@ -271,17 +271,17 @@ setMethod(
     function(object, channel) {
         y <- object@data[-1][channel]
         p <- object@data %>%
-            mutate(Time = as_datetime(Time)) %>%
-            ggplot(
-                aes(
+            dplyr::mutate(Time = lubridate::as_datetime(Time)) %>%
+            ggplot2::ggplot(
+                ggplot2::aes(
                     Time,
                     unlist(y)
                 )
             ) +
-            geom_line() +
-            scale_x_datetime(date_labels = "%H:%M:%S") +
-            xlab("") +
-            ylab(colnames(object@data[-1][channel]))
+            ggplot2::geom_line() +
+            ggplot2::scale_x_datetime(date_labels = "%H:%M:%S") +
+            ggplot2::xlab("") +
+            ggplot2::ylab(colnames(object@data[-1][channel]))
 
         return(p)
     }
@@ -304,7 +304,7 @@ setMethod(
             plots[[channel]] <- p
         }
 
-        return(plot_grid(plotlist = plots, align = "v", ncol = 1))
+        return(cowplot::plot_grid(plotlist = plots, align = "v", ncol = 1))
     }
 )
 
