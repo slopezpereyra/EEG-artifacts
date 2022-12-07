@@ -41,14 +41,8 @@ For example, after previously exporting from EDF Browser an EDF file named `test
 eeg <- load_eeg("test_data.txt",
                 "test_signals.txt") %>%
 				na.omit()
-View(eeg@data)
 ```
 
-  
-
-![EEG data](https://i.ibb.co/M9CqQzG/Screenshot-from-2022-09-04-16-20-50.png)
-
-  
 
 The `load_eeg` function returns an `eeg` object containing the `@data` and `@signals` atrributes, the latter being an empty data frame if no signals file was provided.
 
