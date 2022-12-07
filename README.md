@@ -39,7 +39,7 @@ For example, after previously exporting from EDF Browser an EDF file named `test
 
 ```r
 eeg <- load_eeg("test_data.txt",
-				"test_signals.txt") %>%
+                "test_signals.txt") %>%
 				na.omit()
 View(eeg@data)
 ```
@@ -55,8 +55,8 @@ The `load_eeg` function returns an `eeg` object containing the `@data` and `@sig
 We can consult the sampling frequency if we ignore it.
 
 ```
-get_sampling_frequency(eeg)
-> 500 # In Hz
+get_sampling_frequency(eeg) # In Hz
+> 500 
 ```
 
   
@@ -118,7 +118,7 @@ For example, the thirstiest epoch contains a few unusual spikes:
 
 ```
 an <- analyze(epoch) # Remember epoch <- get_epoch(eeg, 30)
-plot_analysis(an)
+plot(an)
 ```
 
 ![enter image description here](https://i.ibb.co/BjL6fDR/Screenshot-from-2022-12-05-13-18-15.png)
