@@ -111,15 +111,13 @@ plot_eeg(?)
 
 # ---------------ANALYZING THE EEG ---------------------
 # 
-#  From now on, there won't be many explanations. Just follow the instructions
-#  
 # -------------------------------------------------------
 
 # Execute this:
 
 rs <- create_epoch_data()
 sbs <- subset_eeg(resampled_eeg, 0, 600)
-an <- stepwise_analysis(sbs, 60)
+an <- artf_stepwise(sbs, 60)
 
 # Make a static plot of the analysis:
 # does it appear in the Plots pannel?

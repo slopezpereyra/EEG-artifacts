@@ -12,7 +12,7 @@ A scientific package for computational EEG analysis.
     - [Loading EEG data](#loading-eeg-data)
     - [EEG Visualization](#eeg-visualization)
     - [Handling EEG data](#handling-eeg-data)
-    - [Anomaly detection](#anomaly-detection)
+    - [Artifact detection](#artifact-detection)
   - [Power spectrum analysis](#power-spectrum-analysis)
 
 
@@ -88,13 +88,13 @@ defines two `eeg` objects containing the second minute of record, the latter wit
 ![enter image description here](https://i.ibb.co/HnG5jTc/plot-3.png)
 
 
-### Anomaly detection
+### Artifact detection
 
-Anomaly detection is carried out via the CAPA statistical method ([Fisch, Eckley & Fearnhead, 2021](https://onlinelibrary.wiley.com/doi/full/10.1002/sam.11586)). In order to adapt CAPA to the specificities of EEG data, the package conducts a substantial amount of operations. However, these are carried out _sub rosa_, so that performing an analysis is straightforward. Simply call the `analyze(df, start, end, ...)`. :microscope:
+Artifact detection is carried out via the CAPA statistical method ([Fisch, Eckley & Fearnhead, 2021](https://onlinelibrary.wiley.com/doi/full/10.1002/sam.11586)). CAPA is adapted to the specificities of EEG data via _sub rosa_ operations. To perform artifact detection simply call the `artf(eeg, start, end, ...)`. :microscope:
 
   
 
-The `analyze` function returns an `analysis` object. An `analysis` object has
+The `artf` function takes an `eeg` object and returns an `analysis` object. An `analysis` object has
 
   
 
@@ -111,7 +111,7 @@ The `analysis` class has numerous plotting methods, the most important of which 
 For example, the thirstiest epoch contains a few unusual spikes:
 
 ```
-an <- analyze(epoch) # Remember epoch <- get_epoch(eeg, 30)
+an <- artf(epoch) # Remember epoch <- get_epoch(eeg, 30)
 plot(an)
 ```
 

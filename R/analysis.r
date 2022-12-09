@@ -22,35 +22,63 @@ setClass("analysis",
 
 #' @export
 setGeneric(
-    "set_chan_for_iplot", function(object, chan) standardGeneric("set_chan_for_iplot")
+    "set_chan_for_iplot",
+    function(object, chan) standardGeneric("set_chan_for_iplot")
 )
 
 #' @export
-setGeneric("has_anoms", function(object) standardGeneric("has_anoms"))
+setGeneric(
+    "has_anoms",
+    function(object) standardGeneric("has_anoms")
+)
 
 #' @export
-setGeneric("get_anomalous_channels", function(object, channel) standardGeneric("get_anomalous_channels"))
+setGeneric(
+    "get_anomalous_channels",
+    function(object, channel) standardGeneric("get_anomalous_channels")
+)
 
 #' @export
-setGeneric("set_plot_data", function(object, chan) standardGeneric("set_plot_data"))
+setGeneric(
+    "set_plot_data",
+    function(object, chan) standardGeneric("set_plot_data")
+)
 
 #' @export
-setGeneric("plot_analysis_channel", function(object, chan, size = 0.2) standardGeneric("plot_analysis_channel"))
+setGeneric(
+    "plot_analysis_channel",
+    function(object, chan, size = 0.2) standardGeneric("plot_analysis_channel")
+)
 
 #' @export
-setGeneric("plot_analysis", function(object, size = 0.2) standardGeneric("plot_analysis"))
+setGeneric(
+    "plot_analysis",
+    function(object, size = 0.2) standardGeneric("plot_analysis")
+)
 
 #' @export
-setGeneric("set_for_iplot", function(object, save = FALSE) standardGeneric("set_for_iplot"))
+setGeneric(
+    "set_for_iplot",
+    function(object, save = FALSE) standardGeneric("set_for_iplot")
+)
 
 #' @export
-setGeneric("standardize_strengths", function(object, f) standardGeneric("standardize_strengths"))
+setGeneric(
+    "standardize_strengths",
+    function(object, f) standardGeneric("standardize_strengths")
+)
 
 #' @export
-setGeneric("sfilter", function(object, x, f = minmax_normalization) standardGeneric("sfilter"))
+setGeneric(
+    "sfilter",
+    function(object, x, f = minmax_normalization) standardGeneric("sfilter")
+)
 
 #' @export
-setGeneric("merge", function(object, an) standardGeneric("merge"))
+setGeneric(
+    "merge",
+    function(object, an) standardGeneric("merge")
+)
 
 
 #' Show method for the EEG class that calls View on the canoms panoms
@@ -120,8 +148,6 @@ setMethod(
     }
 )
 
-
-
 #' @export
 setMethod(
     "plot_analysis_channel",
@@ -151,16 +177,13 @@ setMethod(
     function(x) {
         plots <- list()
         channels <- get_anomalous_channels(x)
-        for (channel in channels)
-        {
+        for (channel in channels) {
             p <- plot_analysis_channel(x, channel, size = 0.2)
             plots[[channel]] <- p
         }
         return(cowplot::plot_grid(plotlist = plots, align = "v", ncol = 1))
     }
 )
-
-
 
 #' Formats a channel's analysis results to a data frame
 #' specifically designed for interactive plotting using
@@ -206,8 +229,6 @@ setMethod(
     }
 )
 
-
-
 #' Sets the necessary data frame for interactive analysis plotting using
 #' Python's plotly library.
 #'
@@ -234,9 +255,6 @@ setMethod(
         return(df)
     }
 )
-
-
-
 
 #' Normalizes point and collective anomalies' strengths
 #' given a normalizing function f.
@@ -280,8 +298,6 @@ setMethod(
         ))
     }
 )
-
-
 
 #' Filters an analysis object so as to keep only those
 #' anomalies whose strength is greater than x.

@@ -24,34 +24,64 @@ setMethod(
 # ---------- EEG Generics ------------
 
 #' @export
-setGeneric("plot_channel", function(object, channel) standardGeneric("plot_channel"))
+setGeneric(
+    "plot_channel",
+    function(object, channel) standardGeneric("plot_channel")
+)
 
 #' @export
-setGeneric("bandpass", function(object, l, h) standardGeneric("bandpass"))
+setGeneric(
+    "bandpass",
+    function(object, l, h) standardGeneric("bandpass")
+)
 
 #' @export
-setGeneric("high_pass", function(object, n) standardGeneric("high_pass"))
+setGeneric(
+    "high_pass",
+    function(object, n) standardGeneric("high_pass")
+)
 
 #' @export
-setGeneric("subset_eeg", function(object, s, e) standardGeneric("subset_eeg"))
+setGeneric(
+    "subset_eeg",
+    function(object, s, e) standardGeneric("subset_eeg")
+)
 
 #' @export
-setGeneric("resample_eeg", function(object, n) standardGeneric("resample_eeg"))
+setGeneric(
+    "resample_eeg",
+    function(object, n) standardGeneric("resample_eeg")
+)
 
 #' @export
-setGeneric("get_epoch", function(object, which_epoch, epoch = 30) standardGeneric("get_epoch"))
+setGeneric(
+    "get_epoch",
+    function(object, which_epoch, epoch = 30) standardGeneric("get_epoch")
+)
 
 #' @export
-setGeneric("get_samples_in_epoch", function(object, epoch) standardGeneric("get_samples_in_epoch"))
+setGeneric(
+    "get_samples_in_epoch",
+    function(object, epoch) standardGeneric("get_samples_in_epoch")
+)
 
 #' @export
-setGeneric("get_sampling_frequency", function(object) standardGeneric("get_sampling_frequency"))
+setGeneric(
+    "get_sampling_frequency",
+    function(object) standardGeneric("get_sampling_frequency")
+)
 
 #' @export
-setGeneric("low_pass", function(object, n) standardGeneric("low_pass"))
+setGeneric(
+    "low_pass",
+    function(object, n) standardGeneric("low_pass")
+)
 
 #' @export
-setGeneric("remove_epoch", function(object, epoch) standardGeneric("remove_epoch"))
+setGeneric(
+    "remove_epoch",
+    function(object, epoch) standardGeneric("remove_epoch")
+)
 
 
 #' Read a .csv data file containing EEG data and an optionall

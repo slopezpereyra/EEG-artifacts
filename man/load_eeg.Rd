@@ -2,9 +2,7 @@
 % Please edit documentation in R/eeg.R
 \name{load_eeg}
 \alias{load_eeg}
-\title{Read a .csv data file containing EEG data and an optionall
-signals file and return an eeg object. If the signals file is provided,
- channel names are appropriately set.}
+\title{Read a .csv data file containing EEG data and an optionall}
 \usage{
 load_eeg(data_file, signals_file = NULL)
 }
@@ -17,7 +15,6 @@ load_eeg(data_file, signals_file = NULL)
 An eeg object.
 }
 \description{
-Read a .csv data file containing EEG data and an optionall
 signals file and return an eeg object. If the signals file is provided,
  channel names are appropriately set.
 }

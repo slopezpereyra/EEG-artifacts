@@ -1,13 +1,22 @@
 source("R/artifactor.R")
 
 #' @export
-setGeneric("spectogram", function(object, channel, hcolors) standardGeneric("spectogram"))
+setGeneric(
+    "spectogram",
+    function(object, channel, hcolors) standardGeneric("spectogram")
+)
 
 #' @export
-setGeneric("psd", function(object, method = "welch") standardGeneric("psd"))
+setGeneric(
+    "psd",
+    function(object, method = "welch") standardGeneric("psd")
+)
 
 #' @export
-setGeneric("get_channel_psd", function(object, channel) standardGeneric("get_channel_psd"))
+setGeneric(
+    "get_channel_psd",
+    function(object, channel) standardGeneric("get_channel_psd")
+)
 
 
 #' Produces the spectogram of an EEG object.
@@ -59,7 +68,10 @@ setMethod(
     function(object) {
         df <- get_channel_psd(object, 2)
         for (chan in 3:(ncol(object@data) - 1)) {
-            df <- tibble::add_column(df, get_channel_psd(object, chan)[2], .name_repair = "unique")
+            df <- tibble::add_column(df,
+                get_channel_psd(object, chan)[2],
+                .name_repair = "unique"
+            )
         }
         names <- colnames(object@data)
         names[1] <- "Fqc"
