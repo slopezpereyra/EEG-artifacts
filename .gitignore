@@ -9,6 +9,10 @@
 *.txt
 *.edf
 
+# Ignore Python code for the moment
+inst/
+R/zzz.R
+
 # Ignore data
 data/
 
