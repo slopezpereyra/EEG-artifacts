@@ -31,6 +31,8 @@ In order to perform automated artifact detection, we need to install the `artifa
 ```r
 devtools::install_github("slopezpereyra/EEG-toolkit")
 ```
+
+The package can be loaded with `library(eegtk)`.
 ### Loading EEG data
 
 To load EEG data, we use the `load_eeg(data_file, signals_file = NULL)` function. This function takes a data file and an optional signals file as arguments.

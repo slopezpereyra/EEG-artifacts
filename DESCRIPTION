@@ -1,8 +1,8 @@
-Package: artifactor
+Package: eegtk
 Type: Package
-Title: Automated Artifact Detection for EEG data
+Title: EEG Tools
 Author: Santiago López Pereyra
-Description: Automated artifact detection for EEG data using multivariate CAPA analysis.
+Description: General EEG features, from visualization to artifact detection and power spectrum analysis.
 Version: 0.0.1.0
 Encoding: UTF-8
 Depends:
@@ -12,7 +12,6 @@ Depends:
     signal,
     cowplot,
     anomaly,
-    reticulate,
     rsleep,
     stringr
 RoxygenNote: 7.2.1
