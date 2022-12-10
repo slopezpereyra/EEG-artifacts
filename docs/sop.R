@@ -12,7 +12,7 @@ print("I am executing this")
 #
 # ------------------------------------
 # 
-# Let us install devtools (in case you don't already installed it),
+# Let us install devtools (in case it isn't already installed),
 # import it and then install and import our EEG package.
 
 install.packages("devtools")
@@ -23,7 +23,7 @@ library(eegtk)
 # ---------------DATA LOADING---------------------
 #
 # Now we can start using our scientific EEG package. First of all, let's
-# read the EEG data you've exported from EDFReader. 
+# read the EEG data you have in .csv format. 
 # To load EEG data, execute the following command.
 
 eeg <- load_eeg("test_eeg.csv")
@@ -68,7 +68,7 @@ eeg@data
 
 resampled_eeg <- resample_eeg(eeg, 5)
 
-# Now we have a new EEG object called resampled_eeg, and if you plot its data
+# Now we have a new EEG object called resampled_eeg, and if you inspect its data
 # you'll see it has one measurement every 0.01 seconds.
 
 resampled_eeg@data
@@ -78,12 +78,11 @@ resampled_eeg@data
 # 
 # We can draw our EEG at specific time intervals to get a sense of what
 # we area dealing with. There are two types of plots: interactive and static
-# plots. We will call both of them.
+# plots. We will only use the latter.
 #
 # Say we wanted to see the fifth minute of our EEG record. To do this,
-# we need to take the subset of our EEG in that time, and then plotting 
-# that subset. We can do this in one line.
- 
+# we need to take the subset of our EEG in that time, and then plot it.
+
 fifth_minute <- subset_eeg(resampled_eeg, 300, 360)
 plot(fifth_minute)
 
@@ -92,7 +91,7 @@ plot(fifth_minute)
 # 
 # The function `subset_eeg` takes an eeg and two numbers representing
 # time in seconds. It returns the section of that EEG that's between the
-# first and second time in seconds. The function `plot_eeg` simply plots an 
+# first and second time in seconds. The function `plot` simply plots an 
 # eeg object. 
 # 
 # So, what we did before was
@@ -109,10 +108,8 @@ plot_eeg(?)
 
 
 # ---------------ANALYZING THE EEG ---------------------
-# 
+# No more explanations from now on. Just execute the following lines.
 # -------------------------------------------------------
-
-# Execute this:
 
 rs <- create_epoch_data()
 sbs <- subset_eeg(resampled_eeg, 0, 600)
