@@ -12,16 +12,15 @@ print("I am executing this")
 #
 # ------------------------------------
 # 
-# Let us import the artifactor package into this project by executing
+# Let us install devtools (in case you don't already installed it),
+# import it and then install and import our EEG package.
 
-library(artifactor)
+install.packages("devtools")
+library(devtools)
+devtools::install_github("slopezpereyra/EEG-toolkit")
+library(eegtk)
 
-# You  will be asked whether to install Python dependencies.
-# Write "Yes" in the terminal to accept this.  
-# 
 # ---------------DATA LOADING---------------------
-# 
-#
 #
 # Now we can start using our scientific EEG package. First of all, let's
 # read the EEG data you've exported from EDFReader. 
@@ -123,12 +122,6 @@ an <- artf_stepwise(sbs, 60)
 # does it appear in the Plots pannel?
 plot(an)
 
-# The following command may take a while to complete.
-# After completion, a web page showing an interactive plot
-# of the analysis should open in your default browser.
-# If you can, take a screenshot of what it looks like, save it
-# and send it to me.
-iplot_analysis(set_for_iplot(an), show=TRUE, save=FALSE)
 
 # Execute this:
 rs <- rs %>% update_epochs(an)
