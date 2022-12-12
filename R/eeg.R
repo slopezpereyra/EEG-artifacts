@@ -31,6 +31,12 @@ setGeneric(
 
 #' @export
 setGeneric(
+    "iplot",
+    function(eeg) standardGeneric("iplot")
+)
+
+#' @export
+setGeneric(
     "bandpass",
     function(object, l, h) standardGeneric("bandpass")
 )
@@ -102,7 +108,7 @@ load_eeg <- function(data_file, signals_file = NULL) {
             stringr::str_remove("EEG ") %>%
             stringr::str_remove("EOG")
     } else {
-        signals <- tiblbe::tibble()
+        signals <- tibble::tibble()
     }
 
     return(new("eeg", data = data, signals = signals))
@@ -221,7 +227,6 @@ setMethod(
     "eeg",
     function(object, n) {
         for (chan in 1:(ncol(object@data) - 1)) {
-            fs <- get_sampling_frequency(object)
             fs <- get_sampling_frequency(object)
             fpass <- n
             wpass <- fpass / (fs / 2) # Nyquist
@@ -355,5 +360,44 @@ setMethod(
         e_ind <- which(object@data$Time == 30 * epoch) - 1
         df <- object@data[-c(s_ind:e_ind), ]
         return(new("eeg", data = df, signals = object@signals))
+    }
+)
+
+#' Given an EEG returns its interactive visualization.
+#'
+#' @param object An eeg object.
+#' @return A plotly figure.
+#' @export
+setMethod(
+    "iplot",
+    "eeg",
+    function(eeg) {
+        plots <- list()
+        plots[[1]] <- plotly::plot_ly(
+            eeg@data,
+            type = "scatter",
+            mode = "lines"
+        ) %>%
+            plotly::add_trace(
+                x = ~Time, y = unlist(eeg@data[, 2]),
+                name = colnames(eeg@data)[2]
+            )
+        for (i in 3:length(eeg@data)) {
+            fig <- plotly::plot_ly(
+                eeg@data,
+                type = "scatter",
+                mode = "lines"
+            ) %>%
+                plotly::add_trace(
+                    x = ~Time, y = unlist(eeg@data[, i]),
+                    name = colnames(eeg@data)[i]
+                )
+            plots[[i - 1]] <- fig
+        }
+        return(plotly::subplot(
+            plots,
+            nrows = length(plots),
+            shareX = TRUE
+        ))
     }
 )

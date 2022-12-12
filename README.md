@@ -7,8 +7,7 @@
 A scientific package for computational EEG analysis.
 
 - [EEG Computational Toolkit](#eeg-computational-toolkit)
-    - [Requirements](#requirements)
-    - [Installation](#installation)
+    - [Installation and import](#installation-and-import)
     - [Loading EEG data](#loading-eeg-data)
     - [EEG Visualization](#eeg-visualization)
     - [Handling EEG data](#handling-eeg-data)
@@ -16,35 +15,24 @@ A scientific package for computational EEG analysis.
   - [Power spectrum analysis](#power-spectrum-analysis)
 
 
- ### Requirements
+### Installation and import
 
-Aside from R, this library depends on Python >= 3.10.8 and the Python libraries `pandas`, `numpy`, `plotly` and `plotly-resampler`. This is due to the fact that interactive plotting is, for techinical reasons, conducted via Python rather than directly on R.
-
-### Installation
-
-  
-
-In order to perform automated artifact detection, we need to install the `artifactor` package in R. Run the following commands in the R console.
-
-  
 
 ```r
 devtools::install_github("slopezpereyra/EEG-toolkit")
+library(eegtk)
 ```
-
-The package can be loaded with `library(eegtk)`.
 ### Loading EEG data
 
 To load EEG data, we use the `load_eeg(data_file, signals_file = NULL)` function. This function takes a data file and an optional signals file as arguments.
 
-For example, after previously exporting from EDF Browser an EDF file named `test`, we run
+For example, after exporting test EDF from EDF Browser in `.csv` format, we run
 
 ```r
 eeg <- load_eeg("test_data.txt",
                 "test_signals.txt") %>%
 				na.omit()
 ```
-
 
 The `load_eeg` function returns an `eeg` object containing the `@data` and `@signals` atrributes, the latter being an empty data frame if no signals file was provided.
 
@@ -66,7 +54,9 @@ plot(epoch)
 ```
 ![enter image description here](https://i.ibb.co/0X4GG8T/Screenshot-from-2022-12-05-13-12-17.png)
 
-Interactive plotting, on the other hand, is performed through the Python distribution of Plotly. Here's a little teaser!
+Interactive plotting comes from calling
+
+`iplot(epoch)`
 
 
 ![Alt Text](https://i.ibb.co/0XgxhKv/ezgif-1-2c5fd0d1e6.gif)
@@ -128,7 +118,6 @@ filtered <- sfilter(an, 0.1) # After min-max normalization, keep only
 
 ![enter image description here](https://i.ibb.co/djz0v74/Screenshot-from-2022-12-05-13-21-10.png)
   
-  It should be added that analysis objects (i.e. artifact detected segments of the EEG) also allow for interactive plotting.
 
 ## Power spectrum analysis
 

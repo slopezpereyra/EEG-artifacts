@@ -22,12 +22,6 @@ setClass("analysis",
 
 #' @export
 setGeneric(
-    "set_chan_for_iplot",
-    function(object, chan) standardGeneric("set_chan_for_iplot")
-)
-
-#' @export
-setGeneric(
     "has_anoms",
     function(object) standardGeneric("has_anoms")
 )
@@ -56,11 +50,6 @@ setGeneric(
     function(object, size = 0.2) standardGeneric("plot_analysis")
 )
 
-#' @export
-setGeneric(
-    "set_for_iplot",
-    function(object, save = FALSE) standardGeneric("set_for_iplot")
-)
 
 #' @export
 setGeneric(
