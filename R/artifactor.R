@@ -22,9 +22,9 @@ setGeneric(
 setGeneric(
     "artf_stepwise",
     function(eeg,
-             step_size,
+             step_size = 30,
              res = 1,
-             alpha = 8, beta = 1) {
+             alpha = 8) {
         standardGeneric("artf_stepwise")
     }
 )
@@ -81,43 +81,45 @@ setMethod(
 #'
 #' @param eeg An eeg object.
 #' @param step_size Size in seconds of each step.
-#' @param res Resolution at which to perform the analyses. Defaults to 1.
 #' @param alpha Threshold of strength significance for collective anomalies.
-#' @param beta Threshold of strength significance for point anomalies.
 #' @return An analysis object.
 #' @export
 setMethod(
     "artf_stepwise",
     "eeg",
-    function(eeg, step_size, res = 1, alpha = 8, beta = 1) {
-        s <- eeg@data$Time[1]
-        e <- s + step_size
-        measures_per_step <- which(eeg@data$Time == s + step_size)
-        eeg_duration <- tail(eeg@data$Time, n = 1) - s
-        steps <- eeg_duration %/% step_size
-        if (eeg_duration %% step_size != 0) {
-            steps <- steps + 1
-            r <- eeg_duration %% step_size
-        }
+    function(eeg, step_size = 30, alpha = 8) {
+        # Set epochs for grouping
+        t <- set_epochs(eeg@data, epoch = step_size) %>% head(-1)
+        mps <- get_sampling_frequency(eeg) * step_size # measures per step
+        grouped <- dplyr::group_by(t[-1], Epoch) %>%
+            dplyr::group_map(~ anomaly::capa.mv(x = .x, type = "mean"))
+        canoms <- grouped %>% lapply(function(x) anomaly::collective_anomalies(x) %>% dplyr::filter(mean.change > 8))
+        panoms <- grouped %>% lapply(function(x) anomaly::point_anomalies(x))
 
-        an <- artf(eeg, s, e, alpha = alpha, beta = beta)
-        s <- e
-        e <- e + step_size
-        for (x in 2:steps) {
-            if (e > tail(eeg@data["Time"], n = 1)) {
-                e <- s + r
-            }
-            analysis <- artf(eeg, s, e, res, alpha, beta = beta)
-            # Ensure point locations match the original EEG and no the
-            # step subset.
-            displacement <- (x - 1) * measures_per_step
-            analysis@panoms[1] <- analysis@panoms[1] + displacement
-            analysis@canoms[1] <- analysis@canoms[1] + displacement
-            analysis@canoms[2] <- analysis@canoms[2] + displacement
-            an <- merge(an, analysis)
-            s <- e
-            e <- e + step_size
-        }
+        canoms <- mapply(function(x, y) x %>% dplyr::mutate(start = start + mps * (y - 1), end = end + mps * (y - 1)),
+            canoms, seq_along(canoms),
+            SIMPLIFY = FALSE
+        ) %>%
+            dplyr::bind_rows() %>%
+            set_timevars(eeg@data)
+
+        panoms <- mapply(function(x, y) x %>% mutate(location = location + mps * (y - 1)),
+            panoms, seq_along(panoms),
+            SIMPLIFY = FALSE
+        ) %>%
+            dplyr::bind_rows() %>%
+            set_timevars(eeg@data)
+
+        an <- new("analysis", canoms = canoms, panoms = panoms, eeg = eeg)
         return(an)
     }
 )
+
+# Helper function
+set_epochs <- function(df, epoch = 30) {
+    # Get quotient and remainder of euclidean division
+    # of each time in seconds by 30.
+    q <- df$Time %/% epoch
+    df <- df %>% tibble::add_column(Epoch = q + 1, .after = 1)
+    return(df)
+}
