@@ -131,11 +131,11 @@ iplot_psd(sd).
 
 ![PSD (image zoomed to show frequencies up to 40 Hz)](https://i.ibb.co/F5pD0Hn/PSD.png)
 
-We may also compute the spectogram of a specific EEG channel. For example, here's the spectogram of the C4-A1 (artifact-contaminated) channel.
+We may also compute the spectogram of a specific EEG channel. For example, here's the spectogram of the C4-A1 (artifact-contaminated) channel from the start of the record to the sixth minute.
 
 ```
-spectogram(s, channel=4, hcolors=10) # hcolors determines number of 
-									# colors in the palette
+x <- subset_eeg(eeg, 0, 360)
+spectogram(s, channel=4, hcolors=10) # hcolors determines number of colors in the palette
 ```
 
 ![enter image description here](https://i.ibb.co/HqJCTDg/Screenshot-from-2022-12-05-13-34-03.png)
