@@ -43,7 +43,7 @@ update_epochs <- function(epoch_data, analysis) {
 
 
 #' @export
-setGeneric("extract_epochs", function(object) standardGeneric("extract_epochs"))
+methods::setGeneric("extract_epochs", function(object) standardGeneric("extract_epochs"))
 
 #' data attribute is such subset.
 #'
@@ -54,7 +54,7 @@ setGeneric("extract_epochs", function(object) standardGeneric("extract_epochs"))
 #' @return A new eeg whose data is the subset ranging from
 #' second s to e of the object's data attribute.
 #' @export
-setMethod(
+methods::setMethod(
     "extract_epochs",
     "analysis",
     function(object) {

@@ -1,14 +1,9 @@
 # Scripts on this file are dedicated to performing M-CAPA analysis
-# on EEG data.
-
-library(methods)
-source("R/eeg.R")
-source("R/cln.R")
-source("R/analysis.r")
+# on EEG data for artifact detection.
 
 
 #' @export
-setGeneric(
+methods::setGeneric(
     "artf",
     function(eeg,
              s = -1, e = -1,
@@ -19,7 +14,7 @@ setGeneric(
 )
 
 #' @export
-setGeneric(
+methods::setGeneric(
     "artf_stepwise",
     function(eeg,
              step_size = 30,
@@ -44,7 +39,7 @@ setGeneric(
 #' @export
 #'
 #' @export
-setMethod(
+methods::setMethod(
     "artf",
     "eeg",
     function(eeg, s = -1, e = -1, res = 1, alpha = 8, beta = 1) {
@@ -84,7 +79,7 @@ setMethod(
 #' @param alpha Threshold of strength significance for collective anomalies.
 #' @return An analysis object.
 #' @export
-setMethod(
+methods::setMethod(
     "artf_stepwise",
     "eeg",
     function(eeg, step_size = 30, alpha = 8) {
@@ -116,6 +111,7 @@ setMethod(
 )
 
 # Helper function
+#' @export
 set_epochs <- function(df, epoch = 30) {
     # Get quotient and remainder of euclidean division
     # of each time in seconds by 30.

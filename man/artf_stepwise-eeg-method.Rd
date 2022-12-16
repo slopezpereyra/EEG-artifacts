@@ -4,18 +4,14 @@
 \alias{artf_stepwise,eeg-method}
 \title{Performs stepwise (or epoch by epoch) CAPA analysis on EEG data.}
 \usage{
-\S4method{artf_stepwise}{eeg}(eeg, step_size, res = 1, alpha = 8, beta = 1)
+\S4method{artf_stepwise}{eeg}(eeg, step_size = 30, alpha = 8)
 }
 \arguments{
 \item{eeg}{An eeg object.}
 
 \item{step_size}{Size in seconds of each step.}
 
-\item{res}{Resolution at which to perform the analyses. Defaults to 1.}
-
 \item{alpha}{Threshold of strength significance for collective anomalies.}
-
-\item{beta}{Threshold of strength significance for point anomalies.}
 }
 \value{
 An analysis object.

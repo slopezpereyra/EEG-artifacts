@@ -2,10 +2,10 @@
 % Please edit documentation in R/ps.R
 \name{psd,eeg-method}
 \alias{psd,eeg-method}
-\title{Given an eeg object, compute the power spectrum of every
-channel.}
+\title{Given an eeg object, compute the average power spectrum density
+of each channel across epochs.}
 \usage{
-\S4method{psd}{eeg}(object)
+\S4method{psd}{eeg}(object, epoch = 30)
 }
 \arguments{
 \item{object}{An eeg object.}
@@ -15,6 +15,6 @@ A data frame with the spectrum density for every frequency
 for every channel in the  EEG record.
 }
 \description{
-Given an eeg object, compute the power spectrum of every
-channel.
+Given an eeg object, compute the average power spectrum density
+of each channel across epochs.
 }

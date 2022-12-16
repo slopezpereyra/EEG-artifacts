@@ -1,9 +1,7 @@
-source("R/norm_functions.R")
 
 # Scripts on this file are dedicated to plotting EEG data
 # and M-CAPA analysis results.
 
-source("R/eeg.R")
 
 #' Analysis class.
 #' @slot canoms A collective anomalies data frame.

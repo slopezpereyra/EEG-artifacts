@@ -1,4 +1,3 @@
-library(dplyr)
 #' EEG class.
 #' @slot data A data frame containing EEG records
 #' @slot signals A data frame containing signal information (may be empty).
@@ -13,7 +12,7 @@ setClass("eeg",
 #' Show method for the EEG class that prints the data slot.
 #' @param object An EEG object.
 #' @export
-setMethod(
+methods::setMethod(
     "show",
     "eeg",
     function(object) {
@@ -24,67 +23,67 @@ setMethod(
 # ---------- EEG Generics ------------
 
 #' @export
-setGeneric(
+methods::setGeneric(
     "plot_channel",
     function(object, channel) standardGeneric("plot_channel")
 )
 
 #' @export
-setGeneric(
+methods::setGeneric(
     "iplot",
     function(eeg) standardGeneric("iplot")
 )
 
 #' @export
-setGeneric(
+methods::setGeneric(
     "bandpass",
     function(object, l, h) standardGeneric("bandpass")
 )
 
 #' @export
-setGeneric(
+methods::setGeneric(
     "high_pass",
     function(object, n) standardGeneric("high_pass")
 )
 
 #' @export
-setGeneric(
+methods::setGeneric(
     "subset_eeg",
     function(object, s, e) standardGeneric("subset_eeg")
 )
 
 #' @export
-setGeneric(
+methods::setGeneric(
     "resample_eeg",
     function(object, n) standardGeneric("resample_eeg")
 )
 
 #' @export
-setGeneric(
+methods::setGeneric(
     "get_epoch",
     function(object, which_epoch, epoch = 30) standardGeneric("get_epoch")
 )
 
 #' @export
-setGeneric(
+methods::setGeneric(
     "get_samples_in_epoch",
     function(object, epoch) standardGeneric("get_samples_in_epoch")
 )
 
 #' @export
-setGeneric(
+methods::setGeneric(
     "get_sampling_frequency",
     function(object) standardGeneric("get_sampling_frequency")
 )
 
 #' @export
-setGeneric(
+methods::setGeneric(
     "low_pass",
     function(object, n) standardGeneric("low_pass")
 )
 
 #' @export
-setGeneric(
+methods::setGeneric(
     "remove_epoch",
     function(object, epoch) standardGeneric("remove_epoch")
 )
@@ -125,7 +124,7 @@ load_eeg <- function(data_file, signals_file = NULL) {
 #' @return A new eeg whose data is the subset ranging from
 #' second s to e of the object's data attribute.
 #' @export
-setMethod(
+methods::setMethod(
     "subset_eeg",
     "eeg",
     function(object, s, e) {
@@ -153,7 +152,7 @@ setMethod(
 #'
 #' @return An EEG object
 #' @export
-setMethod(
+methods::setMethod(
     "resample_eeg",
     "eeg",
     function(object, n) {
@@ -172,7 +171,7 @@ setMethod(
 #'
 #' @return A new eeg whose data is the requested epoch.
 #' @export
-setMethod(
+methods::setMethod(
     "get_epoch",
     "eeg",
     function(object, which_epoch, epoch = 30) {
@@ -190,7 +189,7 @@ setMethod(
 #' @return An integer representing the number of values
 #' that make up a time-frame of length epoch.
 #' @export
-setMethod(
+methods::setMethod(
     "get_samples_in_epoch",
     "eeg",
     function(object, epoch) {
@@ -204,7 +203,7 @@ setMethod(
 #'
 #' @return An number, the sampling frequency
 #' @export
-setMethod(
+methods::setMethod(
     "get_sampling_frequency",
     "eeg",
     function(object) {
@@ -222,7 +221,7 @@ setMethod(
 #'
 #' @return A new filtered EEG object
 #' @export
-setMethod(
+methods::setMethod(
     "low_pass",
     "eeg",
     function(object, n) {
@@ -248,7 +247,7 @@ setMethod(
 #'
 #' @return A new filtered EEG object
 #' @export
-setMethod(
+methods::setMethod(
     "high_pass",
     "eeg",
     function(object, n) {
@@ -275,7 +274,7 @@ setMethod(
 #'
 #' @return A new filtered EEG object
 #' @export
-setMethod(
+methods::setMethod(
     "bandpass",
     "eeg",
     function(object, l, h) {
@@ -300,7 +299,7 @@ setMethod(
 #'
 #' @return A ggplot object.
 #' @export
-setMethod(
+methods::setMethod(
     "plot_channel",
     "eeg",
     function(object, channel) {
@@ -329,7 +328,7 @@ setMethod(
 #'
 #' @return A plot_grid object.
 #' @export
-setMethod(
+methods::setMethod(
     "plot",
     "eeg",
     function(x) {
@@ -352,7 +351,7 @@ setMethod(
 #' @param epoch An natural number
 #' @return An EEG object.
 #' @export
-setMethod(
+methods::setMethod(
     "remove_epoch",
     "eeg",
     function(object, epoch) {
@@ -368,7 +367,7 @@ setMethod(
 #' @param object An eeg object.
 #' @return A plotly figure.
 #' @export
-setMethod(
+methods::setMethod(
     "iplot",
     "eeg",
     function(eeg) {
