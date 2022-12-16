@@ -121,15 +121,15 @@ filtered <- sfilter(an, 0.1) # After min-max normalization, keep only
 
 ## Power spectrum analysis
 
-It is quite simple to estimate the power spectral density of the EEG signals using the package. For the sake of showcasing, we will only show the spectrum of the first 6 minutes of record.
+It is quite simple to estimate the power spectral density of the EEG signals using the package. For the sake of showcasing, we will only show the spectrum of the first 1200 minutes of record.
 
 ```
-s <- subset_eeg(eeg, 0, 360)
+s <- subset_eeg(eeg, 0, 1200)
 sd <- psd(s) # Estimate the spectral density
-plot_psd(sd, xlim=30) # Show only frequencies up to 30 Hz.
+iplot_psd(sd).
 ```
 
-![enter image description here](https://i.ibb.co/X3TpkQC/Screenshot-from-2022-12-05-13-30-54.png)
+![PSD (image zoomed to show frequencies up to 40 Hz)](https://i.ibb.co/F5pD0Hn/PSD.png)
 
 We may also compute the spectogram of a specific EEG channel. For example, here's the spectogram of the C4-A1 (artifact-contaminated) channel.
 
