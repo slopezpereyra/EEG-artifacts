@@ -10,7 +10,7 @@ A scientific package for computational EEG analysis.
     - [Installation and import](#installation-and-import)
     - [Loading EEG data](#loading-eeg-data)
     - [EEG Visualization](#eeg-visualization)
-    - [Handling EEG data](#handling-eeg-data)
+    - [Resampling and resolution scaling](#resampling-and-resolution-scaling)
     - [Filtering](#filtering)
     - [Artifact detection](#artifact-detection)
   - [Power spectrum analysis](#power-spectrum-analysis)
@@ -56,15 +56,9 @@ We could have also produced an interactive plot to inspect our EEG record, or a 
 
   
 
-### Handling EEG data
+### Resampling and resolution scaling
 
-<<<<<<< HEAD
-EEG data is extremely large. For a sampling rate $f_s = 500$, a single $30$ seconds epoch contains $15.000$ observations!  Hence, it is often desirable to work either with subsets of the record, or lower resolution version of it. These package provides functions to make subsetting and resolution-scaling practical and easy.
-=======
-EEG data is extremely large. For a sampling rate $f_s = 500$, a single $30$ seconds epoch contains $15.000$ observations! An eight-hour record $-$say, from a sleep session$-$ would have $14.400.000$ measures. 
-
-Hence, it is often desirable to work either with subsets of the record, or lower resolution version of it. These package provides functions to make subsetting and resolution-scaling practical and easy.
->>>>>>> main
+EEG data is large. For a sampling rate $f_s = 500$, a single $30$ seconds epoch contains $15.000$ observations!  Hence, it is often desirable to work either with subsets of the record, or lower resolution version of it. These package provides functions to make subsetting and resolution-scaling practical and easy.
 
 The `get_epoch` function has already been showcased. But it is nothing more than a wrapper for a specific call of the `subset_eeg(eeg, start, end)` function, where the `start, end` artifacts are numbers referencing time.
 
