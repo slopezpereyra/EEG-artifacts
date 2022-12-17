@@ -58,7 +58,13 @@ We could have also produced an interactive plot to inspect our EEG record, or a 
 
 ### Handling EEG data
 
+<<<<<<< HEAD
 EEG data is extremely large. For a sampling rate $f_s = 500$, a single $30$ seconds epoch contains $15.000$ observations!  Hence, it is often desirable to work either with subsets of the record, or lower resolution version of it. These package provides functions to make subsetting and resolution-scaling practical and easy.
+=======
+EEG data is extremely large. For a sampling rate $f_s = 500$, a single $30$ seconds epoch contains $15.000$ observations! An eight-hour record $-$say, from a sleep session$-$ would have $14.400.000$ measures. 
+
+Hence, it is often desirable to work either with subsets of the record, or lower resolution version of it. These package provides functions to make subsetting and resolution-scaling practical and easy.
+>>>>>>> main
 
 The `get_epoch` function has already been showcased. But it is nothing more than a wrapper for a specific call of the `subset_eeg(eeg, start, end)` function, where the `start, end` artifacts are numbers referencing time.
 
