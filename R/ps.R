@@ -2,7 +2,7 @@
 #' @export
 setGeneric(
     "spectogram",
-    function(object, channel, hcolors) standardGeneric("spectogram")
+    function(object, channel, hcolors = 10) standardGeneric("spectogram")
 )
 
 #' @export
@@ -27,7 +27,8 @@ setMethod(
     function(object, channel, hcolors = 10) {
         fs <- get_sampling_frequency(object)
         x <- gsignal::specgram(unlist(object@data[channel + 1]), fs = fs)
-        plot(x, col = grDevices::heat.colors(hcolors))
+        p <- plot(x, col = grDevices::heat.colors(hcolors))
+        return(p)
     }
 )
 #' Given an eeg object and a channel's column index,

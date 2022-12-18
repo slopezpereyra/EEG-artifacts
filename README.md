@@ -14,6 +14,7 @@ A scientific package for computational EEG analysis.
     - [Filtering](#filtering)
     - [Artifact detection](#artifact-detection)
   - [Power spectrum analysis](#power-spectrum-analysis)
+  - [Example artifact detection](#example-artifact-detection)
 
 
 ### Installation and import
@@ -127,12 +128,36 @@ iplot_psd(sd).
 
 (We have artifcially zoomed into this interactive plot so as to display only frequencies up to 40 Hz.)
 
-We may also compute the spectogram of a specific EEG channel. For example, here's the spectogram of the C4-A1 (artifact-contaminated) channel from the start of the record to the sixth minute.
+
+## Example artifact detection
+
+We will perform artifact detection over the first $10$ minutes of our record and compare the spectogram of the artifact rejected and raw records. Notice that, explanatory comments aside, artifact rejection is conducted in only three lines.
 
 ```
-x <- subset_eeg(eeg, 0, 360)
-spectogram(s, channel=4, hcolors=10) 
-# hcolors determines number of colors in the palette
+raw_eeg <- subset_eeg(eeg, 0, 600)
+
+# 1. Analyze the EEG for artifacts in segments of 120 seconds (2 minutes), 
+# filtering for anomalies of strength greater than 0.4.
+
+artifact_analysis <- raw_eeg %>% artf_stepwise(step_size = 120) %>% sfilter(0.4)
+
+# 2. Extract the epoch data of the analysis; e.g., which epoch-subepoch pairs
+# were contaminated? 
+
+epoch_data <- extract_epochs(artifact_analysis)
+
+# 3. Drop contaminated epochs from the EEG, save result as new EEG.
+
+clean_eeg <- drop_epochs(epoch_data$Epoch)
+
+
+# Compute and plot the spectograms
+
+spectogram(raw_eeg, 1) # First channel of the raw_eeg.
+spectogram(clean_eeg, 1) # First channel of the artifact rejected EEG.
+
 ```
 
-![enter image description here](https://i.ibb.co/HqJCTDg/Screenshot-from-2022-12-05-13-34-03.png)
+![](https://i.ibb.co/55PZP0R/comparison.png)
+
+The clean record has a shorter duration, as it is to be expected from the fact that artifact contaminated epochs were dropped.

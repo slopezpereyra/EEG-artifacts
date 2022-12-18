@@ -116,6 +116,6 @@ set_epochs <- function(df, epoch = 30) {
     # Get quotient and remainder of euclidean division
     # of each time in seconds by 30.
     q <- df$Time %/% epoch
-    df <- df %>% tibble::add_column(Epoch = q + 1, .after = 1)
+    df <- df %>% tibble::add_column(Epoch = as.factor(q + 1), .after = 1)
     return(df)
 }

@@ -88,6 +88,12 @@ methods::setGeneric(
     function(object, epoch) standardGeneric("remove_epoch")
 )
 
+#' @export
+methods::setGeneric(
+    "drop_epochs",
+    function(object, epochs, epoch = 30) standardGeneric("drop_epochs")
+)
+
 
 #' Read a .csv data file containing EEG data and an optionall
 #'
@@ -398,5 +404,24 @@ methods::setMethod(
             nrows = length(plots),
             shareX = TRUE
         ))
+    }
+)
+
+#' Given an eeg object and an epoch, removes
+#' all samples from that epoch from the EEG data.
+#'
+#' Notice that the extremes of the epoch are kept.
+#'
+#' @param object An eeg object.
+#' @param epoch An natural number
+#' @return An EEG object.
+#' @export
+methods::setMethod(
+    "drop_epochs",
+    "eeg",
+    function(object, epochs, epoch = 30) {
+        df <- object@data %>% set_epochs(epoch)
+        df <- droplevels(df[!df$Epoch %in% epochs, ])[-2]
+        return(new("eeg", data = df, signals = object@signals))
     }
 )

@@ -67,6 +67,9 @@ setGeneric(
     function(object, an) standardGeneric("merge")
 )
 
+#' @export
+methods::setGeneric("extract_epochs", function(object) standardGeneric("extract_epochs"))
+
 
 #' Show method for the EEG class that calls View on the canoms panoms
 #' and eeg slots.
@@ -239,5 +242,25 @@ setMethod(
             panoms = panoms,
             eeg = object@eeg
         ))
+    }
+)
+
+#' @param object An analysis object.
+#'
+#' @return A data frame containing epoch-subepoch pairs
+#' found to contain artifacts as well as the average
+#' strength of the artifacts for each subepoch.
+#' @export
+methods::setMethod(
+    "extract_epochs",
+    "analysis",
+    function(object) {
+        a <- object@canoms %>%
+            dplyr::group_by(Epoch, Subepoch) %>%
+            dplyr::summarise_at(vars(mean.change), list(cAnomStrength = mean))
+        b <- object@panoms %>%
+            dplyr::group_by(Epoch, Subepoch) %>%
+            dplyr::summarise_at(vars(strength), list(pAnomStrength = mean))
+        return(dplyr::full_join(a, b))
     }
 )

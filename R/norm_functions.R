@@ -1,5 +1,5 @@
 
-
+#' @export
 znormalization <- function(x) {
     if (is.null(x) || length(x) == 0) {
         return(x)
@@ -7,6 +7,7 @@ znormalization <- function(x) {
     return((x - mean(x)) / sd(x))
 }
 
+#' @export
 minmax_normalization <- function(x) {
     if (is.null(x) || length(x) == 0) {
         return(x)
