@@ -66,12 +66,6 @@ methods::setGeneric(
 
 #' @export
 methods::setGeneric(
-    "get_samples_in_epoch",
-    function(object, epoch) standardGeneric("get_samples_in_epoch")
-)
-
-#' @export
-methods::setGeneric(
     "get_sampling_frequency",
     function(object) standardGeneric("get_sampling_frequency")
 )
@@ -186,23 +180,6 @@ methods::setMethod(
 )
 
 
-#' Given an eeg object, determine the number of values
-#' that make up epoch seconds.
-#'
-#' @param object An eeg object.
-#' @param epoch A time in seconds.
-#'
-#' @return An integer representing the number of values
-#' that make up a time-frame of length epoch.
-#' @export
-methods::setMethod(
-    "get_samples_in_epoch",
-    "eeg",
-    function(object, epoch) {
-        return(which(object@data["Time"] == epoch))
-    }
-)
-
 #' Returns sampling frequency of the EEG object
 #'
 #' @param object An eeg object.
@@ -218,6 +195,42 @@ methods::setMethod(
     }
 )
 
+#' Wrapper function for low-pass filtering
+#' a vector given a filtering frequency and
+#' a sampling frequency.
+#'
+#' @export
+vlow_pass <- function(vec, n, fs) {
+    wpass <- n / (fs / 2) # Nyquist
+    but <- gsignal::butter(3, wpass, "low")
+    low_pass <- gsignal::filter(but, unlist(vec))
+    return(low_pass)
+}
+
+#' Wrapper function for high-pass filtering
+#' a vector given a filtering frequency and
+#' a sampling frequency.
+#'
+#' @export
+vhigh_pass <- function(vec, n, fs) {
+    wpass <- n / (fs / 2) # Nyquist
+    but <- gsignal::butter(3, wpass, "high")
+    high_pass <- gsignal::filter(but, unlist(vec))
+    return(high_pass)
+}
+
+#' Wrapper function for bandpass filtering
+#' a vector given filtering frequencies and
+#' a sampling frequency.
+#'
+#' @export
+vbandpass <- function(vec, l, h, fs) {
+    fpass <- c(l, h)
+    wpass <- fpass / (fs / 2) # Nyquist
+    but <- gsignal::butter(3, wpass, "pass")
+    pass <- gsignal::filter(but, unlist(vec))
+    return(pass)
+}
 
 #' Given an eeg object and a numeric frequency n,
 #' applies a low-pass Butterworth filter.
@@ -231,25 +244,25 @@ methods::setMethod(
     "low_pass",
     "eeg",
     function(object, n) {
-        for (chan in 1:(ncol(object@data) - 1)) {
-            fs <- get_sampling_frequency(object)
-            fpass <- n
-            wpass <- fpass / (fs / 2) # Nyquist
-            but <- gsignal::butter(3, wpass, "low")
-            highp <- gsignal::filter(but, unlist(object@data[-1][chan]))
-            object@data[-1][chan] <- highp
-        }
-        return(object)
+        fs <- get_sampling_frequency(object)
+        df <- object@data
+        filt_df <- apply(df[-1],
+            MARGIN = 2,
+            FUN = function(x) vlow_pass(x, n, fs),
+            simplify = FALSE
+        ) %>%
+            tibble::as_tibble() %>%
+            tibble::add_column(Time = df$Time, .before = colnames(df)[2])
+        return(new("eeg", data = filt_df, signals = object@signals))
     }
 )
 
 
-
 #' Given an eeg object and a numeric frequency n,
-#' applies high pass Butterworth filter.
+#' applies a low-pass Butterworth filter.
 #'
 #' @param object An eeg object.
-#' @param n Filter frequency in Hz.
+#' @param n Filter frequency in Hz
 #'
 #' @return A new filtered EEG object
 #' @export
@@ -257,16 +270,16 @@ methods::setMethod(
     "high_pass",
     "eeg",
     function(object, n) {
-        for (chan in 1:(ncol(object@data) - 1)) {
-            fs <- get_sampling_frequency(object)
-            fs <- get_sampling_frequency(object)
-            fpass <- n
-            wpass <- fpass / (fs / 2) # Nyquist
-            but <- gsignal::butter(3, wpass, "high")
-            highp <- gsignal::filter(but, unlist(object@data[-1][chan]))
-            object@data[-1][chan] <- highp
-        }
-        return(object)
+        fs <- get_sampling_frequency(object)
+        df <- object@data
+        filt_df <- apply(df[-1],
+            MARGIN = 2,
+            FUN = function(x) vhigh_pass(x, n, fs),
+            simplify = FALSE
+        ) %>%
+            tibble::as_tibble() %>%
+            tibble::add_column(Time = df$Time, .before = colnames(df)[2])
+        return(new("eeg", data = filt_df, signals = object@signals))
     }
 )
 
@@ -284,15 +297,16 @@ methods::setMethod(
     "bandpass",
     "eeg",
     function(object, l, h) {
-        for (chan in 1:(ncol(object@data) - 1)) {
-            fs <- get_sampling_frequency(object)
-            fpass <- c(l, h)
-            wpass <- fpass / (fs / 2) # Nyquist
-            but <- gsignal::butter(5, wpass, "pass")
-            pass <- gsignal::filter(but, unlist(object@data[-1][chan]))
-            object@data[-1][chan] <- pass
-        }
-        return(object)
+        fs <- get_sampling_frequency(object)
+        df <- object@data
+        filt_df <- apply(df[-1],
+            MARGIN = 2,
+            FUN = function(x) vbandpass(x, l, h, fs),
+            simplify = FALSE
+        ) %>%
+            tibble::as_tibble() %>%
+            tibble::add_column(Time = df$Time, .before = colnames(df)[2])
+        return(new("eeg", data = filt_df, signals = object@signals))
     }
 )
 
