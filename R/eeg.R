@@ -88,6 +88,17 @@ methods::setGeneric(
     function(object, epochs, epoch = 30) standardGeneric("drop_epochs")
 )
 
+#' @export
+methods::setGeneric(
+    "drop_subepochs",
+    function(object, epochs, subepochs, epoch = 30) standardGeneric("drop_subepochs")
+)
+
+#' @export
+methods::setGeneric(
+    "artf_reject",
+    function(object, analysis) standardGeneric("artf_reject")
+)
 
 #' Read a .csv data file containing EEG data and an optionall
 #'
@@ -421,6 +432,21 @@ methods::setMethod(
     }
 )
 
+# Helper function
+#' @export
+set_epochs <- function(df, epoch = 30, subepochs = FALSE) {
+    # Get quotient and remainder of euclidean division
+    # of each time in seconds by 30.
+    q <- df$Time %/% epoch
+    df <- df %>% tibble::add_column(Epoch = as.factor(q + 1), .after = 1)
+    if (subepochs) {
+        r <- df$Time %% epoch
+        qprime <- r %/% 5
+        df <- df %>% tibble::add_column(Subepoch = as.factor(qprime + 1), .after = 2)
+    }
+    return(df)
+}
+
 #' Given an eeg object and an epoch, removes
 #' all samples from that epoch from the EEG data.
 #'
@@ -439,3 +465,58 @@ methods::setMethod(
         return(new("eeg", data = df, signals = object@signals))
     }
 )
+
+#' Given an eeg object and an epoch, removes
+#' all samples from that epoch from the EEG data.
+#'
+#' Notice that the extremes of the epoch are kept.
+#'
+#' @param object An eeg object.
+#' @param epoch An natural number
+#' @return An EEG object.
+#' @export
+methods::setMethod(
+    "drop_subepochs",
+    "eeg",
+    function(object, epochs, subepochs, epoch = 30) {
+        contaminated <- as.factor(paste(epochs, subepochs))
+        df <- object@data %>% set_epochs(epoch, subepochs = TRUE)
+
+        df <- df %>% tibble::add_column(
+            Pairs = as.factor(paste(df$Epoch, df$Subepoch)),
+            .after = "Subepoch"
+        )
+        df <- droplevels(df[!df$Pairs %in% contaminated, ])[-c(2, 3, 4)]
+        return(new("eeg", data = df, signals = object@signals))
+    }
+)
+
+#' Given an eeg object and an epoch, removes
+#' all samples from that epoch from the EEG data.
+#'
+#' Notice that the extremes of the epoch are kept.
+#'
+#' @param object An eeg object.
+#' @param epoch An natural number
+#' @return An EEG object.
+#' @export
+methods::setMethod(
+    "artf_reject",
+    "eeg",
+    function(object, analysis) {
+        epoch_data <- extract_epochs(analysis)
+        rejected <- drop_subepochs(object, epoch_data$Epoch, epoch_data$Subepoch)
+        return(rejected)
+    }
+)
+
+an <- artf_stepwise(test, step_size = 60, alpha = 8)
+fan <- an %>% sfilter(0.1)
+
+x_2 <- artf_reject(test, an)
+x_1 <- artf_reject(test, fan)
+spectogram(test, 1)
+spectogram(x_1, 1)
+
+y <- low_pass(x_1, 30)
+spectogram(y, 1)

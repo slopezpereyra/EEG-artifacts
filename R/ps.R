@@ -126,7 +126,7 @@ plot_psd <- function(psd, xlim = 30) {
 #'
 #' @export
 iplot_psd <- function(psd) {
-    psd <- reshape2::melt(x, id.vars = "Fqc")
+    psd <- reshape2::melt(psd, id.vars = "Fqc")
     fig <- plotly::plot_ly(
         psd,
         type = "scatter",
