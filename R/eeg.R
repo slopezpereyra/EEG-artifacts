@@ -509,14 +509,3 @@ methods::setMethod(
         return(rejected)
     }
 )
-
-an <- artf_stepwise(test, step_size = 60, alpha = 8)
-fan <- an %>% sfilter(0.1)
-
-x_2 <- artf_reject(test, an)
-x_1 <- artf_reject(test, fan)
-spectogram(test, 1)
-spectogram(x_1, 1)
-
-y <- low_pass(x_1, 30)
-spectogram(y, 1)
