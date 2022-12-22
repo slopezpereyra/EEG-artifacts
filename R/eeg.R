@@ -447,13 +447,13 @@ set_epochs <- function(df, epoch = 30, subepochs = FALSE) {
     return(df)
 }
 
-#' Given an eeg object and an epoch, removes
-#' all samples from that epoch from the EEG data.
+#' Given an eeg object and a list of epochs,
+#' removes all samples from the given epochs.
 #'
 #' Notice that the extremes of the epoch are kept.
 #'
 #' @param object An eeg object.
-#' @param epoch An natural number
+#' @param epochs A vector of natural integers.
 #' @return An EEG object.
 #' @export
 methods::setMethod(
@@ -466,10 +466,15 @@ methods::setMethod(
     }
 )
 
-#' Given an eeg object and an epoch, removes
-#' all samples from that epoch from the EEG data.
+#' Given an eeg object, a list of epochs and
+#' a list of subepochs, removes epoch-subepoch
+#' pairs from the eeg data.
 #'
-#' Notice that the extremes of the epoch are kept.
+#' Notice that elements in the epoch and subepoch
+#' lists are understood to represent an
+#' elementwise association. This means if this lists
+#' are (e_1, ..., e_n) and (s_1, ..., s_n) then
+#' epoch/subepochj pairs (e_i, s_i) are removed.
 #'
 #' @param object An eeg object.
 #' @param epoch An natural number
@@ -491,13 +496,13 @@ methods::setMethod(
     }
 )
 
-#' Given an eeg object and an epoch, removes
-#' all samples from that epoch from the EEG data.
+#' Given an eeg object and an analysis object,
+#' returns an artifact-rejected version of the
+#' eeg.
 #'
-#' Notice that the extremes of the epoch are kept.
 #'
 #' @param object An eeg object.
-#' @param epoch An natural number
+#' @param analysis An analysis object
 #' @return An EEG object.
 #' @export
 methods::setMethod(
