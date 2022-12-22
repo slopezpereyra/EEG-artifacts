@@ -8,9 +8,8 @@ setGeneric(
 #' @export
 setGeneric(
     "psd",
-    function(object, epoch = 30) standardGeneric("psd")
+    function(object) standardGeneric("psd")
 )
-
 #' @export
 setGeneric(
     "psd_chan",
@@ -45,19 +44,14 @@ setMethod(
 setMethod(
     "psd_chan",
     "eeg",
-    function(object, channel, epoch = 30) {
-        t <- set_epochs(object@data, epoch) %>% head(-1)
+    function(object, channel) {
         fs <- get_sampling_frequency(object)
-        by_epoch <- tapply(
-            unlist(t[-1][channel + 1]), # +1 accounts for epoch column
-            t$Epoch,
-            function(x) rsleep::pwelch(x, sRate = fs)
-        )
-        avg <- Reduce("+", lapply(by_epoch, "[[", "psd")) / length(by_epoch)
-        df <- avg %>%
-            tibble::as_tibble() %>%
-            tibble::add_column(Fqc = by_epoch[[1]]$hz, .before = "value")
-        return(df)
+        pwelch <- gsignal::pwelch(as.matrix(object@data[-1][channel]), fs = fs)
+        psd <- pwelch$spec %>%
+            apply(log10, MARGIN = 2) %>%
+            tibble::as_tibble()
+        psd$Fqc <- pwelch$freq
+        return(psd)
     }
 )
 
@@ -72,29 +66,14 @@ setMethod(
 setMethod(
     "psd",
     "eeg",
-    function(object, epoch = 30) {
-        t <- set_epochs(object@data, epoch) %>% head(-1)
+    function(object) {
         fs <- get_sampling_frequency(object)
-        by_epoch <- dplyr::group_by(t[-1], Epoch) %>%
-            # Cast pwelch PSD over each column on each each group.
-            dplyr::group_map(~ apply(.x,
-                FUN = function(y) rsleep::pwelch(y, sRate = fs),
-                MARGIN = 2
-            ))
-        # Extract PSD of each channel over all epochs
-        # (tibble 1 = epoch_1, ..., tibble_n = epoch_n)
-        psds <- lapply(
-            by_epoch,
-            function(x) tibble::as_tibble(lapply(x, "[[", "psd"))
-        )
-        # Compute the average spectrum across epochs for each channel.
-        avgs <- tibble::as_tibble(Reduce("+", psds) / length(by_epoch))
-        # Add hz variable
-        psd <- tibble::add_column(avgs,
-            Fqc = by_epoch[[1]][[1]]$hz,
-            .before = colnames(avgs)[1]
-        )
-        return(tibble::as_tibble(psd))
+        pwelch <- gsignal::pwelch(as.matrix(object@data[-1]), fs = fs)
+        psd <- pwelch$spec %>%
+            apply(log10, MARGIN = 2) %>%
+            tibble::as_tibble()
+        psd$Fqc <- pwelch$freq
+        return(psd)
     }
 )
 
@@ -105,7 +84,7 @@ setMethod(
 #' @return A ggplot object.
 #'
 #' @export
-plot_psd <- function(psd, xlim = 30) {
+plot_psd <- function(psd, xlim = 250) {
     tall_format <- reshape2::melt(psd, id.vars = "Fqc")
     p <- ggplot2::ggplot(tall_format, ggplot2::aes(Fqc, value, col = variable)) +
         ggplot2::geom_line() +
@@ -125,7 +104,7 @@ plot_psd <- function(psd, xlim = 30) {
 #' @return A plotly figure.
 #'
 #' @export
-iplot_psd <- function(psd) {
+iplot_psd <- function(psd, xlim = 250) {
     psd <- reshape2::melt(psd, id.vars = "Fqc")
     fig <- plotly::plot_ly(
         psd,
@@ -134,6 +113,17 @@ iplot_psd <- function(psd) {
     ) %>%
         plotly::add_trace(
             x = ~Fqc, y = ~value, color = ~variable
+        ) %>%
+        layout(
+            xaxis = list(
+                title = "Frequency in Hz",
+                zeroline = F,
+                range = c(0, xlim)
+            ),
+            yaxis = list(
+                title = "log10 Spectrum",
+                zeroline = F
+            )
         )
     return(fig)
 }

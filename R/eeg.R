@@ -213,7 +213,7 @@ methods::setMethod(
 #' @export
 vlow_pass <- function(vec, n, fs) {
     wpass <- n / (fs / 2) # Nyquist
-    but <- gsignal::butter(3, wpass, "low")
+    but <- gsignal::butter(5, wpass, "low", output = "Sos")
     low_pass <- gsignal::filter(but, unlist(vec))
     return(low_pass)
 }
@@ -225,7 +225,7 @@ vlow_pass <- function(vec, n, fs) {
 #' @export
 vhigh_pass <- function(vec, n, fs) {
     wpass <- n / (fs / 2) # Nyquist
-    but <- gsignal::butter(3, wpass, "high")
+    but <- gsignal::butter(5, wpass, "high", output = "Sos")
     high_pass <- gsignal::filter(but, unlist(vec))
     return(high_pass)
 }
@@ -238,7 +238,7 @@ vhigh_pass <- function(vec, n, fs) {
 vbandpass <- function(vec, l, h, fs) {
     fpass <- c(l, h)
     wpass <- fpass / (fs / 2) # Nyquist
-    but <- gsignal::butter(3, wpass, "pass")
+    but <- gsignal::butter(5, wpass, "pass", output = "Sos")
     pass <- gsignal::filter(but, unlist(vec))
     return(pass)
 }
