@@ -2,7 +2,7 @@
 #' @export
 setGeneric(
     "spectogram",
-    function(object, channel, hcolors = 10) standardGeneric("spectogram")
+    function(object, channel, maxFreq = 30, freq = 4) standardGeneric("spectogram")
 )
 
 #' @export
@@ -23,13 +23,12 @@ setGeneric(
 setMethod(
     "spectogram",
     "eeg",
-    function(object, channel, hcolors = 10) {
+    function(object, channel, maxFreq = 30, freq = 4) {
         fs <- get_sampling_frequency(object)
-        x <- gsignal::specgram(unlist(object@data[channel + 1]), fs = fs)
-        p <- plot(x, col = grDevices::heat.colors(hcolors))
-        return(p)
+        rsleep::spectrogram(unlist(object@data[-1][channel]), sRate = fs, maxFreq = maxFreq, freq = freq)
     }
 )
+
 #' Given an eeg object and a channel's column index,
 #' compute the power spectrum density of  the channel
 #' using Welch's method.
