@@ -5,7 +5,7 @@
 \title{Given an PSD data frame as returned by the psd(eeg, ...) function,
 create an interactive plot of the spectrum of all channels.}
 \usage{
-iplot_psd(psd)
+iplot_psd(psd, xlim = 250)
 }
 \arguments{
 \item{object}{An data frame as returned by the psd(eeg, ...) function.}

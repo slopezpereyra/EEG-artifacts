@@ -6,7 +6,7 @@
 compute the power spectrum density of  the channel
 using Welch's method.}
 \usage{
-\S4method{psd_chan}{eeg}(object, channel, epoch = 30)
+\S4method{psd_chan}{eeg}(object, channel)
 }
 \arguments{
 \item{object}{An eeg object.}

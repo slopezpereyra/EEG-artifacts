@@ -5,7 +5,7 @@
 \title{Given an PSD data frame as returned by the psd(eeg, ...) function,
 plot the spectrum of all channels.}
 \usage{
-plot_psd(psd, xlim = 30)
+plot_psd(psd, xlim = 250)
 }
 \arguments{
 \item{object}{An data frame as returned by the psd(eeg, ...) function.}

@@ -2,9 +2,10 @@
 % Please edit documentation in R/ps.R
 \name{spectrogram,eeg-method}
 \alias{spectrogram,eeg-method}
-\title{Produces the spectrogram of an EEG object.}
+\title{Produces the spectrogram of an EEG object.
+Merele a wrapper for rsleep's spectrogram}
 \usage{
-\S4method{spectrogram}{eeg}(object, channel, hcolors = 10)
+\S4method{spectrogram}{eeg}(object, channel, maxFreq = 30, freq = 4)
 }
 \arguments{
 \item{object}{The EEG object to be analyzed.}
@@ -13,4 +14,5 @@
 }
 \description{
 Produces the spectrogram of an EEG object.
+Merele a wrapper for rsleep's spectrogram
 }

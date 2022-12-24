@@ -3,19 +3,19 @@
 \name{high_pass,eeg-method}
 \alias{high_pass,eeg-method}
 \title{Given an eeg object and a numeric frequency n,
-applies high pass Butterworth filter.}
+applies a low-pass Butterworth filter.}
 \usage{
 \S4method{high_pass}{eeg}(object, n)
 }
 \arguments{
 \item{object}{An eeg object.}
 
-\item{n}{Filter frequency in Hz.}
+\item{n}{Filter frequency in Hz}
 }
 \value{
 A new filtered EEG object
 }
 \description{
 Given an eeg object and a numeric frequency n,
-applies high pass Butterworth filter.
+applies a low-pass Butterworth filter.
 }

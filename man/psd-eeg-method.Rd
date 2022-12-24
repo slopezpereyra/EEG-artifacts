@@ -5,7 +5,7 @@
 \title{Given an eeg object, compute the average power spectrum density
 of each channel across epochs.}
 \usage{
-\S4method{psd}{eeg}(object, epoch = 30)
+\S4method{psd}{eeg}(object)
 }
 \arguments{
 \item{object}{An eeg object.}

@@ -2,15 +2,15 @@
 % Please edit documentation in R/eeg.R
 \name{drop_epochs,eeg-method}
 \alias{drop_epochs,eeg-method}
-\title{Given an eeg object and an epoch, removes
-all samples from that epoch from the EEG data.}
+\title{Given an eeg object and a list of epochs,
+removes all samples from the given epochs.}
 \usage{
 \S4method{drop_epochs}{eeg}(object, epochs, epoch = 30)
 }
 \arguments{
 \item{object}{An eeg object.}
 
-\item{epoch}{An natural number}
+\item{epochs}{A vector of natural integers.}
 }
 \value{
 An EEG object.

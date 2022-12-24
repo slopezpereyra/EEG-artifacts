@@ -20,8 +20,6 @@ and return results filtered by anomaly strength.}
 collective anomalies}
 
 \item{beta}{float Threshold of strength significance for point anomalies}
-
-\item{time}{bool Show process time?}
 }
 \value{
 An analysis object
