@@ -1,8 +1,8 @@
 
 #' @export
 setGeneric(
-    "spectogram",
-    function(object, channel, maxFreq = 30, freq = 4) standardGeneric("spectogram")
+    "spectrogram",
+    function(object, channel, maxFreq = 30, freq = 4) standardGeneric("spectrogram")
 )
 
 #' @export
@@ -17,11 +17,12 @@ setGeneric(
 )
 
 
-#' Produces the spectogram of an EEG object.
+#' Produces the spectrogram of an EEG object.
+#' Merele a wrapper for rsleep's spectrogram
 #' @param object The EEG object to be analyzed.
 #' @param channel The channel to be analyzed.
 setMethod(
-    "spectogram",
+    "spectrogram",
     "eeg",
     function(object, channel, maxFreq = 30, freq = 4) {
         fs <- get_sampling_frequency(object)

@@ -34,7 +34,6 @@ methods::setGeneric(
 #' @param alpha float Threshold of strength significance for
 #' collective anomalies
 #' @param beta float Threshold of strength significance for point anomalies
-#' @param time bool Show process time?
 #' @return An analysis object
 #' @export
 #'

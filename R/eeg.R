@@ -470,11 +470,12 @@ methods::setMethod(
 #' a list of subepochs, removes epoch-subepoch
 #' pairs from the eeg data.
 #'
-#' Notice that elements in the epoch and subepoch
-#' lists are understood to represent an
-#' elementwise association. This means if this lists
-#' are (e_1, ..., e_n) and (s_1, ..., s_n) then
-#' epoch/subepochj pairs (e_i, s_i) are removed.
+#' Note that elements in the epoch and subepoch
+#' lists are assumed to have an element-wise
+#' association. This means that, if this lists
+#' are (e_1, ..., e_n) and (s_1, ..., s_n), then
+#' epoch/subepoch pairs (e_i, s_i) are removed
+#' for i in [1, n].
 #'
 #' @param object An eeg object.
 #' @param epoch An natural number
@@ -499,7 +500,6 @@ methods::setMethod(
 #' Given an eeg object and an analysis object,
 #' returns an artifact-rejected version of the
 #' eeg.
-#'
 #'
 #' @param object An eeg object.
 #' @param analysis An analysis object

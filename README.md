@@ -131,7 +131,7 @@ iplot_psd(sd).
 
 ## Example artifact detection
 
-We will perform artifact detection and rejection over the first $10$ minutes of our record. Afterwards, we will plot the spectograms of both the raw and the artifact rejected EEGs. Notice that, explanatory comments aside, artifact rejection is conducted in only three lines.
+We will perform artifact detection and rejection over the first $10$ minutes of our record. Afterwards, we will plot the spectrograms of both the raw and the artifact rejected EEGs. Notice that, explanatory comments aside, artifact rejection is conducted in only three lines.
 
 ```
 raw_eeg <- subset_eeg(eeg, 0, 600)
@@ -151,10 +151,10 @@ epoch_data <- extract_epochs(artifact_analysis)
 clean_eeg <- drop_epochs(raw_eeg, epoch_data$Epoch)
 
 
-# Compute and plot the spectograms
+# Compute and plot the spectrograms
 
-spectogram(raw_eeg, 1) # First channel of the raw_eeg.
-spectogram(clean_eeg, 1) # First channel of the artifact rejected EEG.
+spectrogram(raw_eeg, 1) # First channel of the raw_eeg.
+spectrogram(clean_eeg, 1) # First channel of the artifact rejected EEG.
 
 ```
 
