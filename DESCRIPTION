@@ -9,7 +9,7 @@ Depends:
     tidyverse,
     ggplot2,
     lubridate,
-    signal,
+    gsignal,
     cowplot,
     anomaly,
     rsleep,
