@@ -13,6 +13,12 @@
 inst/
 R/zzz.R
 
+# Ignore RDS files
+.rds
+
+# Ignore HTMLs
+.html
+
 # Ignore data
 data/
 
