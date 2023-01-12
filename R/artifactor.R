@@ -82,6 +82,8 @@ methods::setMethod(
     "artf_stepwise",
     "eeg",
     function(eeg, step_size = 30, alpha = 8) {
+        print("Starting epoch-by-epoch artifact analysis. This make take a 
+              couple of minutes...")
         # Set epochs for grouping
         t <- set_epochs(eeg@data, epoch = step_size) %>% head(-1)
         mps <- get_sampling_frequency(eeg) * step_size # measures per step

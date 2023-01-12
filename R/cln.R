@@ -41,6 +41,7 @@ set_anom_epoch <- function(anoms) {
 #' @param data The data where anomalies were detected.
 #' @return A data frame
 set_timevars <- function(anoms, data) {
+    # Safety measure
     if (nrow(anoms) == 0) {
         return(anoms)
     }

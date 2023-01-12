@@ -119,6 +119,14 @@ setMethod(
 
 
 
+#' Given an analysis object and an EEG channel, returns a data frame
+#' whose format is idoneous for plotting the analysis results.
+#' Such format consists of the EEG Time measure (x axis), the raw
+#' EEG data of the chanel and a column that is filled with NaN except
+#' at each time instance where any type of anomaly was found.
+#' @param object An Analysis object.
+#' @param chan An integer that points to the EEG channel.
+#' @return A data frame
 #' @export
 setMethod(
     "set_plot_data",
@@ -138,13 +146,17 @@ setMethod(
     }
 )
 
+#' Plots analysis results for a specific channel.
+#' @param object An Analysis object.
+#' @param chan An integer that points to the EEG channel.
+#' @param size (optional) The size of the red dots that signal an anomaly.
+#' @return A data frame
 #' @export
 setMethod(
     "plot_analysis_channel",
     "analysis",
     function(object, chan, size = 0.2) {
         df <- set_plot_data(object, chan)
-
         eeg <- plot_channel(object@eeg, channel = chan)
         p <- eeg +
             ggplot2::geom_point(
@@ -158,7 +170,7 @@ setMethod(
 
 #' Plots all channels with any kind of anomalies.
 #'
-#' @param object An Analysis object.
+#' @param x An Analysis object.
 #' @return A plot_grid object.
 #' @export
 setMethod(
@@ -176,9 +188,8 @@ setMethod(
 )
 
 
-#' Normalizes point and collective anomalies' strengths
-#' given a normalizing function f.
-#'
+#' Normalizes the strengths of point and collective anomalies
+#' given a normalizing function f. 
 #'
 #' @return An analysis object.
 #' @export
@@ -224,8 +235,8 @@ setMethod(
 #'
 #' @param object An analysis object
 #' @param x The strength threshold
-#' @param f A function used to standardize strengths (otherwise collective and point
-#' anomalies are incomparable). Defaults to min-max normalization.
+#' @param f A function used to standardize strengths (otherwise collective
+#' and point anomalies are incomparable). Defaults to min-max normalization.
 #'
 #' @return An analysis object.
 #' @export

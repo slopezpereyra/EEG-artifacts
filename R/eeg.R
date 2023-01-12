@@ -1,3 +1,5 @@
+#' Scripts on this file are devoted to the EEG class and its functions.
+
 #' EEG class.
 #' @slot data A data frame containing EEG records
 #' @slot signals A data frame containing signal information (may be empty).
