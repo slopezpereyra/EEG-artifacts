@@ -102,10 +102,11 @@ methods::setGeneric(
     function(object, analysis) standardGeneric("artf_reject")
 )
 
-#' Read a .csv data file containing EEG data and an optionall
-#'
+#' Reads a .csv data file containing EEG data and an optional
 #' signals file and return an eeg object. If the signals file is provided,
-#'  channel names are appropriately set.
+#' channel names are appropriately set.
+#' If no signals file is provided, the method call is equivalent to
+#' to simply using readr::read_csv(data_file)
 #'
 #' @param data_file .csv file containing eeg data.
 #' @param signals_file .csv file containing signal information
@@ -153,12 +154,8 @@ methods::setMethod(
 
 
 
-#' Given an eeg object and an integer n,
-#' subset the EEG's data by keeping only one every
-#' n values and return a new EEG with the subsetted data.
-#'
-#' Logically, the new EEG will have a length of 1/n
-#' the length of the subsetted EEG.
+#' Return a new EEG object containing only one every 
+#' n samples from the input EEG.
 #'
 #' @param object An eeg object.
 #' @param n An integer.
@@ -173,8 +170,9 @@ methods::setMethod(
         return(new("eeg", data = df, signals = object@signals))
     }
 )
-#' Returns new eeg object whose data is a subset of given eeg
-#' on the given epoch.
+
+#' Returns a new EEG object made up of only the specified epoch 
+#' of the input EEG.
 #'
 #' This function wraps a specific call of subset_eeg.
 #'
@@ -193,7 +191,7 @@ methods::setMethod(
 )
 
 
-#' Returns sampling frequency of the EEG object
+#' Returns the sampling frequency of the EEG object.
 #'
 #' @param object An eeg object.
 #'
@@ -245,8 +243,8 @@ vbandpass <- function(vec, l, h, fs) {
     return(pass)
 }
 
-#' Given an eeg object and a numeric frequency n,
-#' applies a low-pass Butterworth filter.
+#' Given an EEG object and a numeric frequency n,
+#' applies a low-pass Butterworth filter to all channels.
 #'
 #' @param object An eeg object.
 #' @param n Filter frequency in Hz
@@ -271,8 +269,8 @@ methods::setMethod(
 )
 
 
-#' Given an eeg object and a numeric frequency n,
-#' applies a low-pass Butterworth filter.
+#' Given an EEG object and a numeric frequency n,
+#' applies a low-pass Butterworth filter to all channels.
 #'
 #' @param object An eeg object.
 #' @param n Filter frequency in Hz
@@ -298,7 +296,7 @@ methods::setMethod(
 
 
 #' Given an eeg object and a numeric frequency n,
-#' applies a bandpass filter.
+#' applies a bandpass filter to all channels.
 #'
 #' @param object An eeg object.
 #' @param l lower bound in Hz
@@ -324,7 +322,7 @@ methods::setMethod(
 )
 
 
-#' Given an eeg object and a channel integer n,
+#' Given an EEG object and a channel integer n,
 #' plots EEG record of the nth channel.
 #'
 #' @param object An eeg object.
@@ -354,7 +352,7 @@ methods::setMethod(
     }
 )
 
-#' Given an eeg object, plot all the EEG channels
+#' Given an EEG object, plot all the EEG channels
 #' in a vertical single-column layout.
 #'
 #' @param object An eeg object.
@@ -375,10 +373,8 @@ methods::setMethod(
     }
 )
 
-#' Given an eeg object and an epoch, removes
-#' all samples from that epoch from the EEG data.
-#'
-#' Notice that the extremes of the epoch are kept.
+#' Given an eeg object and an epoch, returns a new EEG object with said
+#' epoch removed. For practical reasons, the extremes of the epoch are kept.
 #'
 #' @param object An eeg object.
 #' @param epoch An natural number
@@ -395,7 +391,10 @@ methods::setMethod(
     }
 )
 
-#' Given an EEG returns its interactive visualization.
+#' Given an EEG, return its interactive visualization. This method should not
+#' be called on very large EEG objects (e.g., above an hour) without
+#' previous resampling. Interactive visualizations are computationally
+#' expensive.
 #'
 #' @param object An eeg object.
 #' @return A plotly figure.
@@ -449,8 +448,8 @@ set_epochs <- function(df, epoch = 30, subepochs = FALSE) {
     return(df)
 }
 
-#' Given an eeg object and a list of epochs,
-#' removes all samples from the given epochs.
+#' Given an eeg object and a list of epochs, return a new EEG object 
+#' with the said epochs removed.
 #'
 #' Notice that the extremes of the epoch are kept.
 #'
@@ -471,10 +470,9 @@ methods::setMethod(
 #' Given an eeg object, a list of epochs and
 #' a list of subepochs, removes epoch-subepoch
 #' pairs from the eeg data.
-#'
 #' Note that elements in the epoch and subepoch
 #' lists are assumed to have an element-wise
-#' association. This means that, if this lists
+#' association. This means that, if the lists
 #' are (e_1, ..., e_n) and (s_1, ..., s_n), then
 #' epoch/subepoch pairs (e_i, s_i) are removed
 #' for i in [1, n].

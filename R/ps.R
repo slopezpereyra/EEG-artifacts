@@ -18,7 +18,7 @@ setGeneric(
 
 
 #' Produces the spectrogram of an EEG object.
-#' Merele a wrapper for rsleep's spectrogram
+#'
 #' @param object The EEG object to be analyzed.
 #' @param channel The channel to be analyzed.
 setMethod(
@@ -55,12 +55,11 @@ setMethod(
     }
 )
 
-#' Given an eeg object, compute the average power spectrum density
-#' of each channel across epochs.
+#' Given an eeg object, compute the PSD of all channels using Welch's method.
 #'
 #' @param object An eeg object.
 #' @return A data frame with the spectrum density for every frequency
-#' for every channel in the  EEG record.
+#' for every channel in the EEG record.
 #'
 #' @export
 setMethod(
@@ -97,7 +96,7 @@ plot_psd <- function(psd, xlim = 250) {
 }
 
 
-#' Given an PSD data frame as returned by the psd(eeg, ...) function,
+#' Given a PSD data frame as returned by the psd(eeg, ...) function,
 #' create an interactive plot of the spectrum of all channels.
 #'
 #' @param object An data frame as returned by the psd(eeg, ...) function.

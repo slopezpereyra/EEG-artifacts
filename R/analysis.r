@@ -73,6 +73,7 @@ methods::setGeneric("extract_epochs", function(object) standardGeneric("extract_
 
 #' Show method for the EEG class that calls View on the canoms panoms
 #' and eeg slots.
+#' 
 #' @param object An Analysis object.
 #' @export
 setMethod(
@@ -86,7 +87,7 @@ setMethod(
 )
 
 #' Check if either canoms or panoms are non-empty data frames.
-#' @param object An Analysis object.
+#' @param object An analysis object.
 #'
 #' @return bool
 #' @export
@@ -100,7 +101,7 @@ setMethod(
 
 
 #' Getter function retrieving all EEG channels containing
-#' anomalies in the Analysis object.
+#' anomalies in the analysis object.
 #'
 #' @param object An Analysis object.
 #' @return A vector containing all anomalous channels in the analysis.
@@ -124,6 +125,9 @@ setMethod(
 #' Such format consists of the EEG Time measure (x axis), the raw
 #' EEG data of the chanel and a column that is filled with NaN except
 #' at each time instance where any type of anomaly was found.
+#' This method is not intended for isolated calls, but is implicitely used
+#' in other plotting methods.
+#'
 #' @param object An Analysis object.
 #' @param chan An integer that points to the EEG channel.
 #' @return A data frame
@@ -147,6 +151,7 @@ setMethod(
 )
 
 #' Plots analysis results for a specific channel.
+#'
 #' @param object An Analysis object.
 #' @param chan An integer that points to the EEG channel.
 #' @param size (optional) The size of the red dots that signal an anomaly.
@@ -205,7 +210,7 @@ setMethod(
     }
 )
 
-#' Merges two analysis into one
+#' Merges two analysis into one.
 #'
 #' @param object An analysis object
 #' @param an The analysis object being merged into the first
@@ -231,11 +236,11 @@ setMethod(
 )
 
 #' Filters an analysis object so as to keep only those
-#' anomalies whose strength is greater than x.
+#' anomalies whose normalized strength is greater than x.
 #'
 #' @param object An analysis object
 #' @param x The strength threshold
-#' @param f A function used to standardize strengths (otherwise collective
+#' @param f A function used to normalize strengths (otherwise collective
 #' and point anomalies are incomparable). Defaults to min-max normalization.
 #'
 #' @return An analysis object.
@@ -256,8 +261,10 @@ setMethod(
     }
 )
 
-#' @param object An analysis object.
+#' Given an analysis objects, returns a data frame with the epoch-subepoch pairs
+#' found to contain anomalies, and their respective average strength.
 #'
+#' @param object An analysis object.
 #' @return A data frame containing epoch-subepoch pairs
 #' found to contain artifacts as well as the average
 #' strength of the artifacts for each subepoch.

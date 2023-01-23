@@ -136,26 +136,20 @@ We will perform artifact detection and rejection over the first $10$ minutes of 
 ```
 raw_eeg <- subset_eeg(eeg, 0, 600)
 
-# 1. Analyze the EEG for artifacts in segments of 120 seconds (2 minutes), 
-# filtering for anomalies of strength greater than 0.4.
+# 1. Perform artifact detection. Notice that after artifact detection we are 
+# filtering the analysis results so as to preserve only those anomalies with
+# a normalized strength greather than 0.4.
 
-artifact_analysis <- raw_eeg %>% artf_stepwise(step_size = 120) %>% sfilter(0.4)
+analysis <- raw_eeg %>% artf_stepwise(step_size = 120) %>% sfilter(0.4)
 
-# 2. Extract the epoch data of the analysis; e.g., which epoch-subepoch pairs
-# were contaminated? 
+#2. Perform artifact rejection. This creates a new EEG that is a copy of the 
+# original one, but with subepochs containing anomalies removed.
+clean_eeg <- artf_reject(raw_eeg, analysis)
 
-epoch_data <- extract_epochs(artifact_analysis)
+# Plot the spectrograms
 
-# 3. Drop contaminated epochs from the raw EEG, save result as new EEG.
-
-clean_eeg <- drop_epochs(raw_eeg, epoch_data$Epoch)
-
-
-# Compute and plot the spectrograms
-
-spectrogram(raw_eeg, 1) # First channel of the raw_eeg.
 spectrogram(clean_eeg, 1) # First channel of the artifact rejected EEG.
-
+spectrogram(raw_eeg, 1) # First channel of the raw_eeg.
 ```
 
 ![](https://i.ibb.co/55PZP0R/comparison.png)
