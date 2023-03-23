@@ -21,7 +21,19 @@ A scientific package for computational EEG analysis.
 ### Installation and import
 
 
-```r devtools::install_github("slopezpereyra/EEG-toolkit") library(eegtk) ```
+```r 
+devtools::install_github("slopezpereyra/EEG-toolkit") 
+library(eegtk) 
+```
+
+If R complains of not having an up-do-date version of Rtools, you may try to
+use the forcing install option.
+
+```r 
+devtools::install_github("slopezpereyra/EEG-toolkit", force=TRUE) 
+library(eegtk) 
+```
+
 ### Loading EEG data
 
 To load EEG data, we use the `load_eeg(data_file, ...)` function. This function
@@ -29,7 +41,9 @@ takes a data file (with an optional signals file) as arguments.
 
 For example, after transforming a `test.edf` EEG record to `.csv` format, we run
 
-```r eeg <- load_eeg("test_data.txt", "test_signals.txt") %>% na.omit() ```
+```r 
+eeg <- load_eeg("test_data.txt", "test_signals.txt") %>% na.omit() 
+```
 
 `load_eeg` returns an `eeg` S4 object containing the `@data` and `@signals`
 atrributes, the latter being an empty data frame if no signals file was
@@ -41,8 +55,12 @@ We can produce static or interactive plots to get a visual sense of our record.
 For example, let's take a peek at the thirtiest epoch in our newly created `eeg`
 object. 
 
-``` epoch <- get_epoch(eeg, 30) plot(epoch) ``` ![enter image description
-here](https://i.ibb.co/0X4GG8T/Screenshot-from-2022-12-05-13-12-17.png)
+```r 
+epoch <- get_epoch(eeg, 30)
+plot(epoch) 
+``` 
+
+![enter image description here](https://i.ibb.co/0X4GG8T/Screenshot-from-2022-12-05-13-12-17.png)
 
 We could have also produced an interactive plot to inspect our EEG record, or a
 portion of it, live. For example,
@@ -70,10 +88,16 @@ every $n$ observations, producing a lower resolution version of the record. This
 can help accelerate different types of analysis, such as artifact detection and
 power spectrum analysis, as well as static and interactive plotting.
  
-### Filtering Low-pass, high-pass and bandpass filters are available via the
-`low_pass, high_pass` and `bandpass` functions. For example, ```r minute <-
-subset_eeg(eeg, 60, 120) # Second minute of record fminute <- low_pass(fminute,
-20) # Apply 20Hz filter ```
+### Filtering 
+
+Low-pass, high-pass and bandpass filters are available via the `low_pass,
+high_pass` and `bandpass` functions. For example, 
+
+
+```r 
+minute <- subset_eeg(eeg, 60, 120) # Second minute of record 
+fminute <- low_pass(minute, 20) # Apply 20Hz filter 
+```
  
 defines two `eeg` objects containing the second minute of record, the latter
 with a low-pass filter. Visually, they differ as shown below.
@@ -105,7 +129,10 @@ An `analysis` object can be plotted to obtain a visual representation of the
 anomalies found. For example, the thirstiest epoch contains a few unusual
 spikes:
 
-``` an <- artf(epoch) # Remember epoch <- get_epoch(eeg, 30) plot(an) ```
+``` 
+an <- artf(epoch) # Remember epoch <- get_epoch(eeg, 30) 
+plot(an) 
+```
 
 ![enter image description
 here](https://i.ibb.co/BjL6fDR/Screenshot-from-2022-12-05-13-18-15.png)
@@ -117,8 +144,10 @@ It should be noted that anomalies have different strengths. We can easily filter
 an analysis object so as to keep only anomalies stronger than a certain
 threshold value. For example,
 
-``` filtered <- sfilter(an, 0.1) # After min-max normalization, # keep only
-anomalies with strength >= 0.1 ```
+``` 
+filtered <- sfilter(an, 0.1)    # After min-max normalization, 
+                                # keep only anomalies with strength >= 0.1 
+```
 
 ![enter image description
 here](https://i.ibb.co/djz0v74/Screenshot-from-2022-12-05-13-21-10.png)
@@ -130,8 +159,11 @@ It is straightforward to estimate the power spectral density of the EEG signals
 using the package. For the sake of showcasing, we will only show the spectrum of
 the first 1200 minutes of record.
 
-``` s <- subset_eeg(eeg, 0, 1200) sd <- psd(s) # Estimate the spectral density
-iplot_psd(sd). ```
+```r
+s <- subset_eeg(eeg, 0, 1200) 
+sd <- psd(s) # Estimate the spectral density.
+iplot_psd(sd)
+```
 
 ![](https://i.ibb.co/F5pD0Hn/PSD.png)
 
@@ -144,24 +176,26 @@ frequencies up to 40 Hz.)
 We will perform artifact detection and rejection over the first $10$ minutes of
 our record. Afterwards, we will plot the spectrograms of both the raw and the
 artifact rejected EEGs. Notice that, explanatory comments aside, artifact
-rejection is conducted in only three lines.
+rejection is conducted in only two lines.
 
-``` raw_eeg <- subset_eeg(eeg, 0, 600)
+```r
+raw_eeg <- subset_eeg(eeg, 0, 600)
 
-# 1. Perform artifact detection. Notice that after artifact detection we are #
-filtering the analysis results so as to preserve only those anomalies with # a
-normalized strength greather than 0.4.
+# 1. Perform artifact detection. Notice that after artifact detection we are 
+# filtering the analysis results so as to preserve only those anomalies with 
+# a normalized strength greather than 0.4.
 
 analysis <- raw_eeg %>% artf_stepwise(step_size = 120) %>% sfilter(0.4)
 
-#2. Perform artifact rejection. This creates a new EEG that is a copy of the #
-original one, but with subepochs containing anomalies removed. clean_eeg <-
-artf_reject(raw_eeg, analysis)
+#2. Perform artifact rejection. This creates a new EEG that is a copy of the 
+# original one, except subepochs containing anomalies were removed. 
+clean_eeg <- artf_reject(raw_eeg, analysis)
 
-# Plot the spectrograms
+# Plot the spectrograms if you wish to compare
 
 spectrogram(clean_eeg, 1) # First channel of the artifact rejected EEG.
-spectrogram(raw_eeg, 1) # First channel of the raw_eeg. ```
+spectrogram(raw_eeg, 1) # First channel of the raw_eeg. 
+```
 
 ![](https://i.ibb.co/55PZP0R/comparison.png)
 
