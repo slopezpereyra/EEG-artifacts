@@ -16,3 +16,11 @@ Depends:
     stringr,
     plotly
 RoxygenNote: 7.2.3
+Collate: 
+    'eeg.R'
+    'analysis.r'
+    'artifactor.R'
+    'cln.R'
+    'norm_functions.R'
+    'ps.R'
+    'tests.R'

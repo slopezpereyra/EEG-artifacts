@@ -39,7 +39,6 @@ setMethod(
 #'
 #' @return An data frame containing the power density
 #' for every frequency composing the given channel's signal.
-#'
 #' @export
 setMethod(
     "psd_chan",

@@ -11,8 +11,7 @@
 setClass("analysis",
     slots = list(
         canoms = "data.frame",
-        panoms = "data.frame",
-        eeg = "eeg"
+        panoms = "data.frame"
     )
 )
 
@@ -33,19 +32,19 @@ setGeneric(
 #' @export
 setGeneric(
     "set_plot_data",
-    function(object, chan) standardGeneric("set_plot_data")
+    function(object, chan, data) standardGeneric("set_plot_data")
 )
 
 #' @export
 setGeneric(
     "plot_analysis_channel",
-    function(object, chan, size = 0.2) standardGeneric("plot_analysis_channel")
+    function(object, chan, eeg, size = 0.2) standardGeneric("plot_analysis_channel")
 )
 
 #' @export
 setGeneric(
     "plot_analysis",
-    function(object, size = 0.2) standardGeneric("plot_analysis")
+    function(object, eeg, size = 0.2) standardGeneric("plot_analysis")
 )
 
 
@@ -61,11 +60,6 @@ setGeneric(
     function(object, x, f = minmax_normalization) standardGeneric("sfilter")
 )
 
-#' @export
-setGeneric(
-    "merge",
-    function(object, an) standardGeneric("merge")
-)
 
 #' @export
 methods::setGeneric("extract_epochs", function(object) standardGeneric("extract_epochs"))
@@ -82,7 +76,6 @@ setMethod(
     function(object) {
         View(object@canoms)
         View(object@panoms)
-        View(object@eeg@data)
     }
 )
 
@@ -130,19 +123,20 @@ setMethod(
 #'
 #' @param object An Analysis object.
 #' @param chan An integer that points to the EEG channel.
+#' @param data Original EEG data for this analysis
 #' @return A data frame
 #' @export
 setMethod(
     "set_plot_data",
     "analysis",
-    function(object, chan) {
+    function(object, chan, data) {
         canoms <- dplyr::filter(object@canoms, variate == chan)
         panoms <- dplyr::filter(object@panoms, variate == chan)
-        data <- object@eeg@data
         # Get all indexes between start and end of canoms
         locations <- mapply(function(x, y) x:y, canoms$start, canoms$end)
         # Unite with point anomalies
-        locations <- union(unlist(locations), unlist(panoms$location))
+        locations <- union(unlist(locations), unlist(panoms$location)) %>%
+                    as.integer()
         time_of_anomalies <- lubridate::as_datetime(unlist(data[locations, 1]))
         values <- unlist(data[locations, chan + 1])
         df <- tibble::tibble(A = time_of_anomalies, B = values)
@@ -160,9 +154,9 @@ setMethod(
 setMethod(
     "plot_analysis_channel",
     "analysis",
-    function(object, chan, size = 0.2) {
-        df <- set_plot_data(object, chan)
-        eeg <- plot_channel(object@eeg, channel = chan)
+    function(object, chan, eeg, size = 0.2) {
+        df <- set_plot_data(object, chan, eeg@data)
+        eeg <- plot_channel(eeg, channel = chan)
         p <- eeg +
             ggplot2::geom_point(
                 data = df, ggplot2::aes(A, B),
@@ -179,13 +173,13 @@ setMethod(
 #' @return A plot_grid object.
 #' @export
 setMethod(
-    "plot",
+    "plot_analysis",
     "analysis",
-    function(x) {
+    function(object, eeg, size = 0.2) {
         plots <- list()
-        channels <- get_anomalous_channels(x)
+        channels <- get_anomalous_channels(object)
         for (channel in channels) {
-            p <- plot_analysis_channel(x, channel, size = 0.2)
+            p <- plot_analysis_channel(object, channel, eeg, size)
             plots[[channel]] <- p
         }
         return(cowplot::plot_grid(plotlist = plots, align = "v", ncol = 1))
@@ -210,30 +204,6 @@ setMethod(
     }
 )
 
-#' Merges two analysis into one.
-#'
-#' @param object An analysis object
-#' @param an The analysis object being merged into the first
-#'
-#' @return An analysis object.
-#' @export
-setMethod(
-    "merge",
-    "analysis",
-    function(object, an) {
-        canoms <- dplyr::full_join(object@canoms, an@canoms)
-        panoms <- dplyr::full_join(object@panoms, an@panoms)
-
-        data <- dplyr::full_join(object@eeg@data, an@eeg@data)
-        eeg <- new("eeg", data = data)
-
-        return(new("analysis",
-            canoms = canoms,
-            panoms = panoms,
-            eeg = eeg
-        ))
-    }
-)
 
 #' Filters an analysis object so as to keep only those
 #' anomalies whose normalized strength is greater than x.
@@ -255,8 +225,7 @@ setMethod(
 
         return(new("analysis",
             canoms = canoms,
-            panoms = panoms,
-            eeg = object@eeg
+            panoms = panoms
         ))
     }
 )

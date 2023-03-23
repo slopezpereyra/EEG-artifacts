@@ -59,8 +59,7 @@ methods::setMethod(
             tibble::as_tibble()
         results <- new("analysis",
             canoms = canoms,
-            panoms = panoms,
-            eeg = eeg
+            panoms = panoms
         )
         end_time <- Sys.time()
         print(paste(
@@ -82,14 +81,13 @@ methods::setMethod(
     "artf_stepwise",
     "eeg",
     function(eeg, step_size = 30, alpha = 8) {
-        print("Starting epoch-by-epoch artifact analysis. This make take a 
-              couple of minutes...")
+        print("Starting epoch-by-epoch artifact analysis. This may take a couple of minutes...")
         # Set epochs for grouping
         t <- set_epochs(eeg@data, epoch = step_size) %>% head(-1)
         mps <- get_sampling_frequency(eeg) * step_size # measures per step
         grouped <- dplyr::group_by(t[-1], Epoch) %>%
             dplyr::group_map(~ anomaly::capa.mv(x = .x, type = "mean"))
-        canoms <- grouped %>% lapply(function(x) anomaly::collective_anomalies(x) %>% dplyr::filter(mean.change > 8))
+        canoms <- grouped %>% lapply(function(x) anomaly::collective_anomalies(x) %>% dplyr::filter(mean.change >= alpha))
         panoms <- grouped %>% lapply(function(x) anomaly::point_anomalies(x))
 
         canoms <- mapply(function(x, y) x %>% dplyr::mutate(start = start + mps * (y - 1), end = end + mps * (y - 1)),
@@ -106,7 +104,7 @@ methods::setMethod(
             dplyr::bind_rows() %>%
             set_timevars(eeg@data)
 
-        an <- new("analysis", canoms = canoms, panoms = panoms, eeg = eeg)
+        an <- new("analysis", canoms = canoms, panoms = panoms)
         return(an)
     }
 )
