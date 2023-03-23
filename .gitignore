@@ -8,6 +8,12 @@
 *.png
 *.txt
 *.edf
+.idea/
+78/
+*.rds
+old_python_ip/
+results_*
+work_notes.tex
 
 # Ignore Python code for the moment
 inst/
