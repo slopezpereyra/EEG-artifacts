@@ -3,7 +3,7 @@ Type: Package
 Title: EEG Tools
 Author: Santiago López Pereyra
 Description: General EEG features, from visualization to artifact detection and power spectrum analysis.
-Version: 0.0.1.0
+Version: 0.0.2.0
 Encoding: UTF-8
 Depends:
     tidyverse,

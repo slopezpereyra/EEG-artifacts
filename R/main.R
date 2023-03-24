@@ -86,7 +86,7 @@ EEG <- R6::R6Class("EEG", list(
         return(pass)
     },
 
-    #' Given a frequency n, applies a low-pass Butterworth 
+    #' Given a frequency n, applies a low-pass Butterworth
     #' filter to all channels.
     #' @param n Filter frequency in Hz
     low_pass = function(n) {
@@ -385,7 +385,7 @@ EEG <- R6::R6Class("EEG", list(
     #' found to contain artifacts as well as the average
     #' strength of the artifacts for each subepoch.
     #'
-    extract_epochs = function() {
+    get_contaminated_epochs = function() {
         l <- list(self$canoms, self$panoms)
         i <- which(lapply(l, nrow) == 0)
         # If both data frames have length 0
@@ -410,7 +410,7 @@ EEG <- R6::R6Class("EEG", list(
     #' @return An EEG object.
     #'
     artf_reject = function() {
-        epoch_data <- self$extract_epochs()
+        epoch_data <- self$get_contaminated_epochs()
         clone <- self$clone()
         clone$drop_subepochs(epoch_data$Epoch, epoch_data$Subepoch)
         clone$canoms <- clone$panoms <- tibble::tibble()
