@@ -57,16 +57,13 @@ methods::setMethod(
             dplyr::filter(strength >= beta) %>%
             set_timevars(data = eeg@data) %>%
             tibble::as_tibble()
-        results <- new("analysis",
-            canoms = canoms,
-            panoms = panoms
-        )
         end_time <- Sys.time()
         print(paste(
             "Analysis completed in ",
             (end_time - start_time), " seconds"
         ))
-        return(results)
+        eeg@canoms <- canoms
+        eeg@panoms <- panoms
     }
 )
 
@@ -82,6 +79,7 @@ methods::setMethod(
     "eeg",
     function(eeg, step_size = 30, alpha = 8) {
         print("Starting epoch-by-epoch artifact analysis. This may take a couple of minutes...")
+        start_time <- Sys.time()
         # Set epochs for grouping
         t <- set_epochs(eeg@data, epoch = step_size) %>% head(-1)
         mps <- get_sampling_frequency(eeg) * step_size # measures per step
@@ -103,8 +101,13 @@ methods::setMethod(
         ) %>%
             dplyr::bind_rows() %>%
             set_timevars(eeg@data)
-
-        an <- new("analysis", canoms = canoms, panoms = panoms)
-        return(an)
+        
+        end_time <- Sys.time()
+        print(paste(
+            "Analysis completed in ",
+            (end_time - start_time), " seconds"
+        ))
+        eeg@canoms <- canoms
+        eeg@panoms <- panoms
     }
 )

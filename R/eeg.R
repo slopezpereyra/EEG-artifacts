@@ -7,7 +7,9 @@
 setClass("eeg",
     slots = list(
         data = "data.frame",
-        signals = "data.frame"
+        signals = "data.frame",
+        canoms = "data.frame",
+        panoms = 'data.frame'
     )
 )
 
@@ -154,7 +156,7 @@ methods::setMethod(
 
 
 
-#' Return a new EEG object containing only one every 
+#' Return a new EEG object containing only one every
 #' n samples from the input EEG.
 #'
 #' @param object An eeg object.
@@ -171,7 +173,7 @@ methods::setMethod(
     }
 )
 
-#' Returns a new EEG object made up of only the specified epoch 
+#' Returns a new EEG object made up of only the specified epoch
 #' of the input EEG.
 #'
 #' This function wraps a specific call of subset_eeg.
@@ -195,7 +197,7 @@ methods::setMethod(
 #'
 #' @param object An eeg object.
 #'
-#' @return An number, the sampling frequency
+#' @return A number, the sampling frequency
 #' @export
 methods::setMethod(
     "get_sampling_frequency",
