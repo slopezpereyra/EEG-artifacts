@@ -17,10 +17,6 @@ Depends:
     plotly
 RoxygenNote: 7.2.3
 Collate: 
-    'eeg.R'
-    'analysis.r'
-    'artifactor.R'
+    'main.R'
     'cln.R'
-    'norm_functions.R'
-    'ps.R'
-    'tests.R'
+    'helper.R'
