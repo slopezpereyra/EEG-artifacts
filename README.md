@@ -46,11 +46,11 @@ directory, we call
 eeg <- EEG$new("/relative/path/eeg.csv")
 ```
 
-`load_eeg` returns an `eeg` R6 object containing the following attributes: 
+The function returns an `eeg` R6 object containing the following attributes: 
 
-- `$data` : The EEG data 
+- `$data` : The EEG data.
 - `$signals` : The channels of the EEG, if a signals file was provided on
-  initiialization. 
+  initialization. 
 
 - `$canoms` : Collective anomalies (artifacts) found in the EEG. If artifact
   detection was not yet performed, it defaults to an empty data frame.
