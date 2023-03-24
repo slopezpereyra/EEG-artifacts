@@ -256,8 +256,8 @@ EEG <- R6::R6Class("EEG", list(
             tibble::as_tibble()
         end_time <- Sys.time()
         print(paste(
-            "Analysis completed in ",
-            (end_time - start_time), " seconds"
+            "Analysis took ",
+            (end_time - start_time)
         ))
         self$canoms <- canoms
         self$panoms <- panoms
