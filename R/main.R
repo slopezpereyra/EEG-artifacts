@@ -1,4 +1,4 @@
-#' Class providing object with methods for communication with lightning-viz server
+#' Class providing object with methods for EEG analysis, visualization, and manipulation.
 #'
 #' @docType class
 #' @importFrom R6 R6Class
@@ -6,7 +6,7 @@
 #' @return Object of \code{\link{R6Class}} with methods for EEG analysis,
 #' visualization and manipulation. 
 #' @format \code{\link{R6Class}} object.
-#' @field data Stores de EEG data in a data frame format (tibble by default).
+#' @field data Stores the EEG data in a data frame format (tibble by default).
 #' @field signals Stores a data frame with information on the EEG signals, if a
 #' `signals` file was provided on initialization.
 #' @field canoms A data frame with all data pertaining to collective anomalies
@@ -18,14 +18,13 @@
 #' @field psd Power spectrum density data of this EEG. Empty by default and
 #' until PSD is computed on the EEG.
 #' @field fs Sampling frequency of the EEG.
-#'
 #' #' @section Methods:
 #' \describe{
-#'   \item{\code{subset_by_seconds(s, e)}}{Subsets the EEG from second s to
+#'   \item{\code{subset_by_seconds(s, e)}}Subsets the EEG from second s to
 #'   second e. Both \code{s} and \code{e} must be numeric values that exist in the `Time`
-#'   column of the EEG data. Modification is performed inplace.}
-#'   \item{\code{subset(s, e)}}{Subsets the EEG from epoch s to epoch e. The
-#'   interval is inclusive. Modification is performed inplace.}
+#'   column of the EEG data. Modification is performed inplace.
+#'   \item{\code{subset(s, e)}}Subsets the EEG from epoch s to epoch e. The
+#'   interval is inclusive. Modification is performed inplace.
 #'   \item{\code{resample(n)}}{Reduces the EEG data by removing on every
 #'   \code{n} samples. This is a (very) brute resampling method and should only
 #'   be used for the purpose of accelerating certain analyses, such as
@@ -72,7 +71,7 @@
 #'   \item{\code{compute_psd()}}{Computes the power spectrum of this EEG and
 #'   sotres it on the psd field.}
 #'   \item{\code{plot_psd(xlim = 250)}}{Plots the PSD of this EEG.}
-#'   \item{\code{iplot_psd(xlim)}}{Produces an interactive plot of the PSD.}
+#'   \item{\code{iplot_psd(xlim)}}{Produces an interactive plot of the PSD.}}
 EEG <- R6::R6Class("EEG", list(
     data = tibble::tibble(),
     signals = tibble::tibble(),
