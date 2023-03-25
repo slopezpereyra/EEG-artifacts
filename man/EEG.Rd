@@ -16,33 +16,14 @@ Class providing object with methods for EEG analysis, visualization, and manipul
 
 Class providing object with methods for EEG analysis, visualization, and manipulation.
 }
-\section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
+\section{Methods}{
+
 \describe{
-\item{\code{data}}{Stores the EEG data in a data frame format (tibble by default).}
-
-\item{\code{signals}}{Stores a data frame with information on the EEG signals, if a
-`signals` file was provided on initialization.}
-
-\item{\code{canoms}}{A data frame with all data pertaining to collective anomalies
-(artifacts) found on the EEG. Empty by default and until artifact analysis is
-performed.}
-
-\item{\code{panoms}}{A data frame with all data pertaining to point anomalies
-(artifacts) found on the EEG. Empty by default and until artifact analysis is
-performed.}
-
-\item{\code{psd}}{Power spectrum density data of this EEG. Empty by default and
-until PSD is computed on the EEG.}
-
-\item{\code{fs}}{Sampling frequency of the EEG.
-#' @section Methods:
-\describe{
-  \item{\code{subset_by_seconds(s, e)}}Subsets the EEG from second s to
+  \item{\code{subset_by_seconds(s, e)}}{Subsets the EEG from second s to
   second e. Both \code{s} and \code{e} must be numeric values that exist in the `Time`
-  column of the EEG data. Modification is performed inplace.
-  \item{\code{subset(s, e)}}Subsets the EEG from epoch s to epoch e. The
-  interval is inclusive. Modification is performed inplace.
+  column of the EEG data. Modification is performed inplace.}
+  \item{\code{subset(s, e)}}{Subsets the EEG from epoch s to epoch e. The
+  interval is inclusive. Modification is performed inplace.}
   \item{\code{resample(n)}}{Reduces the EEG data by removing on every
   \code{n} samples. This is a (very) brute resampling method and should only
   be used for the purpose of accelerating certain analyses, such as
@@ -90,17 +71,28 @@ until PSD is computed on the EEG.}
   sotres it on the psd field.}
   \item{\code{plot_psd(xlim = 250)}}{Plots the PSD of this EEG.}
   \item{\code{iplot_psd(xlim)}}{Produces an interactive plot of the PSD.}}
-Wrapper function for low-pass filtering
-a vector given a filtering frequency and
-a sampling frequency.
-Wrapper function for high-pass filtering
-a vector given a filtering frequency and
-a sampling frequency.
-Wrapper function for bandpass filtering
-a vector given filtering frequencies and
-a sampling frequency.
-Given a frequency n, applies a low-pass Butterworth
-filter to all channels.}
+}
+
+\section{Public fields}{
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{data}}{Stores the EEG data in a data frame format (tibble by default).}
+
+\item{\code{signals}}{Stores a data frame with information on the EEG signals, if a
+`signals` file was provided on initialization.}
+
+\item{\code{canoms}}{A data frame with all data pertaining to collective anomalies
+(artifacts) found on the EEG. Empty by default and until artifact analysis is
+performed.}
+
+\item{\code{panoms}}{A data frame with all data pertaining to point anomalies
+(artifacts) found on the EEG. Empty by default and until artifact analysis is
+performed.}
+
+\item{\code{psd}}{Power spectrum density data of this EEG. Empty by default and
+until PSD is computed on the EEG.}
+
+\item{\code{fs}}{Sampling frequency of the EEG.}
 }
 \if{html}{\out{</div>}}
 }
@@ -220,15 +212,6 @@ filter to all channels.}
 \if{html}{\out{<div class="r">}}\preformatted{EEG$low_pass(n)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{n}}{Filter frequency in Hz
-Given a numeric frequency n,
-applies a high-pass Butterworth filter to all channels.}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EEG-high_pass"></a>}}
@@ -238,18 +221,6 @@ applies a high-pass Butterworth filter to all channels.}
 \if{html}{\out{<div class="r">}}\preformatted{EEG$high_pass(n)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{n}}{Filter frequency in Hz
-
-Given a numeric frequency n,
-applies a bandpass filter to all channels.}
-
-\item{\code{object}}{An eeg object.}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EEG-bandpass"></a>}}
@@ -259,19 +230,6 @@ applies a bandpass filter to all channels.}
 \if{html}{\out{<div class="r">}}\preformatted{EEG$bandpass(l, h)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{l}}{lower bound in Hz}
-
-\item{\code{h}}{higher bound in Hz
-
-Given a integer n, plots EEG record of the nth channel.}
-
-\item{\code{object}}{An eeg object.}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EEG-plot_channel"></a>}}
@@ -281,18 +239,6 @@ Given a integer n, plots EEG record of the nth channel.}
 \if{html}{\out{<div class="r">}}\preformatted{EEG$plot_channel(channel)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{channel}}{An integer indicating index of channel to plot.
-
-Plot all the EEG channels in a vertical single-column layout.
-Plot an interactive plotly figure of all EEG channels.
-Given a list of epochs, remove those epochs from the EEG data.
-Note that the extremes of the epoch are kept.}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EEG-plot"></a>}}
@@ -320,21 +266,6 @@ Note that the extremes of the epoch are kept.}
 \if{html}{\out{<div class="r">}}\preformatted{EEG$drop_epochs(epochs, epoch = 30)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{epochs}}{A vector of natural integers.
-Given  a list of subepochs, removes epoch-subepoch                    
-pairs from the eeg data.
-
-Note that elements in the epoch and subepoch lists are assumed to have
- an element-wise association. This means that, if the lists
-are (e_1, ..., e_n) and (s_1, ..., s_n), then epoch/subepoch pairs
-                         (e_i, s_i)
-are removed, for i in [1, n].}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EEG-drop_subepochs"></a>}}
@@ -344,25 +275,6 @@ are removed, for i in [1, n].}
 \if{html}{\out{<div class="r">}}\preformatted{EEG$drop_subepochs(epochs, subepochs, epoch = 30)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{epochs}}{A list of integers.}
-
-\item{\code{subepochs}}{A list of integers.}
-
-\item{\code{epoch}}{An integer: how many seconds make up an epoch?
-
-Given an EEG channel, returns a data frame
-whose format is idoneous for plotting the analysis results.
-Such format consists of the EEG Time measure (x axis), the raw
-EEG data of the chanel and a column that is filled with NaN except
-at each time instance where any type of anomaly was found.
-This method is not intended for isolated calls, but is implicitely used
-in other plotting methods.}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EEG-artf"></a>}}
@@ -399,15 +311,6 @@ in other plotting methods.}
 \if{html}{\out{<div class="r">}}\preformatted{EEG$set_plot_data(chan)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{chan}}{An integer that points to the EEG channel.
-
-Plots analysis results for a specific channel.}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EEG-plot_channel_artifacts"></a>}}
@@ -417,17 +320,6 @@ Plots analysis results for a specific channel.}
 \if{html}{\out{<div class="r">}}\preformatted{EEG$plot_channel_artifacts(chan, size = 0.2)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{chan}}{An integer that points to the EEG channel.}
-
-\item{\code{size}}{(optional) The size of the red dots that signal an anomaly.
-
-Plots all channels with any kind of anomalies.}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EEG-plot_artifacts"></a>}}
@@ -437,16 +329,6 @@ Plots all channels with any kind of anomalies.}
 \if{html}{\out{<div class="r">}}\preformatted{EEG$plot_artifacts(size = 0.2)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{(optional)}}{size Size of the red dots that depict anomalies.
-
-Filters the EEG so as to keep only those
-anomalies whose normalized strength is greater than x.}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EEG-sfilter"></a>}}
@@ -456,21 +338,6 @@ anomalies whose normalized strength is greater than x.}
 \if{html}{\out{<div class="r">}}\preformatted{EEG$sfilter(x, f = minmax_normalization)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{x}}{The strength threshold}
-
-\item{\code{f}}{A function used to normalize strengths (otherwise collective
-and point anomalies are incomparable). Defaults to min-max normalization.
-
-Helper function
-
-Computes a data frame with the epoch-subepoch pairs
-found to contain anomalies, and their respective average strengths.}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EEG-get_contaminated_epochs"></a>}}
@@ -480,13 +347,6 @@ found to contain anomalies, and their respective average strengths.}
 \if{html}{\out{<div class="r">}}\preformatted{EEG$get_contaminated_epochs()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-A data frame containing epoch-subepoch pairs
-found to contain artifacts as well as the average
-strength of the artifacts for each subepoch.
-
-Returns an artifact-rejected copy of this EEG.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EEG-artf_reject"></a>}}
@@ -496,11 +356,6 @@ Returns an artifact-rejected copy of this EEG.
 \if{html}{\out{<div class="r">}}\preformatted{EEG$artf_reject()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-An EEG object.
-
-Plot the spectrum of all channels.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EEG-spectrogram"></a>}}
@@ -537,16 +392,6 @@ Plot the spectrum of all channels.
 \if{html}{\out{<div class="r">}}\preformatted{EEG$plot_psd(xlim = 250)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{(optional)}}{xlim An integer, positive bound for the x-axis.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A ggplot object.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EEG-iplot_psd"></a>}}
