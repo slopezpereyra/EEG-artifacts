@@ -3,7 +3,7 @@
 \docType{class}
 \name{EEG}
 \alias{EEG}
-\title{Class providing object with methods for communication with lightning-viz server}
+\title{Class providing object with methods for EEG analysis, visualization, and manipulation.}
 \format{
 \code{\link{R6Class}} object.
 }
@@ -12,14 +12,14 @@ Object of \code{\link{R6Class}} with methods for EEG analysis,
 visualization and manipulation.
 }
 \description{
-Class providing object with methods for communication with lightning-viz server
+Class providing object with methods for EEG analysis, visualization, and manipulation.
 
-Class providing object with methods for communication with lightning-viz server
+Class providing object with methods for EEG analysis, visualization, and manipulation.
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{data}}{Stores de EEG data in a data frame format (tibble by default).}
+\item{\code{data}}{Stores the EEG data in a data frame format (tibble by default).}
 
 \item{\code{signals}}{Stores a data frame with information on the EEG signals, if a
 `signals` file was provided on initialization.}
@@ -34,6 +34,73 @@ performed.}
 
 \item{\code{psd}}{Power spectrum density data of this EEG. Empty by default and
 until PSD is computed on the EEG.}
+
+\item{\code{fs}}{Sampling frequency of the EEG.
+#' @section Methods:
+\describe{
+  \item{\code{subset_by_seconds(s, e)}}Subsets the EEG from second s to
+  second e. Both \code{s} and \code{e} must be numeric values that exist in the `Time`
+  column of the EEG data. Modification is performed inplace.
+  \item{\code{subset(s, e)}}Subsets the EEG from epoch s to epoch e. The
+  interval is inclusive. Modification is performed inplace.
+  \item{\code{resample(n)}}{Reduces the EEG data by removing on every
+  \code{n} samples. This is a (very) brute resampling method and should only
+  be used for the purpose of accelerating certain analyses, such as
+  artifact detection.}
+  \item{\code{low_pass(n)}}{Applies a low-pass Butterworth filter with a
+  filter frequency \code{n} (in Hz).}
+  \item{\code{high_pass(n)}}{Applies a high-pass Butterworth filter with a
+  filter frequency \code{n} (in Hz).}
+  \item{\code{bandpass(l, h)}}{Applies a bandpass Butterworth filter with
+  filter frequencies \code{l} (lower bound) and \code{h} (upper bound) (in Hz).}
+  \item{\code{plot_channel(channel)}}{Plots the ith signal in data, where i =
+  \code{channel}}.
+  \item{\code{plot}}{Plots the EEG data.}
+  \item{\code{iplot}}{Draws an interactive plot of the EEG data.}
+  \item{\code{plot}}{Plots the EEG data.}
+  \item{\code{drop_epochs(epochs, epoch = 30)}}{Given a list `epochs` of
+  integer values, removes those epochs from the EEG data. The argument
+  `epoch` determins how many seconds are understood to comprise an epoch and
+  defaults to 30.}
+  \item{\code{drop_subepochs(epochs, subepochs, epoch = 30)}}{Given numeric
+  lists of \code{subepochs} and \code{epochs}, removes epoch/subepoch pairs from the
+  EEG data. Elements in both lists are assumed to have an element-wise
+  association, meaning that if \code{(e_1, ..., e_n), (s_1, ..., s_n)} are
+  both lists, then epoch/subepoch pairs \code{(e_i, s_i)} are removed. The
+  argument `epoch` is an integer determining how many seconds are understood
+  to comprise an epoch (defaults to 30).}
+  \item{\code{artf(alpha = 8, beta = 1)}}{Performs direct artifact detection
+  over the EEG data. \code{alpha, beta} are numeric significance thresholds
+  for collective and point anomalies respectively.}
+  \item{\code{artf_stepwise(step_size = 30, alpha=8)}}{Performs stepwise
+  artifact detection over the EEG data, by steps of \code{step_size} seconds.
+  \code{alpha} is the significance threshold for collective anomalies.}
+  \item{\code{get_contaminated_channels}}{Returns a vector with all EEG
+  channels found to contain artifacts.}
+  \item{\code{plot_artifacts(size = 0.2)}}{Plots EEG data with artifacts
+  represented by red points of a certain \code{size}.}
+  \item{\code{sfilter(x, f = minmax_normalization)}}{After normalizing
+  artifact strength with a normalization function \code{f}, filters out all
+  artifacts of strength lesser than \code{x}.}
+  \item{\code{artf_reject()}}{Returns an artifact rejected copy of this EEG.}
+  \item{\code{spectrogram(channel, max_freq = 30, freq = 4)}}{Plots the
+  spectrogram of a given \code{channel}. \code{freq} is the resolution of the
+  plot.}
+  \item{\code{compute_psd()}}{Computes the power spectrum of this EEG and
+  sotres it on the psd field.}
+  \item{\code{plot_psd(xlim = 250)}}{Plots the PSD of this EEG.}
+  \item{\code{iplot_psd(xlim)}}{Produces an interactive plot of the PSD.}}
+Wrapper function for low-pass filtering
+a vector given a filtering frequency and
+a sampling frequency.
+Wrapper function for high-pass filtering
+a vector given a filtering frequency and
+a sampling frequency.
+Wrapper function for bandpass filtering
+a vector given filtering frequencies and
+a sampling frequency.
+Given a frequency n, applies a low-pass Butterworth
+filter to all channels.}
 }
 \if{html}{\out{</div>}}
 }
