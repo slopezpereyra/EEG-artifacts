@@ -2,7 +2,7 @@ Package: eegtk
 Type: Package
 Title: EEG Tools
 Author: Santiago López Pereyra
-Description: General EEG features, from visualization to artifact detection and power spectrum analysis.
+Description: General EEG utilities. Visualization, artifact detection/rejection, PS estimation, and more.
 Version: 0.0.2.0
 Encoding: UTF-8
 Depends:
@@ -14,7 +14,8 @@ Depends:
     anomaly,
     rsleep,
     stringr,
-    plotly
+    plotly,
+    R6
 RoxygenNote: 7.2.3
 Collate: 
     'main.R'
