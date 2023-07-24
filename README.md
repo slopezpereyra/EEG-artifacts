@@ -58,6 +58,8 @@ The function returns an `eeg` R6 object containing the following attributes:
   detection was not yet performed, it defaults to an empty data frame.
 - `$psd` : The estimated power spectrum density of the EEG. If PSD computation
   was not yet performed, it defaults to an empty data frame.
+- `$spindles` : The spindles detected by any of the automated spindle detection
+  algorithms, it defaults to an empty data frame.
 - `$fs` : The sampling frequency $f_s$ of the EEG.
 
 Most methods of the EEG class perform inplace replacement. For example, take the
@@ -180,9 +182,75 @@ eeg$plot_artifacts()
 
 ![enter image description
 here](https://i.ibb.co/djz0v74/Screenshot-from-2022-12-05-13-21-10.png)
-  
 
-## Power spectrum analysis
+### Automated spindle detection
+
+The library contains implementations of three out of the four automated spindle
+detection algorithms discussed in [O'Reilly and Nielsen
+(2015)](https://doi.org/10.3389/fnhum.2015.00353). We give a brief overview of
+them here but refer to their original publications in case the reader is
+interested. 
+
+**RMS Algorithm** : The RMS algorithm [(Schimicek et al., 1994)](10.1177/155005949402500108) works by characterizing potential spindles
+as small signal windows with an abnormally high root mean square (RMS).
+Specifically, an EEG signal $\vec{x}$ is split into small, non-overlapping
+windows $\vec{x}_1, \ldots, \vec{x}_n$. The RMS of each window vector is
+computed and the resulting RMS values, $r_1, \ldots, r_n$, are understood to
+represent an RMS function $RMS(t)$. Whichever $r_i$ is above the $\lambda =
+0.95$ threshold percentile of $RMS(t)$ is marked as a spindle. 
+
+To perform  RMS spindle detection, simply call
+`eeg$spindle_detection_rms(channel, args...)`.
+
+**Sigma Index Algorithm** : The Sigma Index algorithm [(Huupponen et al.,
+2007)](https://pubmed.ncbi.nlm.nih.gov/17555950/) uses the amplitude spectrum to
+find spindles by characterizing abnormal values among the spindle frequency
+band. Per each $1$ second window of the EEG, $a.$ the
+maximum amplitude in the spindle frequency, which we call $S_{max}$, $b.$ the
+average amplitude in the low alpha and theta frequencies, which we call
+$\alpha_{mean}, \theta_{mean}$, and $c.$ the maximum alpha amplitude
+$\alpha_{max}$, are computed. The sigma index is defind to be 
+
+$$
+f(S_{max}, \alpha_{mean}, \beta_{mean}) = \begin{cases} 
+
+0 & \alpha_{max} > S_{max} \\ 
+\frac{2S_{max}}{\alpha_{mean} + \beta_{mean} } & otherwise
+
+\end{cases}
+$$
+
+High values correspond to a high probability of a spindle. The rejection
+threshold recommended in the original paper is $\lambda = 4.5$.
+
+To perform spindle detection with the *Sigma index* algorithm, simply call
+`eeg$spindle_detection(channel, method="sigma_index", args...)`
+
+**Relative Spindle Power Algorithm** : The Relative Spindle Power (RSP)
+algorithm [(Devuyst et al., 2011)](https://pubmed.ncbi.nlm.nih.gov/22254656/)
+also uses the amplitude spectrum to find spindles by characterizing abnormal values
+among the spindle frequency band. Its approach is more direct and parsimonious,
+however. For every $1$ second window, the amplitude spectrum $S(t)$ is computed, and
+the RSP is defined as
+
+$$
+
+RSP(t) = \frac{\int_{11}^{16} S(t, f) df}{\int_{0.5}^{40} S(t, f) df}
+
+$$
+
+This definition is more intelligible than the previous one, insofar as it
+represents the ratio of the total power in the spindle band over the total power
+over the whole delta-theta-alpha-beta frequency range.
+
+Higher values indicate higher probability of a spindle. The rejection threshold
+recommended in the original paper is $\lambda = 0.22$.
+
+To perform spindle detection with RSP, simply call
+`eeg$spindle_detection(channel, method="rsp", args...)`.
+
+
+### Power spectrum analysis
 
 It is straightforward to estimate the power spectral density of the EEG signals
 using the package. For the sake of showcasing, we will only show the spectrum of

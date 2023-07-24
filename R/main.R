@@ -4,7 +4,7 @@
 #' @importFrom R6 R6Class
 #' @export
 #' @return Object of \code{\link{R6Class}} with methods for EEG analysis,
-#' visualization and manipulation. 
+#' visualization and manipulation.
 #' @format \code{\link{R6Class}} object.
 #' @field data Stores the EEG data in a data frame format (tibble by default).
 #' @field signals Stores a data frame with information on the EEG signals, if a
@@ -78,6 +78,7 @@ EEG <- R6::R6Class("EEG", list(
     canoms = tibble::tibble(),
     panoms = tibble::tibble(),
     psd = tibble::tibble(),
+    spindles = tibble::tibble(),
     fs = 0,
 
     initialize = function(data_file, signals_file = NULL) {
@@ -284,36 +285,39 @@ EEG <- R6::R6Class("EEG", list(
         self$panoms <- panoms
     },
 
-    artf_stepwise = function(step_size = 30, alpha = 8) {
-        print("Starting epoch-by-epoch artifact analysis. This may take a couple of minutes...")
-        start_time <- Sys.time()
+    artf_stepwise = function(step_size = 30, alpha = 8, type = "mean") {
+        print("Starting analysis. This may take a couple of minutes...")
         # Set epochs for grouping
         t <- set_epochs(self$data, epoch = step_size) %>% head(-1)
         mps <- self$fs * step_size # measures per step
         grouped <- dplyr::group_by(t[-1], Epoch) %>%
-            dplyr::group_map(~ anomaly::capa.mv(x = .x, type = "mean"))
-        canoms <- grouped %>% lapply(function(x) anomaly::collective_anomalies(x) %>% dplyr::filter(mean.change >= alpha))
+            dplyr::group_map(~ anomaly::capa.mv(x = .x, type = type))
+        canoms <- grouped %>%
+            lapply(function(x) {
+                        anomaly::collective_anomalies(x) %>%
+                        dplyr::filter(mean.change >= alpha)
+        })
         panoms <- grouped %>% lapply(function(x) anomaly::point_anomalies(x))
 
-        canoms <- mapply(function(x, y) x %>% dplyr::mutate(start = start + mps * (y - 1), end = end + mps * (y - 1)),
+        canoms <- mapply(function(x, y) {
+                            x %>% dplyr::mutate(
+                                                start = start + mps * (y - 1),
+                                                end = end + mps * (y - 1))
+                            },
             canoms, seq_along(canoms),
-            SIMPLIFY = FALSE
-        ) %>%
+            SIMPLIFY = FALSE) %>%
             dplyr::bind_rows() %>%
             set_timevars(self$data)
 
-        panoms <- mapply(function(x, y) x %>% mutate(location = location + mps * (y - 1)),
-            panoms, seq_along(panoms),
-            SIMPLIFY = FALSE
-        ) %>%
-            dplyr::bind_rows() %>%
-            set_timevars(self$data)
+        panoms <- mapply(function(x, y) {
+                         x %>% mutate(location = location + mps * (y - 1))
+                        },
+                        panoms, seq_along(panoms),
+                        SIMPLIFY = FALSE) %>%
+                dplyr::bind_rows() %>%
+                set_timevars(self$data)
 
         end_time <- Sys.time()
-        print(paste(
-            "Analysis completed in ",
-            (end_time - start_time), " seconds"
-        ))
         self$canoms <- canoms
         self$panoms <- panoms
     },
@@ -455,6 +459,66 @@ EEG <- R6::R6Class("EEG", list(
                     zeroline = F
                 )
             )
+        return(fig)
+    },
+
+    spindle_detection = function(channel = 0,
+                                 method = "sigma_index",
+                                 filter = TRUE) {
+        if (method == "sigma_index") {
+            f <- sigma_index
+            threshold <- 4.5
+        }else if (method == "rsp") {
+            f <- relative_spindle_power
+            threshold <- 0.22
+        }else {
+            stop("Invalid spindle detection method. `method` argument should be:
+            'rsp': for Relative Spindle Power detection, or
+            'sigma_index': for Sigma Index detection.")
+        }
+        if (channel != 0) {
+            data <- self$data[c(1, channel)] %>% window_eeg_data(1)
+        }else {
+            data <- self$data %>% window_eeg_data(1)
+        }
+        result <- data %>%
+            group_by(Group = Windows) %>%
+            summarize(across(-c(Time, Windows), \(x) f(x, fs = self$fs))) %>%
+            mutate(Group = as.numeric(str_extract(Group, "\\d+\\.?\\d*?(?=,)"))) %>%
+            rename(Second = Group) %>%
+            na.omit()
+        if (filter) {
+            result <- result %>%
+                filter(across(-Second, ~ . > threshold)
+                %>% rowSums() > 0) %>%
+                mutate(across(-Second, ~ ifelse(. < threshold, 0, .))) %>%
+                select(where(~ any(. != 0)))
+        }
+        self$spindles <- result
+    },
+
+
+    plot_spindle_distribution = function(channel, time_axis = "epoch",
+                                        xbins = 10, ybins = 10, from = 0) {
+        time_resolution <- c(second = 1 / 60,
+                            minute = 1 / (60 ^ 2),
+                            hour = 1 / (60 ^ 3),
+                            epoch = 1 / 2)
+
+        fig <- plot_ly(self$spindles,
+            x = ~(Second / (60 * time_resolution[time_axis])),
+            y = self$spindles[[channel + 1]])
+        fig <- fig %>%
+          add_histogram2d(
+                nbinsx = xbins,
+                nbinsy = ybins,
+                ybins = list(start = from)
+            ) %>%
+          layout(
+            title = "Spindle distribution over time",
+            xaxis = list(title = "Time"),
+            yaxis = list(title = "Index score")
+          )
         return(fig)
     }
     )
