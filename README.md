@@ -262,6 +262,11 @@ The $z$ values described by the coloring of the boxed regions is the number of
 spindles found at each respective $(t, f)$ point with $f$ the detection index
 and $t$ time.
 
+Of course, researchers will limit the scope of their analysis to smaller 
+time frames and are free to adjust the sensitivity of the detectors. The 
+spindle detection plotted above is unrealistic and only serves a showcasing 
+purpose.
+
 ### Power spectrum analysis
 
 It is straightforward to estimate the power spectral density of the EEG signals
