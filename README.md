@@ -199,14 +199,10 @@ average amplitude in the low alpha and theta frequencies, which we call
 $\alpha_{mean}, \theta_{mean}$, and $c.$ the maximum alpha amplitude
 $\alpha_{max}$, are computed. The sigma index is defind to be 
 
-$$
-f(S_{max}, \alpha_{mean}, \beta_{mean}) = \begin{cases} 
-
+$$f(S_{max}, \alpha_{mean}, \beta_{mean}) = \begin{cases} 
 0 & \alpha_{max} > S_{max} \\ 
 \frac{2S_{max}}{\alpha_{mean} + \beta_{mean} } & otherwise
-
-\end{cases}
-$$
+\end{cases}$$
 
 Higher values are indicative of a higher spindle probability. The rejection
 threshold recommended in the original paper is $\lambda = 4.5$.
@@ -226,11 +222,7 @@ among the spindle frequency band. Its approach is more direct and parsimonious,
 however. For every $1$ second window, the amplitude spectrum $S(t)$ is computed, and
 the RSP is defined as
 
-$$
-
-RSP(t) = \frac{\int_{11}^{16} S(t, f) df}{\int_{0.5}^{40} S(t, f) df}
-
-$$
+$$RSP(t) = \frac{\int_{11}^{16} S(t, f) df}{\int_{0.5}^{40} S(t, f) df}$$
 
 This definition is more intelligible than the that of the sigma index, insofar
 as it represents the ratio of the total power in the spindle band with respect
