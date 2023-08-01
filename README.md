@@ -185,22 +185,10 @@ here](https://i.ibb.co/djz0v74/Screenshot-from-2022-12-05-13-21-10.png)
 
 ### Automated spindle detection
 
-The library contains implementations of three out of the four automated spindle
+The library contains implementations of two spindle
 detection algorithms discussed in [O'Reilly and Nielsen
 (2015)](https://doi.org/10.3389/fnhum.2015.00353). We give a brief overview of
-them here but refer to their original publications in case the reader is
-interested. 
-
-**RMS Algorithm** : The RMS algorithm [(Schimicek et al., 1994)](10.1177/155005949402500108) works by characterizing potential spindles
-as small signal windows with an abnormally high root mean square (RMS).
-Specifically, an EEG signal $\vec{x}$ is split into small, non-overlapping
-windows $\vec{x}_1, \ldots, \vec{x}_n$. The RMS of each window vector is
-computed and the resulting RMS values, $r_1, \ldots, r_n$, are understood to
-represent an RMS function $RMS(t)$. Whichever $r_i$ is above the $\lambda =
-0.95$ threshold percentile of $RMS(t)$ is marked as a spindle. 
-
-To perform  RMS spindle detection, simply call
-`eeg$spindle_detection_rms(channel, args...)`.
+them here but refer to their original publications for further detail.
 
 **Sigma Index Algorithm** : The Sigma Index algorithm [(Huupponen et al.,
 2007)](https://pubmed.ncbi.nlm.nih.gov/17555950/) uses the amplitude spectrum to
@@ -220,11 +208,16 @@ f(S_{max}, \alpha_{mean}, \beta_{mean}) = \begin{cases}
 \end{cases}
 $$
 
-High values correspond to a high probability of a spindle. The rejection
+Higher values are indicative of a higher spindle probability. The rejection
 threshold recommended in the original paper is $\lambda = 4.5$.
 
 To perform spindle detection with the *Sigma index* algorithm, simply call
-`eeg$spindle_detection(channel, method="sigma_index", args...)`
+`eeg$spindle_detection(channel=0, method="sigma_index", filter=TRUE)`
+
+Letting `channel=0` sets spindle detection to be carried out across all
+channels. If you want perform it only over the $n$th channel simply let `channel
+= n`. If `filter` is `TRUE` then results that do not meet the recommended 
+threshold $f \geq 4.5$ are automatically removed.
 
 **Relative Spindle Power Algorithm** : The Relative Spindle Power (RSP)
 algorithm [(Devuyst et al., 2011)](https://pubmed.ncbi.nlm.nih.gov/22254656/)
@@ -239,16 +232,43 @@ RSP(t) = \frac{\int_{11}^{16} S(t, f) df}{\int_{0.5}^{40} S(t, f) df}
 
 $$
 
-This definition is more intelligible than the previous one, insofar as it
-represents the ratio of the total power in the spindle band over the total power
-over the whole delta-theta-alpha-beta frequency range.
-
-Higher values indicate higher probability of a spindle. The rejection threshold
-recommended in the original paper is $\lambda = 0.22$.
+This definition is more intelligible than the that of the sigma index, insofar
+as it represents the ratio of the total power in the spindle band with respect
+to the total power in the delta-theta-alpha-beta frequency range. It is evident
+that $0 \leq RSP \leq 1$. Higher values are indicative of a higher spindle
+probability---though it should be clear that $RSP$ is not a probability itself.
+The rejection threshold recommended in the original paper is $\lambda = 0.22$.
 
 To perform spindle detection with RSP, simply call
-`eeg$spindle_detection(channel, method="rsp", args...)`.
+`eeg$spindle_detection(channel=0, method="rsp", filter=TRUE)`, where `channel=0` has 
+the same implication as in the sigma index method. If `filter` is `TRUE`,
+results with $RSP \leq 0.22$ are automatically removed.
 
+#### Plotting the spindle distribution
+
+The distribution of spindles across time can be plotted with a wrapper function
+`plot_spindle_distribution`. The function has multiple parameters that make the
+plot design as flexible as possible, specially with respect to its time
+resolution. Here's an example from EEG data of our own:
+
+```
+eeg <- EEG$new("data/eeg_s78.csv")
+eeg$spindle_detection(method="sigma_index", filter=TRUE)
+eeg$plot_spindle_distribution(channel = 4, time_axis = "hour", from=4, 
+                            xbins=75, ybins=75)
+
+# the `from` parameter sets the lower y-axis bound and is set to 4.
+# `time_axis` sets the resolution of the x-axis and accepts the 
+# values  "second", "epoch", "minute", "hour". The other parameters are 
+# self-explanatory.
+
+```
+
+![](https://i.ibb.co/CsxxBdt/Rplot.png)
+
+The $z$ values described by the coloring of the boxed regions is the number of 
+spindles found at each respective $(t, f)$ point with $f$ the detection index
+and $t$ time.
 
 ### Power spectrum analysis
 

@@ -119,7 +119,7 @@ sigma_index <- function(x, fs=500){
     return(max / ((mean_low + mean_high) / 2))
 }
 
-relative_spindle_power <- function(x, fs=500) {
+relative_spindle_power <- function(x, fs = 500) {
     amp_spectrum <- amplitude_spectrum(x, fs)
     spindle_band <- subset(amp_spectrum, Frequency >= 11 & Frequency <= 16.0)
     cross_band <- subset(amp_spectrum, Frequency >= 0.5 & Frequency <= 40)

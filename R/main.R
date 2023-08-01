@@ -498,16 +498,31 @@ EEG <- R6::R6Class("EEG", list(
     },
 
 
-    plot_spindle_distribution = function(channel, time_axis = "epoch",
-                                        xbins = 10, ybins = 10, from = 0) {
+    plot_spindle_distribution = function(channel = 0,
+                                         time_axis = "epoch",
+                                        xbins = 10,
+                                        ybins = 10,
+                                        from = 0) {
         time_resolution <- c(second = 1 / 60,
                             minute = 1 / (60 ^ 2),
                             hour = 1 / (60 ^ 3),
-                            epoch = 1 / 2)
+                            epoch = 1 / 30)
+        data <- self$spindles
+        if (channel == 0) {
+            ylabel <- "Cumulative Index Score"
+            y <- rowSums(data[, !colnames(data) %in% c("Second")])
+            plot_title <- "Cumulative spindle distribution over time"
+        }else{
+            y <- data[[channel + 1]]
+            ylabel <- "Index Score"
+            plot_title <- paste(colnames(data)[channel + 1],
+                                ": Spindle distribution over time",
+                                sep = "")
+        }
 
         fig <- plot_ly(self$spindles,
-            x = ~(Second / (60 * time_resolution[time_axis])),
-            y = self$spindles[[channel + 1]])
+            x = ~(Second * time_resolution[time_axis]),
+            y = y)
         fig <- fig %>%
           add_histogram2d(
                 nbinsx = xbins,
@@ -515,9 +530,9 @@ EEG <- R6::R6Class("EEG", list(
                 ybins = list(start = from)
             ) %>%
           layout(
-            title = "Spindle distribution over time",
-            xaxis = list(title = "Time"),
-            yaxis = list(title = "Index score")
+            title = plot_title,
+            xaxis = list(title = paste(time_axis, "s", sep = "")),
+            yaxis = list(title = ylabel)
           )
         return(fig)
     }
