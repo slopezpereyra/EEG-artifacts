@@ -81,7 +81,7 @@ EEG <- R6::R6Class("EEG", list(
     spindles = tibble::tibble(),
     fs = 0,
 
-    initialize = function(data_file, signals_file = NULL) {
+    initialize = function(data_file, signals_file = NULL, epoch = 30) {
         data <- readr::read_csv(data_file)
         if (!is.null(signals_file)) {
             signals <- readr::read_csv(signals_file)
@@ -91,7 +91,7 @@ EEG <- R6::R6Class("EEG", list(
         } else {
             signals <- tibble::tibble()
         }
-        self$data <- data
+        self$data <- data %>% set_epochs(epoch, subepochs = TRUE)
         self$signals <- signals
         self$fs <- self$get_fs()
     },
@@ -108,10 +108,8 @@ EEG <- R6::R6Class("EEG", list(
     },
 
     subset = function(s, e, epoch = 30) {
-        df <- self$data %>%
-            set_epochs(epoch) %>%
+        self$data <- self$data %>%
             dplyr::filter(Epoch %in% c(s:e))
-        self$data <- df %>% select(-c("Epoch"))
     },
 
     resample = function(n) {
@@ -147,7 +145,7 @@ EEG <- R6::R6Class("EEG", list(
     },
 
     low_pass = function(n) {
-        filt_df <- apply(self$data[-1],
+        filt_df <- apply(self$data[, -c(1:3)],
             MARGIN = 2,
             FUN = function(x) self$vlow_pass(x, n, self$fs),
             simplify = FALSE
@@ -160,7 +158,7 @@ EEG <- R6::R6Class("EEG", list(
 
 
     high_pass = function(n) {
-        filt_df <- apply(self$data[-1],
+        filt_df <- apply(self$data[, -c(1:3)],
             MARGIN = 2,
             FUN = function(x) self$vhigh_pass(x, n, self$fs),
             simplify = FALSE
@@ -173,7 +171,7 @@ EEG <- R6::R6Class("EEG", list(
 
 
     bandpass = function(l, h) {
-        filt_df <- apply(self$data[-1],
+        filt_df <- apply(self$data[, -c(1:3)],
             MARGIN = 2,
             FUN = function(x) self$vbandpass(x, l, h, self$fs),
             simplify = FALSE
@@ -186,7 +184,7 @@ EEG <- R6::R6Class("EEG", list(
 
 
     plot_channel = function(channel) {
-        y <- self$data[-1][channel]
+        y <- self$data[, -c(1:3)][channel]
         p <- self$data %>%
             dplyr::mutate(Time = lubridate::as_datetime(Time)) %>%
             ggplot2::ggplot(
@@ -198,7 +196,7 @@ EEG <- R6::R6Class("EEG", list(
             ggplot2::geom_line() +
             ggplot2::scale_x_datetime(date_labels = "%H:%M:%S") +
             ggplot2::xlab("") +
-            ggplot2::ylab(colnames(self$data[-1][channel]))
+            ggplot2::ylab(colnames(self$data[, -c(1:3)][channel]))
 
         return(p)
     },
@@ -245,20 +243,18 @@ EEG <- R6::R6Class("EEG", list(
 
 
     drop_epochs = function(epochs, epoch = 30) {
-        df <- self$data %>% set_epochs(epoch)
-        df <- droplevels(df[!df$Epoch %in% epochs, ])[-2]
-        self$data <- df %>% select(-c("Epoch"))
+        df <- self$data 
+        self$data <- droplevels(self$data[!self$data$Epoch %in% epochs, ])[-2]
     },
 
     drop_subepochs = function(epochs, subepochs, epoch = 30) {
         contaminated <- as.factor(paste(epochs, subepochs))
-        df <- self$data %>% set_epochs(epoch, subepochs = TRUE)
-
+        df <- self$data
         df <- df %>% tibble::add_column(
             Pairs = as.factor(paste(df$Epoch, df$Subepoch)),
             .after = "Subepoch"
         )
-        df <- droplevels(df[!df$Pairs %in% contaminated, ])[-c(2, 3, 4)]
+        df <- droplevels(df[!df$Pairs %in% contaminated, ])[-c(4)]
         self$data <- df
     },
 
@@ -267,7 +263,7 @@ EEG <- R6::R6Class("EEG", list(
     artf = function(alpha = 8, beta = 1) {
         print("Starting artifact analysis. This may take a couple of minutes...")
         start_time <- Sys.time()
-        analysis <- anomaly::capa.mv(self$data[-1], type = "mean")
+        analysis <- anomaly::capa.mv(self$data[, -c(1:3)], type = "mean")
         canoms <- anomaly::collective_anomalies(analysis) %>%
             dplyr::filter(mean.change >= alpha) %>%
             set_timevars(data = self$data) %>%
@@ -288,17 +284,22 @@ EEG <- R6::R6Class("EEG", list(
     artf_stepwise = function(step_size = 30, alpha = 8, type = "mean") {
         print("Starting analysis. This may take a couple of minutes...")
         # Set epochs for grouping
-        t <- set_epochs(self$data, epoch = step_size) %>% head(-1)
+        exclude <- c("Time", "Epoch", "Subepoch")
+        q <- self$data$Time %/% step_size
+        t <- self$data %>%
+            tibble::add_column(AnRegion = as.factor(q + 1), .after = 1)
         mps <- self$fs * step_size # measures per step
-        grouped <- dplyr::group_by(t[-1], Epoch) %>%
+        grouped <- dplyr::group_by(t[, !names(t) %in% exclude], AnRegion) %>%
             dplyr::group_map(~ anomaly::capa.mv(x = .x, type = type))
+        gc()
         canoms <- grouped %>%
             lapply(function(x) {
                         anomaly::collective_anomalies(x) %>%
                         dplyr::filter(mean.change >= alpha)
         })
+        gc()
         panoms <- grouped %>% lapply(function(x) anomaly::point_anomalies(x))
-
+        gc()
         canoms <- mapply(function(x, y) {
                             x %>% dplyr::mutate(
                                                 start = start + mps * (y - 1),
@@ -308,6 +309,7 @@ EEG <- R6::R6Class("EEG", list(
             SIMPLIFY = FALSE) %>%
             dplyr::bind_rows() %>%
             set_timevars(self$data)
+        gc()
 
         panoms <- mapply(function(x, y) {
                          x %>% mutate(location = location + mps * (y - 1))
@@ -316,6 +318,7 @@ EEG <- R6::R6Class("EEG", list(
                         SIMPLIFY = FALSE) %>%
                 dplyr::bind_rows() %>%
                 set_timevars(self$data)
+        gc()
 
         end_time <- Sys.time()
         self$canoms <- canoms
@@ -340,7 +343,7 @@ EEG <- R6::R6Class("EEG", list(
         locations <- union(unlist(locations), unlist(panoms$location)) %>%
                     as.integer()
         time_of_anomalies <- lubridate::as_datetime(unlist(data[locations, 1]))
-        values <- unlist(data[locations, chan + 1])
+        values <- unlist(data[locations, chan + 3]) # +3 to skip Time, Epoch, Subepoch columns
         df <- tibble::tibble(A = time_of_anomalies, B = values)
         return(df)
     },
@@ -407,13 +410,13 @@ EEG <- R6::R6Class("EEG", list(
 
 
     spectrogram = function(channel, max_freq = 30, freq = 4) {
-        rsleep::spectrogram(unlist(self$data[-1][channel]),
+        rsleep::spectrogram(unlist(self$data[, -c(1:3)][channel]),
                             sRate = self$fs, maxFreq = max_freq,
                             freq = freq)
     },
 
     channel_psd = function(channel) {
-        welch <- gsignal::pwelch(as.matrix(self$data[-1][channel]), fs = self$fs)
+        welch <- gsignal::pwelch(as.matrix(self$data[, -c(1:3)][channel]), fs = self$fs)
         psd <- welch$spec %>%
             apply(log10, MARGIN = 2) %>%
             tibble::as_tibble()
@@ -422,7 +425,7 @@ EEG <- R6::R6Class("EEG", list(
     },
 
     compute_psd = function() {
-        pwelch <- gsignal::pwelch(as.matrix(self$data[-1]), fs = self$fs)
+        pwelch <- gsignal::pwelch(as.matrix(self$data[, -c(1:3)]), fs = self$fs)
         psd <- pwelch$spec %>%
             apply(log10, MARGIN = 2) %>%
             tibble::as_tibble()
@@ -462,7 +465,7 @@ EEG <- R6::R6Class("EEG", list(
         return(fig)
     },
 
-    spindle_detection = function(channel = 0,
+    spindle_detection = function(channel = 0, # channel = 0 -> whole EEG
                                  method = "sigma_index",
                                  filter = TRUE) {
         if (method == "sigma_index") {
@@ -477,9 +480,9 @@ EEG <- R6::R6Class("EEG", list(
             'sigma_index': for Sigma Index detection.")
         }
         if (channel != 0) {
-            data <- self$data[c(1, channel)] %>% window_eeg_data(1)
+            data <- self$data[c(1, channel + 3)] %>% window_eeg_data(1)
         }else {
-            data <- self$data %>% window_eeg_data(1)
+            data <- self$data[, -c(2:3)] %>% window_eeg_data(1)
         }
         result <- data %>%
             group_by(Group = Windows) %>%
