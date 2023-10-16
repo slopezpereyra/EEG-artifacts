@@ -81,7 +81,7 @@ EEG <- R6::R6Class("EEG", list(
     spindles = tibble::tibble(),
     fs = 0,
 
-    initialize = function(data_file, signals_file = NULL, epoch = 30) {
+    initialize = function(data_file, signals_file = NULL, set_epochs=TRUE, epoch = 30) {
         data <- readr::read_csv(data_file)
         if (!is.null(signals_file)) {
             signals <- readr::read_csv(signals_file)
@@ -91,7 +91,10 @@ EEG <- R6::R6Class("EEG", list(
         } else {
             signals <- tibble::tibble()
         }
-        self$data <- data %>% set_epochs(epoch, subepochs = TRUE)
+        self$data <- data
+        if (set_epochs){
+            self$data <- set_epochs(self$data, epoch, subepochs = TRUE)
+        }
         self$signals <- signals
         self$fs <- self$get_fs()
     },
@@ -183,9 +186,13 @@ EEG <- R6::R6Class("EEG", list(
     },
 
 
-    plot_channel = function(channel) {
-        y <- self$data[, -c(1:3)][channel]
-        p <- self$data %>%
+    plot_channel = function(channel, s = 0, e = 0) {
+        data <- self$data
+        if (s != 0 && e != 0) {
+            data <- dplyr::filter(data, Epoch %in% c(s:e))
+        }
+        y <- data[, -c(1:3)][channel]
+        p <- data %>%
             dplyr::mutate(Time = lubridate::as_datetime(Time)) %>%
             ggplot2::ggplot(
                 ggplot2::aes(
@@ -196,7 +203,7 @@ EEG <- R6::R6Class("EEG", list(
             ggplot2::geom_line() +
             ggplot2::scale_x_datetime(date_labels = "%H:%M:%S") +
             ggplot2::xlab("") +
-            ggplot2::ylab(colnames(self$data[, -c(1:3)][channel]))
+            ggplot2::ylab(colnames(data[, -c(1:3)][channel]))
 
         return(p)
     },
@@ -281,48 +288,50 @@ EEG <- R6::R6Class("EEG", list(
         self$panoms <- panoms
     },
 
-    artf_stepwise = function(step_size = 30, alpha = 8, type = "mean") {
+    artf_stepwise = function(step_size = 30, alpha = 8, type = "mean",
+                             verbose = FALSE) {
         print("Starting analysis. This may take a couple of minutes...")
-        # Set epochs for grouping
         exclude <- c("Time", "Epoch", "Subepoch")
         q <- self$data$Time %/% step_size
         t <- self$data %>%
             tibble::add_column(AnRegion = as.factor(q + 1), .after = 1)
-        mps <- self$fs * step_size # measures per step
         grouped <- dplyr::group_by(t[, !names(t) %in% exclude], AnRegion) %>%
             dplyr::group_map(~ anomaly::capa.mv(x = .x, type = type))
         gc()
         canoms <- grouped %>%
             lapply(function(x) {
                         anomaly::collective_anomalies(x) %>%
-                        dplyr::filter(mean.change >= alpha)
-        })
+                        dplyr::filter(mean.change >= alpha)})
         gc()
         panoms <- grouped %>% lapply(function(x) anomaly::point_anomalies(x))
         gc()
-        canoms <- mapply(function(x, y) {
-                            x %>% dplyr::mutate(
-                                                start = start + mps * (y - 1),
-                                                end = end + mps * (y - 1))
-                            },
-            canoms, seq_along(canoms),
-            SIMPLIFY = FALSE) %>%
-            dplyr::bind_rows() %>%
-            set_timevars(self$data)
-        gc()
+        mps <- as.vector(table(t$AnRegion)) # Measures per step.
+        self$set_anom_dfs(mps, panoms, canoms)
+    },
 
-        panoms <- mapply(function(x, y) {
-                         x %>% mutate(location = location + mps * (y - 1))
+    set_anom_dfs = function(mps, panoms, canoms) {
+        mps <- c(0, mps[-length(mps)])
+        self$canoms <- mapply(function(x, y) {
+                            x %>% dplyr::mutate(
+                                                start = start + sum(mps[1:y]),
+                                                end = end + sum(mps[1:y]))
+                            },
+                            canoms,
+                            seq_along(canoms), SIMPLIFY = FALSE) %>%
+            bind_rows() %>%
+            as_tibble()
+
+        self$panoms <- mapply(function(x, y) {
+                         x %>% mutate(location = location + sum(mps[1:y]))
                         },
                         panoms, seq_along(panoms),
                         SIMPLIFY = FALSE) %>%
-                dplyr::bind_rows() %>%
-                set_timevars(self$data)
-        gc()
-
-        end_time <- Sys.time()
-        self$canoms <- canoms
-        self$panoms <- panoms
+            bind_rows() %>%
+            as_tibble()
+        self$panoms$Time <- self$data$Time[unlist(self$panoms[1])]
+        self$canoms$Time <- self$data$Time[unlist(self$canoms[1])]
+        self$canoms <- self$canoms %>% set_epochs()
+        self$panoms <- self$panoms %>% set_epochs()
     },
 
     get_contaminated_channels = function() {
@@ -333,24 +342,32 @@ EEG <- R6::R6Class("EEG", list(
         return(chans)
     },
 
-    set_plot_data = function(chan) {
-        data <- self$data # For shorter lines in what follows
+    set_plot_data = function(chan, s = 0, e = 0) {
+        data <- self$data
         canoms <- dplyr::filter(self$canoms, variate == chan)
         panoms <- dplyr::filter(self$panoms, variate == chan)
+        if (s != 0 && e != 0) {
+            if (!(s %in% data$Epoch) || !(e %in% data$Epoch)) {
+                stop("Invalid epoch bounds")
+            }
+            canoms <- dplyr::filter(canoms, Epoch %in% c(s:e))
+            panoms <- dplyr::filter(panoms, Epoch %in% c(s:e))
+            data <- dplyr::filter(data, Epoch %in% c(s:e))
+        }
         # Get all indexes between start and end of canoms
         locations <- mapply(function(x, y) x:y, canoms$start, canoms$end)
         # Unite with point anomalies
         locations <- union(unlist(locations), unlist(panoms$location)) %>%
                     as.integer()
-        time_of_anomalies <- lubridate::as_datetime(unlist(data[locations, 1]))
-        values <- unlist(data[locations, chan + 3]) # +3 to skip Time, Epoch, Subepoch columns
-        df <- tibble::tibble(A = time_of_anomalies, B = values)
+        anom_times <- lubridate::as_datetime(unlist(data[locations, 1]))
+        values <- unlist(data[locations, chan + 3])# +3 to skip time and factors
+        df <- tibble::tibble(A = anom_times, B = values)
         return(df)
     },
 
-    plot_channel_artifacts = function(chan, size = 0.2) {
-        df <- self$set_plot_data(chan)
-        eeg <- self$plot_channel(channel = chan)
+    plot_channel_artifacts = function(chan, s = 0, e = 0, size = 0.2) {
+        df <- self$set_plot_data(chan, s, e)
+        eeg <- self$plot_channel(chan, s, e)
         p <- eeg +
             ggplot2::geom_point(
                 data = df, ggplot2::aes(A, B),
@@ -360,14 +377,26 @@ EEG <- R6::R6Class("EEG", list(
         return(p)
     },
 
-    plot_artifacts = function(size = 0.2) {
+    plot_artifacts = function(s = 0, e = 0, size = 0.2) {
         plots <- list()
         channels <- self$get_contaminated_channels()
         for (channel in channels) {
-            p <- self$plot_channel_artifacts(channel, size)
+            p <- self$plot_channel_artifacts(channel, s, e, size)
             plots[[channel]] <- p
         }
         return(cowplot::plot_grid(plotlist = plots, align = "v", ncol = 1))
+    },
+
+    gen_plots = function(epochs_per_plot, dir = getwd()) {
+        epochs_per_plot <- epochs_per_plot - 1
+        s <- as.numeric(head(self$data$Epoch, 1))
+        end <- as.numeric(tail(self$data$Epoch, 1))
+        while (s + epochs_per_plot <= end) {
+            p <- self$plot_artifacts(s, s + epochs_per_plot)
+            fname <- paste(dir, "/", s, ".png", sep = "")
+            ggplot2::ggsave(fname, p)
+            s <- s + epochs_per_plot + 1
+        }
     },
 
 

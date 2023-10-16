@@ -33,19 +33,3 @@ set_anom_epoch <- function(anoms) {
     return(anoms)
 }
 
-#' Given a canoms or panoms data frame and its origin, returns an identical
-#' canoms or panoms data frame with the inclusion of all time variables:
-#' Time, Epoch and Subepoch.
-#'
-#' @param anoms A canoms or panoms data frame.
-#' @param data The data where anomalies were detected.
-#' @return A data frame
-set_timevars <- function(anoms, data) {
-    # Safety measure
-    if (nrow(anoms) == 0) {
-        return(anoms)
-    }
-    anoms$Time <- get_time(anoms, data)
-    anoms <- set_anom_epoch(anoms)
-    return(anoms)
-}
