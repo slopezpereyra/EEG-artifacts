@@ -269,23 +269,16 @@ EEG <- R6::R6Class("EEG", list(
 
     artf = function(alpha = 8, beta = 1) {
         print("Starting artifact analysis. This may take a couple of minutes...")
-        start_time <- Sys.time()
         analysis <- anomaly::capa.mv(self$data[, -c(1:3)], type = "mean")
         canoms <- anomaly::collective_anomalies(analysis) %>%
             dplyr::filter(mean.change >= alpha) %>%
-            set_timevars(data = self$data) %>%
             tibble::as_tibble()
         panoms <- anomaly::point_anomalies(analysis) %>%
             dplyr::filter(strength >= beta) %>%
-            set_timevars(data = self$data) %>%
             tibble::as_tibble()
-        end_time <- Sys.time()
-        print(paste(
-            "Analysis took ",
-            (end_time - start_time)
-        ))
         self$canoms <- canoms
         self$panoms <- panoms
+        self$set_anom_time_features()
     },
 
     artf_stepwise = function(step_size = 30, alpha = 8, type = "mean",
@@ -328,6 +321,10 @@ EEG <- R6::R6Class("EEG", list(
                         SIMPLIFY = FALSE) %>%
             bind_rows() %>%
             as_tibble()
+        self$set_anom_time_features()
+    },
+
+    set_anom_time_features = function() {
         self$panoms$Time <- self$data$Time[unlist(self$panoms[1])]
         self$canoms$Time <- self$data$Time[unlist(self$canoms[1])]
         self$canoms <- self$canoms %>% set_epochs()
@@ -346,22 +343,39 @@ EEG <- R6::R6Class("EEG", list(
         data <- self$data
         canoms <- dplyr::filter(self$canoms, variate == chan)
         panoms <- dplyr::filter(self$panoms, variate == chan)
+        subsetting <- FALSE
         if (s != 0 && e != 0) {
             if (!(s %in% data$Epoch) || !(e %in% data$Epoch)) {
                 stop("Invalid epoch bounds")
             }
+            data$ExplicitIndex <- seq_len(nrow(data))
             canoms <- dplyr::filter(canoms, Epoch %in% c(s:e))
             panoms <- dplyr::filter(panoms, Epoch %in% c(s:e))
             data <- dplyr::filter(data, Epoch %in% c(s:e))
+            subsetting <- TRUE
         }
         # Get all indexes between start and end of canoms
         locations <- mapply(function(x, y) x:y, canoms$start, canoms$end)
         # Unite with point anomalies
         locations <- union(unlist(locations), unlist(panoms$location)) %>%
                     as.integer()
-        anom_times <- lubridate::as_datetime(unlist(data[locations, 1]))
-        values <- unlist(data[locations, chan + 3])# +3 to skip time and factors
-        df <- tibble::tibble(A = anom_times, B = values)
+        # When working with the original 'self$eeg$data', 'locations' matches
+        # anomalous sample indexes. If dealing with a subset, 'locations'
+        # corresponds to 'self$eeg$data' indexes, not the subset.
+        # These cases are handled separately. While using the 'ExplicitIndex'
+        # column for all cases is an option, it's more efficient to check a
+        # boolean condition than add a potentially large column.
+        if (!subsetting) {
+            time_of_anomalies <- unlist(data[locations, 1]) %>%
+                                lubridate::as_datetime()
+            values <- unlist(data[locations, chan + 3])
+        }else {
+            anom_samples <- dplyr::filter(data, ExplicitIndex %in% locations)
+            time_of_anomalies <- unlist(anom_samples[, 1]) %>%
+                                lubridate::as_datetime()
+            values <- unlist(anom_samples[, chan + 3])
+        }
+        df <- tibble::tibble(X = time_of_anomalies, Y = values)
         return(df)
     },
 
@@ -370,7 +384,7 @@ EEG <- R6::R6Class("EEG", list(
         eeg <- self$plot_channel(chan, s, e)
         p <- eeg +
             ggplot2::geom_point(
-                data = df, ggplot2::aes(A, B),
+                data = df, ggplot2::aes(X, Y),
                 inherit.aes = FALSE, color = "red",
                 size = size
             )
