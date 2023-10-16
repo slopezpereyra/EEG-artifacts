@@ -401,16 +401,35 @@ EEG <- R6::R6Class("EEG", list(
         return(cowplot::plot_grid(plotlist = plots, align = "v", ncol = 1))
     },
 
-    gen_plots = function(epochs_per_plot, dir = getwd()) {
+    gen_plots = function(epochs_per_plot, dir = getwd(), ignore_clean=TRUE) {
         epochs_per_plot <- epochs_per_plot - 1
         s <- as.numeric(head(self$data$Epoch, 1))
         end <- as.numeric(tail(self$data$Epoch, 1))
         while (s + epochs_per_plot <= end) {
+            if (ignore_clean && !(self$has_anoms(s, s + epochs_per_plot))) {
+                s <- s + epochs_per_plot + 1
+                next
+            }
             p <- self$plot_artifacts(s, s + epochs_per_plot)
             fname <- paste(dir, "/", s, ".png", sep = "")
             ggplot2::ggsave(fname, p)
             s <- s + epochs_per_plot + 1
         }
+    },
+
+    has_anoms = function(s, e = 0){
+        if (e == 0){
+            e <- s
+        }
+        canoms <- dplyr::filter(self$canoms, Epoch %in% c(s:e))
+        panoms <- dplyr::filter(self$panoms, Epoch %in% c(s:e))
+        l <- list(canoms, panoms)
+        i <- which(lapply(l, nrow) == 0)
+        # If both data frames have length 0
+        if (length(i) > 1) {
+            return(FALSE)
+        }
+        return(TRUE)
     },
 
 
