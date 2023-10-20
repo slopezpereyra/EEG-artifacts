@@ -17,7 +17,7 @@ read_edf <- function(file){
     # Select EEG signals and unnest the lists of the single row of x.
     # Add time colum at cool index 1.
     x  <- x %>% dplyr::select(dplyr::starts_with("EEG") | dplyr::starts_with("EOG")) %>%
-                dplyr::unnest(cols = dplyr::everything()) %>%
+                tidyr::unnest(cols = dplyr::everything()) %>%
                 dplyr::mutate(Time = unlist(t)) %>%
                 dplyr::relocate(Time, .before = 1)
 

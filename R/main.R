@@ -46,6 +46,7 @@ EEG <- R6::R6Class("EEG", public = list(
             self$data <- set_epochs(self$data, epoch, subepochs = TRUE)
         }
         self$fs <- self$get_fs()
+        gc() # ::edf module seems to produce memory ovefload
     },
 
     #' @description
@@ -233,7 +234,7 @@ EEG <- R6::R6Class("EEG", public = list(
     #' @return cowplot
     plot = function() {
         plots <- list()
-        for (channel in 1:(ncol(self$data) - 1)) {
+        for (channel in 1:(ncol(self$data) - 3)) {
             p <- self$plot_channel(channel)
             plots[[channel]] <- p
         }
@@ -318,7 +319,7 @@ EEG <- R6::R6Class("EEG", public = list(
     #' @return void
     artf = function(alpha = 8, beta = 1) {
         print("Starting artifact analysis. This may take a few minutes...")
-        analysis <- anomaly::capa.mv(self$data[, -c(1:3)], type = "mean")
+        analysis <- anomaly::capa(self$data[, -c(1:3)], type = "mean")
         canoms <- anomaly::collective_anomalies(analysis) %>%
             dplyr::filter(mean.change >= alpha) %>%
             tibble::as_tibble()
@@ -351,7 +352,7 @@ EEG <- R6::R6Class("EEG", public = list(
         t <- self$data %>%
             tibble::add_column(AnRegion = as.factor(q + 1), .after = 1)
         grouped <- dplyr::group_by(t[, !names(t) %in% exclude], AnRegion) %>%
-            dplyr::group_map(~ anomaly::capa.mv(x = .x, type = type))
+            dplyr::group_map(~ anomaly::capa(x = .x, type = type))
         gc()
         canoms <- grouped %>%
             lapply(function(x) {
