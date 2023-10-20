@@ -317,17 +317,16 @@ EEG <- R6::R6Class("EEG", public = list(
     #' Only point anomalies with strength greater than `beta` are kept.
     #' Defaults to `1`.
     #' @return void
-    artf = function(alpha = 8, beta = 1) {
+    artf = function(alpha = 0.1) {
         print("Starting artifact analysis. This may take a few minutes...")
         analysis <- anomaly::capa(self$data[, -c(1:3)], type = "mean")
-        canoms <- anomaly::collective_anomalies(analysis) %>%
-            dplyr::filter(mean.change >= alpha) %>%
+        canoms <- anomaly::collective_anomalies(analysis)
             tibble::as_tibble()
         panoms <- anomaly::point_anomalies(analysis) %>%
-            dplyr::filter(strength >= beta) %>%
             tibble::as_tibble()
         self$canoms <- canoms
         self$panoms <- panoms
+        self$sfilter(alpha)
         self$set_anom_time_features()
     },
 
@@ -344,7 +343,7 @@ EEG <- R6::R6Class("EEG", public = list(
     #' Only point anomalies with strength greater than `beta` are kept.
     #' Defaults to `1`.
     #' @return void
-    artf_stepwise = function(step_size = 30, alpha = 8, type = "mean",
+    artf_stepwise = function(step_size = 30, alpha = 0.05, type = "mean",
                              verbose = FALSE) {
         print("Starting analysis. This may take a couple of minutes...")
         exclude <- c("Time", "Epoch", "Subepoch")
@@ -352,17 +351,16 @@ EEG <- R6::R6Class("EEG", public = list(
         t <- self$data %>%
             tibble::add_column(AnRegion = as.factor(q + 1), .after = 1)
         grouped <- dplyr::group_by(t[, !names(t) %in% exclude], AnRegion) %>%
-            dplyr::group_map(~ anomaly::capa(x = .x, type = type))
+            dplyr::group_map(~ anomaly::capa(x = scale(.x), type = type))
         gc()
-        canoms <- grouped %>%
-            lapply(function(x) {
-                        anomaly::collective_anomalies(x) %>%
-                        dplyr::filter(mean.change >= alpha)})
+        canoms <- grouped %>% lapply(function(x) {
+                                         anomaly::collective_anomalies(x)
+                                    })
         gc()
         panoms <- grouped %>% lapply(function(x) anomaly::point_anomalies(x))
         gc()
         mps <- as.vector(table(t$AnRegion)) # Measures per step.
-        self$set_anom_dfs(mps, panoms, canoms)
+        self$set_anom_dfs(mps, panoms, canoms, alpha)
     },
 
     #' @description
@@ -381,7 +379,7 @@ EEG <- R6::R6Class("EEG", public = list(
     #' List of data frames, each comming from calling
     #' anomaly::collective_anomalies on an analyzed subset of the EEG data.
     #' @return void
-    set_anom_dfs = function(mps, panoms, canoms) {
+    set_anom_dfs = function(mps, panoms, canoms, alpha=0.05) {
         mps <- c(0, mps[-length(mps)])
         self$canoms <- mapply(function(x, y) {
                             x %>% dplyr::mutate(
@@ -401,6 +399,7 @@ EEG <- R6::R6Class("EEG", public = list(
             bind_rows() %>%
             as_tibble()
         self$set_anom_time_features()
+        self$sfilter(alpha)
     },
 
     #' @description
