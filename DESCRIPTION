@@ -15,9 +15,10 @@ Depends:
     rsleep,
     stringr,
     plotly,
-    R6
+    R6,
+    edf,
+    stats
 RoxygenNote: 7.2.3
 Collate: 
     'main.R'
-    'cln.R'
     'helper.R'

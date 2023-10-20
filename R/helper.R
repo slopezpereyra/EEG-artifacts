@@ -16,10 +16,10 @@ read_edf <- function(file){
 
     # Select EEG signals and unnest the lists of the single row of x.
     # Add time colum at cool index 1.
-    x  <- x %>% select(starts_with("EEG") | starts_with("EOG")) %>%
-                unnest(cols = everything()) %>%
-                mutate(Time = unlist(t)) %>%
-                relocate(Time, .before = 1)
+    x  <- x %>% dplyr::select(dplyr::starts_with("EEG") | dplyr::starts_with("EOG")) %>%
+                dplyr::unnest(cols = dplyr::everything()) %>%
+                dplyr::mutate(Time = unlist(t)) %>%
+                dplyr::relocate(Time, .before = 1)
 
     return(x)
 }
@@ -170,7 +170,7 @@ amplitude_spectrum <- function(x, fs = 500) {
     x <- x * hanning_window
     #Zero-padd
     x <- c(x, rep(0, 512 - n))
-    x <- fft(x)
+    x <- stats::fft(x)
     x <- (2 * abs(x)) / sum(hanning_window)
     Df <- fs / 512
     frequencies <- seq(0, (length(x) - 1)) * Df

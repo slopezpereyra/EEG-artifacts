@@ -663,17 +663,17 @@ EEG <- R6::R6Class("EEG", public = list(
             data <- self$data[, -c(2:3)] %>% window_eeg_data(1)
         }
         result <- data %>%
-            group_by(Group = Windows) %>%
-            summarize(across(-c(Time, Windows), \(x) f(x, fs = self$fs))) %>%
-            mutate(Group = as.numeric(str_extract(Group, "\\d+\\.?\\d*?(?=,)"))) %>%
-            rename(Second = Group) %>%
+            dplyr::group_by(Group = Windows) %>%
+            dplyr::summarize(dplyr::across(-c(Time, Windows), \(x) f(x, fs = self$fs))) %>%
+            dplyr::mutate(Group = as.numeric(stringr::str_extract(Group, "\\d+\\.?\\d*?(?=,)"))) %>%
+            dplyr::rename(Second = Group) %>%
             na.omit()
         if (filter) {
             result <- result %>%
                 filter(across(-Second, ~ . > threshold)
                 %>% rowSums() > 0) %>%
-                mutate(across(-Second, ~ ifelse(. < threshold, 0, .))) %>%
-                select(where(~ any(. != 0)))
+                dplyr::mutate(across(-Second, ~ ifelse(. < threshold, 0, .))) %>%
+                dplyr::select(where(~ any(. != 0)))
         }
         self$spindles <- result
     },
@@ -701,16 +701,16 @@ EEG <- R6::R6Class("EEG", public = list(
                                 sep = "")
         }
 
-        fig <- plot_ly(self$spindles,
+        fig <- plotly::plot_ly(self$spindles,
             x = ~(Second * time_resolution[time_axis]),
             y = y)
         fig <- fig %>%
-          add_histogram2d(
+          plotly::add_histogram2d(
                 nbinsx = xbins,
                 nbinsy = ybins,
                 ybins = list(start = from)
             ) %>%
-          layout(
+          plotly::layout(
             title = plot_title,
             xaxis = list(title = paste(time_axis, "s", sep = "")),
             yaxis = list(title = ylabel)
