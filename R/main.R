@@ -1,104 +1,60 @@
-#' Class providing object with methods for EEG analysis, visualization, and manipulation.
-#'
-#' @docType class
-#' @importFrom R6 R6Class
-#' @export
-#' @return Object of \code{\link{R6Class}} with methods for EEG analysis,
-#' visualization and manipulation.
-#' @format \code{\link{R6Class}} object.
-#' @field data Stores the EEG data in a data frame format (tibble by default).
-#' @field signals Stores a data frame with information on the EEG signals, if a
-#' `signals` file was provided on initialization.
-#' @field canoms A data frame with all data pertaining to collective anomalies
-#' (artifacts) found on the EEG. Empty by default and until artifact analysis is
-#' performed.
-#' @field panoms A data frame with all data pertaining to point anomalies
-#' (artifacts) found on the EEG. Empty by default and until artifact analysis is
-#' performed.
-#' @field psd Power spectrum density data of this EEG. Empty by default and
-#' until PSD is computed on the EEG.
-#' @field fs Sampling frequency of the EEG.
-#' @section Methods:
-#' \describe{
-#'   \item{\code{subset_by_seconds(s, e)}}{Subsets the EEG from second s to
-#'   second e. Both \code{s} and \code{e} must be numeric values that exist in the `Time`
-#'   column of the EEG data. Modification is performed inplace.}
-#'   \item{\code{subset(s, e)}}{Subsets the EEG from epoch s to epoch e. The
-#'   interval is inclusive. Modification is performed inplace.}
-#'   \item{\code{resample(n)}}{Reduces the EEG data by removing on every
-#'   \code{n} samples. This is a (very) brute resampling method and should only
-#'   be used for the purpose of accelerating certain analyses, such as
-#'   artifact detection.}
-#'   \item{\code{low_pass(n)}}{Applies a low-pass Butterworth filter with a
-#'   filter frequency \code{n} (in Hz).}
-#'   \item{\code{high_pass(n)}}{Applies a high-pass Butterworth filter with a
-#'   filter frequency \code{n} (in Hz).}
-#'   \item{\code{bandpass(l, h)}}{Applies a bandpass Butterworth filter with
-#'   filter frequencies \code{l} (lower bound) and \code{h} (upper bound) (in Hz).}
-#'   \item{\code{plot_channel(channel)}}{Plots the ith signal in data, where i =
-#'   \code{channel}}.
-#'   \item{\code{plot}}{Plots the EEG data.}
-#'   \item{\code{iplot}}{Draws an interactive plot of the EEG data.}
-#'   \item{\code{plot}}{Plots the EEG data.}
-#'   \item{\code{drop_epochs(epochs, epoch = 30)}}{Given a list `epochs` of
-#'   integer values, removes those epochs from the EEG data. The argument
-#'   `epoch` determins how many seconds are understood to comprise an epoch and
-#'   defaults to 30.}
-#'   \item{\code{drop_subepochs(epochs, subepochs, epoch = 30)}}{Given numeric
-#'   lists of \code{subepochs} and \code{epochs}, removes epoch/subepoch pairs from the
-#'   EEG data. Elements in both lists are assumed to have an element-wise
-#'   association, meaning that if \code{(e_1, ..., e_n), (s_1, ..., s_n)} are
-#'   both lists, then epoch/subepoch pairs \code{(e_i, s_i)} are removed. The
-#'   argument `epoch` is an integer determining how many seconds are understood
-#'   to comprise an epoch (defaults to 30).}
-#'   \item{\code{artf(alpha = 8, beta = 1)}}{Performs direct artifact detection
-#'   over the EEG data. \code{alpha, beta} are numeric significance thresholds
-#'   for collective and point anomalies respectively.}
-#'   \item{\code{artf_stepwise(step_size = 30, alpha=8)}}{Performs stepwise
-#'   artifact detection over the EEG data, by steps of \code{step_size} seconds.
-#'   \code{alpha} is the significance threshold for collective anomalies.}
-#'   \item{\code{get_contaminated_channels}}{Returns a vector with all EEG
-#'   channels found to contain artifacts.}
-#'   \item{\code{plot_artifacts(size = 0.2)}}{Plots EEG data with artifacts
-#'   represented by red points of a certain \code{size}.}
-#'   \item{\code{sfilter(x, f = minmax_normalization)}}{After normalizing
-#'   artifact strength with a normalization function \code{f}, filters out all
-#'   artifacts of strength lesser than \code{x}.}
-#'   \item{\code{artf_reject()}}{Returns an artifact rejected copy of this EEG.}
-#'   \item{\code{spectrogram(channel, max_freq = 30, freq = 4)}}{Plots the
-#'   spectrogram of a given \code{channel}. \code{freq} is the resolution of the
-#'   plot.}
-#'   \item{\code{compute_psd()}}{Computes the power spectrum of this EEG and
-#'   sotres it on the psd field.}
-#'   \item{\code{plot_psd(xlim = 250)}}{Plots the PSD of this EEG.}
-#'   \item{\code{iplot_psd(xlim)}}{Produces an interactive plot of the PSD.}}
-EEG <- R6::R6Class("EEG", list(
+# EEG R6 class
+
+EEG <- R6::R6Class("EEG", public = list(
+    #' @field data (`tibble`)\cr
+    #' Data frame (tibble) with the EEG data.
     data = tibble::tibble(),
-    signals = tibble::tibble(),
+    #' @field data (`tibble`)\cr
+    #' Data frame (tibble) with the collective anomalies data.
     canoms = tibble::tibble(),
+    #' @field data (`tibble`)\cr
+    #' Data frame (tibble) with the point anomalies data.
     panoms = tibble::tibble(),
+    #' @field data (`tibble`)\cr
+    #' Data frame (tibble) with the power spectral density data.
     psd = tibble::tibble(),
+    #' @field data (`tibble`)\cr
+    #' Data frame (tibble) with the spindle data.
     spindles = tibble::tibble(),
+    #` @field (`numeric`)\cr
+    #  Sampling frequency of the EEG.
     fs = 0,
 
-    initialize = function(data_file, signals_file = NULL, set_epochs=TRUE, epoch = 30) {
-        data <- readr::read_csv(data_file)
-        if (!is.null(signals_file)) {
-            signals <- readr::read_csv(signals_file)
-            colnames(data)[-1] <- signals$Label %>%
-                stringr::str_remove("EEG ") %>%
-                stringr::str_remove("EOG")
-        } else {
-            signals <- tibble::tibble()
-        }
-        self$data <- data
+    #' @description
+    #' Creates a new instance of the EEG class.
+    #'
+    #' @param data_file (`character`)\cr
+    #'   Address of .csv file containing EEG data.
+    #' @param signals_file (`list()`)\cr
+    #'   Arbitrary special values this parameter is allowed to take, to make it
+    #'   feasible. This allows extending the domain of the parameter. Note that
+    #'   these values are only used in feasibility checks, neither in generating
+    #'   designs nor sampling.
+    #' @param set_epochs (`bool = TRUE`)\cr
+    #'   Whether to set the epoch and subepoch features upon reading the 
+    #'   EEG data. Defaults to TRUE, but should be FALSE if the EEG data 
+    #'   being read already has these features.
+    #'   
+    #' @param epoch (`int`)\cr
+    #'   How many seconds make up an epoch? Only relevant if set_epochs is TRUE.
+    initialize = function(data_file, 
+                          set_epochs=TRUE, 
+                          epoch = 30) {
+        f <- ifelse(endsWith(data_file, ".edf"), read_edf, readr::read_csv)
+        self$data <- f(data_file)
         if (set_epochs){
             self$data <- set_epochs(self$data, epoch, subepochs = TRUE)
         }
-        self$signals <- signals
         self$fs <- self$get_fs()
     },
 
+    #' @description
+    #' Subsets EEG data to keep only measures in the interval [s, e], where 
+    #' `s` and `e` are times in seconds and `e > s`.
+    #'
+    #' @param s (`integer`).
+    #' @param e (`integer`).
+    #' @return void
     subset_by_seconds = function(s, e) {
         s_ind <- which(self$data$Time == s)
         e_ind <- which(self$data$Time == e)
@@ -110,21 +66,46 @@ EEG <- R6::R6Class("EEG", list(
         self$data <- self$data[s_ind:e_ind, ]
     },
 
-    subset = function(s, e, epoch = 30) {
+    #' @description
+    #' Subsets EEG data to keep only measures in the interval [s, e], where
+    #' `s` and `e` are epochs and `e >= s`. If `e == s` then only data from
+    #' that single epoch is kept.
+    #'
+    #' @param s (`integer`).
+    #' @param e (`integer`).
+    #' @return void
+    subset = function(s, e) {
         self$data <- self$data %>%
             dplyr::filter(Epoch %in% c(s:e))
     },
 
+    #' @description
+    #' Subsets EEG data to keep only one for every `n` samples. This is a
+    #' brute resampling algorithm and should only not be used except for
+    #' special purposes.
+    #'
+    #' @param n (`integer`).
+    #' @return void
     resample = function(n) {
         self$data <- self$data[seq(1, nrow(self$data), n), ]
         self$fs <- self$get_fs()
     },
 
+    #' @description
+    #' Returns the sampling frequency of the EEG data. The frequency is computed
+    #' from the data and not extracted from the $fs field. This method is useful
+    #' for updating the $fs field after resampling or other data modifications.
+    #'
+    #' @return void
     get_fs = function() {
         delta_t <- self$data$Time[2] - self$data$Time[1]
         return(1 / delta_t)
     },
 
+    #' @description
+    #' Private (do not use)
+    #'
+    #' @return void
     vlow_pass = function(vec, n, fs) {
         wpass <- n / (fs / 2) # Nyquist
         but <- gsignal::butter(5, wpass, "low", output = "Sos")
@@ -132,6 +113,11 @@ EEG <- R6::R6Class("EEG", list(
         return(low_pass)
     },
 
+
+    #' @description
+    #' Private (do not use)
+    #'
+    #' @return void
     vhigh_pass = function(vec, n, fs) {
         wpass <- n / (fs / 2) # Nyquist
         but <- gsignal::butter(5, wpass, "high", output = "Sos")
@@ -140,6 +126,11 @@ EEG <- R6::R6Class("EEG", list(
     },
 
     vbandpass = function(vec, l, h, fs) {
+
+    #' @description
+    #' Private (do not use)
+    #'
+    #' @return void
         fpass <- c(l, h)
         wpass <- fpass / (fs / 2) # Nyquist
         but <- gsignal::butter(5, wpass, "pass", output = "Sos")
@@ -147,6 +138,12 @@ EEG <- R6::R6Class("EEG", list(
         return(pass)
     },
 
+    #' @description
+    #' Applies a low-pass filter to the EEG data. The value of `n` is used
+    #' to compute the pass filter `F = n / (fs / 2)` (Nyquist frequency).
+    #'
+    #' @param n (`numeric`).
+    #' @return void
     low_pass = function(n) {
         filt_df <- apply(self$data[, -c(1:3)],
             MARGIN = 2,
@@ -160,6 +157,12 @@ EEG <- R6::R6Class("EEG", list(
     },
 
 
+    #' @description
+    #' Applies a high-pass filter to the EEG data. The value of `n` is used
+    #' to compute the pass filter `F = n / (fs / 2)` (Nyquist frequency).
+    #'
+    #' @param n (`numeric`).
+    #' @return void
     high_pass = function(n) {
         filt_df <- apply(self$data[, -c(1:3)],
             MARGIN = 2,
@@ -173,6 +176,13 @@ EEG <- R6::R6Class("EEG", list(
     },
 
 
+    #' @description
+    #' Applies a bandpass filter to the EEG data. Parameters `l` and `h` are
+    # ' the low and high frequency bounds.
+    #'
+    #' @param l (`numeric`).
+    #' @param h (`numeric`).
+    #' @return void
     bandpass = function(l, h) {
         filt_df <- apply(self$data[, -c(1:3)],
             MARGIN = 2,
@@ -186,6 +196,15 @@ EEG <- R6::R6Class("EEG", list(
     },
 
 
+    #' @description
+    #' Plots the EEG channel number `channel`. If `s` and `e` are non-zero the
+    #' plot only shows EEG data from epoch `s` to epoch `e` (inclusive). If
+    #  both are zero (default) the full EEG channel is ploted.
+    #'
+    #' @param channel (`integer`).
+    #' @param s (`integer`) = 0
+    #' @param e (`integer`) = 0
+    #' @return ggplot
     plot_channel = function(channel, s = 0, e = 0) {
         data <- self$data
         if (s != 0 && e != 0) {
@@ -208,6 +227,10 @@ EEG <- R6::R6Class("EEG", list(
         return(p)
     },
 
+    #' @description
+    #' Plots the EEG data.
+    #'
+    #' @return cowplot
     plot = function() {
         plots <- list()
         for (channel in 1:(ncol(self$data) - 1)) {
@@ -218,6 +241,10 @@ EEG <- R6::R6Class("EEG", list(
         return(cowplot::plot_grid(plotlist = plots, align = "v", ncol = 1))
     },
 
+    #' @description
+    #' Produces an interactive PlotLy plot of the EEG data.
+    #'
+    #' @return plotly
     iplot = function() {
         plots <- list()
         plots[[1]] <- plotly::plot_ly(
@@ -249,12 +276,23 @@ EEG <- R6::R6Class("EEG", list(
     },
 
 
-    drop_epochs = function(epochs, epoch = 30) {
+    #' @description
+    #' Removes from the EEG data the samples of any epoch in `epochs`.
+    #'
+    #' @param epochs (`int`)
+    #' @return void
+    drop_epochs = function(epochs) {
         df <- self$data 
         self$data <- droplevels(self$data[!self$data$Epoch %in% epochs, ])[-2]
     },
 
-    drop_subepochs = function(epochs, subepochs, epoch = 30) {
+    #' @description
+    #' Removes from the EEG data the samples of any epoch-subepoch pair
+    #' in `epochs`, `subepochs`.
+    #' @param epochs (`int`)
+    #' @param subepochs (`int`)
+    #' @return void
+    drop_subepochs = function(epochs, subepochs) {
         contaminated <- as.factor(paste(epochs, subepochs))
         df <- self$data
         df <- df %>% tibble::add_column(
@@ -267,8 +305,19 @@ EEG <- R6::R6Class("EEG", list(
 
     # ---- Artifact related functions
 
+    #' @description
+    #' Performs MV-CAPA analysis on the EEG data; formats the results
+    #` and sets them to the `canoms` and `panoms` fields.
+    #'
+    #' @param alpha (`numeric`)\cr 
+    #' Only collective anomalies with strength greater than `alpha` are kept.
+    #' Defaults to `8`.
+    #' @param beta (`numeric`)\cr 
+    #' Only point anomalies with strength greater than `beta` are kept.
+    #' Defaults to `1`.
+    #' @return void
     artf = function(alpha = 8, beta = 1) {
-        print("Starting artifact analysis. This may take a couple of minutes...")
+        print("Starting artifact analysis. This may take a few minutes...")
         analysis <- anomaly::capa.mv(self$data[, -c(1:3)], type = "mean")
         canoms <- anomaly::collective_anomalies(analysis) %>%
             dplyr::filter(mean.change >= alpha) %>%
@@ -281,6 +330,19 @@ EEG <- R6::R6Class("EEG", list(
         self$set_anom_time_features()
     },
 
+    #' @description
+    #' Performs MV-CAPA analysis on the EEG data by steps of size `step_size`
+    #' (in seconds); formats the results and sets them to the `canoms` and
+    #' `panoms` fields.
+    #'
+    #' @param step_size(`int`)
+    #' @param alpha (`numeric`)\cr 
+    #' Only collective anomalies with strength greater than `alpha` are kept.
+    #' Defaults to `8`.
+    #' @param beta (`numeric`)\cr 
+    #' Only point anomalies with strength greater than `beta` are kept.
+    #' Defaults to `1`.
+    #' @return void
     artf_stepwise = function(step_size = 30, alpha = 8, type = "mean",
                              verbose = FALSE) {
         print("Starting analysis. This may take a couple of minutes...")
@@ -302,6 +364,22 @@ EEG <- R6::R6Class("EEG", list(
         self$set_anom_dfs(mps, panoms, canoms)
     },
 
+    #' @description
+    #' A helper function to be privately used in artf_stepwise. Transforms each 
+    # ` of two lists of data frames, `panoms` and `canoms`, into a unique 
+    #' tibble with the joined data of each analysis; it adjusts the location
+    #` features of these data frames to match the full `$data` instead of 
+    #` simply the step to which they correspond.
+    #'
+    #' @param mps(`vector`)\cr 
+    #' A vector containing the number of measures per analyzed step of data.
+    #' @param panoms (`list`)\cr 
+    #' List of data frames, each comming from calling
+    #' anomaly::point_anomalies on an analyzed subset of the EEG data.
+    #' @param canoms (`numeric`)\cr 
+    #' List of data frames, each comming from calling
+    #' anomaly::collective_anomalies on an analyzed subset of the EEG data.
+    #' @return void
     set_anom_dfs = function(mps, panoms, canoms) {
         mps <- c(0, mps[-length(mps)])
         self$canoms <- mapply(function(x, y) {
@@ -324,6 +402,9 @@ EEG <- R6::R6Class("EEG", list(
         self$set_anom_time_features()
     },
 
+    #' @description
+    #' Private wrapper.
+    #' @return void
     set_anom_time_features = function() {
         self$panoms$Time <- self$data$Time[unlist(self$panoms[1])]
         self$canoms$Time <- self$data$Time[unlist(self$canoms[1])]
@@ -331,6 +412,9 @@ EEG <- R6::R6Class("EEG", list(
         self$panoms <- self$panoms %>% set_epochs()
     },
 
+    #' @description
+    #' Private wrapper.
+    #' @return void
     get_contaminated_channels = function() {
         chans <- union(
             unique(self$canoms$variate),
@@ -339,6 +423,17 @@ EEG <- R6::R6Class("EEG", list(
         return(chans)
     },
 
+    #' @description
+    #' (Private)
+    #' Returns a df whose format is idoneous for plotting the analysis results.
+    #' Such format consists of the EEG Time measure (x axis), the raw
+    #' EEG data of the chanel and a column that is filled with NaN except
+    #' at each time instance where any type of anomaly was found.
+    #'
+    #' @param eeg An Analysis object.
+    #' @param chan An integer that points to the EEG channel.
+    #' @param data Original EEG data for this analysis
+    #' @return void
     set_plot_data = function(chan, s = 0, e = 0) {
         data <- self$data
         canoms <- dplyr::filter(self$canoms, variate == chan)
@@ -363,8 +458,8 @@ EEG <- R6::R6Class("EEG", list(
         # anomalous sample indexes. If dealing with a subset, 'locations'
         # corresponds to 'self$eeg$data' indexes, not the subset.
         # These cases are handled separately. While using the 'ExplicitIndex'
-        # column for all cases is an option, it's more efficient to check a
-        # boolean condition than add a potentially large column.
+        # column for both cases is an option, it's more efficient to check a
+        # boolean condition than to directly add a potentially large column.
         if (!subsetting) {
             time_of_anomalies <- unlist(data[locations, 1]) %>%
                                 lubridate::as_datetime()
@@ -379,6 +474,12 @@ EEG <- R6::R6Class("EEG", list(
         return(df)
     },
 
+    #' @description
+    #' Plots analysis results for a specific channel.
+    #'
+    #' @param chan An integer that points to the EEG channel.
+    #' @param size (optional) The size of the red dots that signal an anomaly.
+    #' @return ggplot
     plot_channel_artifacts = function(chan, s = 0, e = 0, size = 0.2) {
         df <- self$set_plot_data(chan, s, e)
         eeg <- self$plot_channel(chan, s, e)
@@ -391,6 +492,12 @@ EEG <- R6::R6Class("EEG", list(
         return(p)
     },
 
+    #' Plots all channels with any kind of anomalies from epoch `s` to `e`.
+    #' Mark anomalies with dots of radius `size`.
+    #' @param s
+    #' @param e
+    #' @param size
+    #' @return cowplot
     plot_artifacts = function(s = 0, e = 0, size = 0.2) {
         plots <- list()
         channels <- self$get_contaminated_channels()
@@ -401,7 +508,9 @@ EEG <- R6::R6Class("EEG", list(
         return(cowplot::plot_grid(plotlist = plots, align = "v", ncol = 1))
     },
 
-    gen_plots = function(epochs_per_plot, dir = getwd(), ignore_clean=TRUE) {
+    gen_artifact_plots = function(epochs_per_plot,
+                                  dir = getwd(),
+                                  ignore_clean=TRUE) {
         epochs_per_plot <- epochs_per_plot - 1
         s <- as.numeric(head(self$data$Epoch, 1))
         end <- as.numeric(tail(self$data$Epoch, 1))
@@ -417,8 +526,8 @@ EEG <- R6::R6Class("EEG", list(
         }
     },
 
-    has_anoms = function(s, e = 0){
-        if (e == 0){
+    has_anoms = function(s, e = 0) {
+        if (e == 0) {
             e <- s
         }
         canoms <- dplyr::filter(self$canoms, Epoch %in% c(s:e))
@@ -433,6 +542,13 @@ EEG <- R6::R6Class("EEG", list(
     },
 
 
+    #' @description
+    #' Normalizes the strengths of point and collective anomalies
+    #' given a normalizing function `f` which defaults to min-max
+    #' normalization.
+    #'
+    #' @param f
+    #' @return void
     sfilter = function(x, f = minmax_normalization) {
         self$canoms$mean.change <- f(self$canoms$mean.change)
         self$panoms$strength <- f(self$panoms$strength)

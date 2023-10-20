@@ -1,4 +1,29 @@
 
+#' @description 
+#' Reads a .edf file and returns a tibble with its EEG data.\r
+#' *Important* Only columns whose name starts with EEG or EOG are kept.
+#' This means the function removes snoring or EMG signals if possible.
+#' @param file Path to the EDF file.
+#'
+#' @return tibble
+#' @export
+read_edf <- function(file){
+    eeg <- edf::read.edf(file)
+    x <- tibble::as_tibble(eeg[[3]], .name_repair = "minimal")
+    t <- x[, 1][[1]][2] # Take the list of time values from first signal
+    x <- x[-2, ]        # Remove the second row whose values are lists
+                        # of time values (now only signals exist in x).
+
+    # Select EEG signals and unnest the lists of the single row of x.
+    # Add time colum at cool index 1.
+    x  <- x %>% select(starts_with("EEG") | starts_with("EOG")) %>%
+                unnest(cols = everything()) %>%
+                mutate(Time = unlist(t)) %>%
+                relocate(Time, .before = 1)
+
+    return(x)
+}
+
 #' @export
 znormalization <- function(x) {
     if (is.null(x) || length(x) == 0) {
@@ -15,6 +40,8 @@ minmax_normalization <- function(x) {
     normalized <- (x - min(x)) / (max(x) - min(x))
     return(normalized)
 }
+
+#' @export
 canoms_avg_epoch_strength <- function(df) {
     a <- df %>%
             dplyr::group_by(Epoch, Subepoch) %>%
@@ -46,11 +73,13 @@ set_epochs <- function(df, epoch = 30, subepochs = FALSE) {
     return(df)
 }
 
+#' @export
 window_split <- function(x, samples_per_split){
   split(x, ceiling(seq_along(x)/samples_per_split))
 }
 
 #' Computes the RMS of a numeric vector x.
+#' @export
 root_mean_square <- function(x) {
   squared <- x**2
   mean <- sum(squared)/length(squared)
@@ -60,6 +89,7 @@ root_mean_square <- function(x) {
 #' Given a numeric vector x, returns a boolean vector whose ith truth value
 #' indicates whether the ith element of x was above the 0.95 percentile of
 #' rms(x).
+#' @export
 rms_spindle <- function(x, λ=0.95) {
   rms <- root_mean_square(x)
   threshold <- quantile(rms, λ)
@@ -67,6 +97,7 @@ rms_spindle <- function(x, λ=0.95) {
   return(spindles)
 }
 
+#' @export
 window_eeg_data <- function(data, window_size) {
     data$Windows <- cut(data$Time,
                              breaks = seq(0, max(data$Time), by = window_size),
@@ -79,6 +110,7 @@ window_eeg_data <- function(data, window_size) {
 #' with less than min or more than max elements.
 #' In the context of spindle detection, the boolean vector is understood
 #' signal which indexes of the EEG sample were found to contain spindles.
+#' @export
 remove_spindles_out_of_range <- function(x, min, max) {
   substitute <- c()
   run <- rle(x)
@@ -94,13 +126,14 @@ remove_spindles_out_of_range <- function(x, min, max) {
   return(substitute)
 }
 
-# Sigma index method as described in O'Reilly & Nielsen (2015) and
-# Hupponen et al. (2007).
-# Parameters:
-# x: numeric vector
-# fs = 500: sampling frequency
-# 
-# Returns sigma index of vector x of EEG samples.
+#' Sigma index method as described in O'Reilly & Nielsen (2015) and
+#' Hupponen et al. (2007).
+#' Parameters:
+#' x: numeric vector
+#' fs = 500: sampling frequency
+#' 
+#' Returns sigma index of vector x of EEG samples.
+#' @export
 sigma_index <- function(x, fs=500){
     amp_spectrum <- amplitude_spectrum(x, fs)
     spindle_band <- subset(amp_spectrum, Frequency >= 10.5 & Frequency <= 16.0)
@@ -119,6 +152,7 @@ sigma_index <- function(x, fs=500){
     return(max / ((mean_low + mean_high) / 2))
 }
 
+#' @export
 relative_spindle_power <- function(x, fs = 500) {
     amp_spectrum <- amplitude_spectrum(x, fs)
     spindle_band <- subset(amp_spectrum, Frequency >= 11 & Frequency <= 16.0)
@@ -126,6 +160,7 @@ relative_spindle_power <- function(x, fs = 500) {
     return(sum(spindle_band$Amplitude) / sum(cross_band$Amplitude))
 }
 
+#' @export
 amplitude_spectrum <- function(x, fs = 500) {
     # Mean centering
     x <- x - mean(x)

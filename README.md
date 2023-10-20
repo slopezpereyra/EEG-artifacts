@@ -37,7 +37,14 @@ library(eegtk)
 ### Loading EEG data
 
 To load EEG data, we use the `EEG$new(data_file, ...)` initiation function. 
-This function takes a data file (with an optional signals file) as arguments.
+This function takes the path (`string`) to an EDF or CSV file as argument and
+initializes an `EEG` object with the data read. 
+
+Reading an EDF takes more or less the same time than reading a CSV, but the
+resulting data is more polished. For example, because EDF files contain channel
+names, column names will be immediately set when reading this format, while they
+must be manually set if reading .csv files.
+
 
 For example, if we have an `eeg.csv` file in some path relative to our working
 directory, we call
@@ -46,23 +53,22 @@ directory, we call
 eeg <- EEG$new("/relative/path/eeg.csv")
 ```
 
-The function returns an `eeg` R6 object containing the following attributes: 
+### The `EEG` object
 
-- `$data` : The EEG data.
-- `$signals` : The channels of the EEG, if a signals file was provided on
-  initialization. 
+The `EEG$new` function returns an `EEG` R6 object with the following fields: 
 
-- `$canoms` : Collective anomalies (artifacts) found in the EEG. If artifact
+- `$data` (`tibble`): The EEG data as a data frame.
+- `$canoms` (`tibble`): A data frame with collective anomalies data. If artifact
   detection was not yet performed, it defaults to an empty data frame.
-- `$panoms` : Point anomalies (artifacts) found in the EEG. If artifact
+- `$panoms` (`tibble`): A data frame with point anomalies data. If artifact
   detection was not yet performed, it defaults to an empty data frame.
-- `$psd` : The estimated power spectrum density of the EEG. If PSD computation
+- `$psd` (`tibble`) : The estimated power spectrum density of the EEG. If PSD computation
   was not yet performed, it defaults to an empty data frame.
-- `$spindles` : The spindles detected by any of the automated spindle detection
+- `$spindles` (`tibble`): The spindles detected by any of the automated spindle detection
   algorithms, it defaults to an empty data frame.
-- `$fs` : The sampling frequency $f_s$ of the EEG.
+- `$fs` (`int`): The sampling frequency $f_s$ of the EEG.
 
-Most methods of the EEG class perform inplace replacement. For example, take the
+Most methods of the EEG class work in-place. For example, take the
 following lines. 
 
 ``` r
@@ -70,7 +76,7 @@ eeg <- EEG$new("/relative/path/eeg.csv")
 eeg$subset(1, 10)  
 ```
 
-This subsets the `eeg` object from epoch $1$ to $10$ *inplace*, meaning that the
+This subsets the `eeg` object from epoch $1$ to $10$ *in-place*, meaning that the
 original EEG was modified. For that reason, it is advisable to create a copy of
 the original EEG object before proceeding with any analysis: 
 
@@ -182,6 +188,62 @@ eeg$plot_artifacts()
 
 ![enter image description
 here](https://i.ibb.co/djz0v74/Screenshot-from-2022-12-05-13-21-10.png)
+
+The complexity of the algorithm depends primarily on the complexity of `capa`,
+which is detailed in Fisch, Eckley and Fearnhead. On a 15.5 million samples EEG
+record with 8 channels, corresponding to a full night of sleep, artifact
+detection with a `step_size` parameter of `30 * 5` seconds (each five epoch
+period was independently analyzed ) took on average ≈ 8.6 minutes. The
+specifications for one of these tests is given below for reference.
+
+```
+========================================================================= 
+Log Path: /home/santiago/Work/EEG-toolkit/RTests/log/test.log 
+Working Directory: /home/santiago/Work/EEG-toolkit/RTests 
+User Name: santiago 
+R Version: 4.2.2 Patched (2022-11-10 r83330) 
+Machine: kipling x86_64 
+Operating System: Linux 6.2.0-34-generic #34-Ubuntu SMP PREEMPT_DYNAMIC Mon Sep 4 13:06:55 UTC 2023 
+Base Packages: stats graphics grDevices utils datasets methods base Other Packages: forcats_1.0.0 stringr_1.5.0 purrr_1.0.1 readr_2.1.4 tidyr_1.3.0 tibble_3.2.1 ggplot2_3.4.2 tidyverse_1.3.2 dplyr_1.1.2 logr_1.3.4 
+Log Start Time: 2023-10-14 13:59:25 
+========================================================================= 
+
+# A tibble: 15,562,500 × 11
+    Time Epoch Subepoch `F3-A2` `F4-A1` `C3-A2` `C4-A1` `O1-A2` `O2-A1` `LOC-A2`
+   <dbl> <fct> <fct>      <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>    <dbl>
+ 1 0     1     1        0.00478 0.00478 0.00478 0.00478 0.00478 0.00478  0.00478
+ 2 0.002 1     1        0.00478 0.00478 0.00478 0.00478 0.00478 0.00478  0.00478
+ 3 0.004 1     1        0.00478 0.00478 0.00478 0.00478 0.00478 0.00478  0.00478
+ 4 0.006 1     1        0.00478 0.00478 0.00478 0.00478 0.00478 0.00478  0.00478
+ 5 0.008 1     1        0.00478 0.00478 0.00478 0.00478 0.00478 0.00478  0.00478
+ 6 0.01  1     1        0.00478 0.00478 0.00478 0.00478 0.00478 0.00478  0.00478
+ 7 0.012 1     1        0.00478 0.00478 0.00478 0.00478 0.00478 0.00478  0.00478
+ 8 0.014 1     1        0.00478 0.00478 0.00478 0.00478 0.00478 0.00478  0.00478
+ 9 0.016 1     1        0.00478 0.00478 0.00478 0.00478 0.00478 0.00478  0.00478
+10 0.018 1     1        0.00478 0.00478 0.00478 0.00478 0.00478 0.00478  0.00478
+# ℹ 15,562,490 more rows
+# ℹ 1 more variable: `ROC-A2` <dbl>
+
+NOTE: Data frame has 15562500 rows and 11 columns. 
+
+NOTE: Log Print Time:  2023-10-14 13:59:41 
+NOTE: Elapsed Time: 15.2787973880768 secs 
+
+Starting artifact detection parameters with step_size = 30 * 5. 
+
+NOTE: Log Print Time:  2023-10-14 13:59:41 
+NOTE: Elapsed Time: 0.000774621963500977 secs 
+
+Artifact detection finished. 
+
+NOTE: Log Print Time:  2023-10-14 14:08:13 
+NOTE: Elapsed Time: 8.54647764762243 mins 
+```
+
+If one considers that artifact detection on an EEG record of this size usually
+takes days or weeks of tedious, non-standardized work, this run-time is excellent.
+However, the run-time can be improved if the EEG is resampled, at the cost of
+loosing resolution.
 
 ### Automated spindle detection
 
