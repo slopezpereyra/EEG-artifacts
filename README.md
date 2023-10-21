@@ -10,6 +10,7 @@ A scientific package for computational EEG analysis.
 - [EEG Computational Toolkit](#eeg-computational-toolkit)
     - [Installation and import](#installation-and-import)
     - [Loading EEG data](#loading-eeg-data)
+    - [The `EEG` object](#the-`eeg`-object)
     - [EEG Visualization](#eeg-visualization)
     - [Resampling and resolution scaling](#resampling-and-resolution-scaling)
     - [Filtering](#filtering)
@@ -20,19 +21,32 @@ A scientific package for computational EEG analysis.
 
 ### Installation and import
 
+If you don't have `devtools` installed, install it in R with 
+`install.packages('devtools')`. If this installation fails with 
+non-zero exit status, it may be due to lacking dependencies. Run 
+
+```
+sudo apt-get install libcurl4-openssl-dev libssl-dev libfontconfig1-dev libxml2-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
+```
+
+and try again. For more details, see
+[this](https://stackoverflow.com/questions/20923209/problems-installing-the-devtools-package).
+
+Then install this package using
 
 ```r 
 devtools::install_github("slopezpereyra/EEG-toolkit") 
 library(eegtk) 
 ```
 
-If R complains of not having an up-do-date version of Rtools, you may try to
-use the forcing install option.
+If R complains of not having an up-do-date version of `Rtools`, you may try 
+the forcing install option.
 
 ```r 
 devtools::install_github("slopezpereyra/EEG-toolkit", force=TRUE) 
 library(eegtk) 
 ```
+
 
 ### Loading EEG data
 
@@ -198,14 +212,9 @@ specifications for one of these tests is given below for reference.
 
 ```
 ========================================================================= 
-Log Path: /home/santiago/Work/EEG-toolkit/RTests/log/test.log 
-Working Directory: /home/santiago/Work/EEG-toolkit/RTests 
-User Name: santiago 
 R Version: 4.2.2 Patched (2022-11-10 r83330) 
-Machine: kipling x86_64 
 Operating System: Linux 6.2.0-34-generic #34-Ubuntu SMP PREEMPT_DYNAMIC Mon Sep 4 13:06:55 UTC 2023 
 Base Packages: stats graphics grDevices utils datasets methods base Other Packages: forcats_1.0.0 stringr_1.5.0 purrr_1.0.1 readr_2.1.4 tidyr_1.3.0 tibble_3.2.1 ggplot2_3.4.2 tidyverse_1.3.2 dplyr_1.1.2 logr_1.3.4 
-Log Start Time: 2023-10-14 13:59:25 
 ========================================================================= 
 
 # A tibble: 15,562,500 × 11
@@ -239,12 +248,6 @@ Artifact detection finished.
 NOTE: Log Print Time:  2023-10-14 14:08:13 
 NOTE: Elapsed Time: 8.54647764762243 mins 
 ```
-
-If one considers that artifact detection on an EEG record of this size usually
-takes days or weeks of tedious, non-standardized work, this run-time is excellent.
-However, the run-time can be improved if the EEG is resampled, at the cost of
-loosing resolution.
-
 ### Automated spindle detection
 
 The library contains implementations of two spindle
@@ -380,3 +383,4 @@ eeg$spectrogram(1) # First channel of the original EEG.
 
 The clean record has a shorter duration, as it is to be expected from the fact
 that artifact contaminated epochs were dropped.
+
