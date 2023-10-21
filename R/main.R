@@ -1,23 +1,27 @@
 # EEG R6 class
 
+#' @title EEG
+#'
+#' @description
+#' Abstract base class for EEG data.
 EEG <- R6::R6Class("EEG", public = list(
     #' @field data (`tibble`)\cr
     #' Data frame (tibble) with the EEG data.
     data = tibble::tibble(),
-    #' @field data (`tibble`)\cr
+    #' @field canoms (`tibble`)\cr
     #' Data frame (tibble) with the collective anomalies data.
     canoms = tibble::tibble(),
-    #' @field data (`tibble`)\cr
+    #' @field panoms (`tibble`)\cr
     #' Data frame (tibble) with the point anomalies data.
     panoms = tibble::tibble(),
-    #' @field data (`tibble`)\cr
+    #' @field psd (`tibble`)\cr
     #' Data frame (tibble) with the power spectral density data.
     psd = tibble::tibble(),
-    #' @field data (`tibble`)\cr
+    #' @field spindles (`tibble`)\cr
     #' Data frame (tibble) with the spindle data.
     spindles = tibble::tibble(),
-    #` @field (`numeric`)\cr
-    #  Sampling frequency of the EEG.
+    #' @field fs (`numeric`)
+    #'  Sampling frequency of the EEG.
     fs = 0,
 
     #' @description
@@ -106,6 +110,10 @@ EEG <- R6::R6Class("EEG", public = list(
     #' @description
     #' Private (do not use)
     #'
+    #' @param vec (`vector`).
+    #' @param n (`int`).
+    #' @param fs (`int`).
+    #'
     #' @return void
     vlow_pass = function(vec, n, fs) {
         wpass <- n / (fs / 2) # Nyquist
@@ -118,6 +126,10 @@ EEG <- R6::R6Class("EEG", public = list(
     #' @description
     #' Private (do not use)
     #'
+    #' @param vec (`vector`).
+    #' @param n (`int`).
+    #' @param fs (`int`).
+    #'
     #' @return void
     vhigh_pass = function(vec, n, fs) {
         wpass <- n / (fs / 2) # Nyquist
@@ -126,12 +138,17 @@ EEG <- R6::R6Class("EEG", public = list(
         return(high_pass)
     },
 
-    vbandpass = function(vec, l, h, fs) {
-
     #' @description
     #' Private (do not use)
     #'
+    #' @param vec (`vector`).
+    #' @param n (`int`).
+    #' @param l (`int`).
+    #' @param h (`int`).
+    #' @param fs (`int`).
+    #'
     #' @return void
+    vbandpass = function(vec, l, h, fs) {
         fpass <- c(l, h)
         wpass <- fpass / (fs / 2) # Nyquist
         but <- gsignal::butter(5, wpass, "pass", output = "Sos")
@@ -335,13 +352,14 @@ EEG <- R6::R6Class("EEG", public = list(
     #' (in seconds); formats the results and sets them to the `canoms` and
     #' `panoms` fields.
     #'
-    #' @param step_size(`int`)
-    #' @param alpha (`numeric`)\cr 
-    #' Only collective anomalies with strength greater than `alpha` are kept.
-    #' Defaults to `8`.
-    #' @param beta (`numeric`)\cr 
-    #' Only point anomalies with strength greater than `beta` are kept.
-    #' Defaults to `1`.
+    #' @param step_size (`int`) Seconds per analyzed step.
+    #' @param alpha (`numeric`) The result will exclude anoms with normalized strength <= alpha.
+    #' The value of `alpha` must satisfie 0 ≤ alpha ≤ 1.
+    #' Defaults to `0.05`.
+    #' @param type (`string`) Should be "mean" or "meanvar", depending on 
+    #' whether to test for changes in mean or in mean and variance.
+    #' @param verbose (`bool`) Print log messages of the analysis process?
+    #' 
     #' @return void
     artf_stepwise = function(step_size = 30, alpha = 0.05, type = "mean",
                              verbose = FALSE) {
@@ -370,14 +388,12 @@ EEG <- R6::R6Class("EEG", public = list(
     #` features of these data frames to match the full `$data` instead of 
     #` simply the step to which they correspond.
     #'
-    #' @param mps(`vector`)\cr 
-    #' A vector containing the number of measures per analyzed step of data.
-    #' @param panoms (`list`)\cr 
-    #' List of data frames, each comming from calling
+    #' @param mps (`vector`) A vector containing the number of measures per analyzed step of data.
+    #' @param panoms (`list`) List of data frames, each comming from calling
     #' anomaly::point_anomalies on an analyzed subset of the EEG data.
-    #' @param canoms (`numeric`)\cr 
-    #' List of data frames, each comming from calling
+    #' @param canoms (`numeric`) List of data frames, each comming from calling
     #' anomaly::collective_anomalies on an analyzed subset of the EEG data.
+    #' @param alpha See artf_stepwise which transfers its alpha parameter to this.
     #' @return void
     set_anom_dfs = function(mps, panoms, canoms, alpha=0.05) {
         mps <- c(0, mps[-length(mps)])
@@ -430,10 +446,10 @@ EEG <- R6::R6Class("EEG", public = list(
     #' EEG data of the chanel and a column that is filled with NaN except
     #' at each time instance where any type of anomaly was found.
     #'
-    #' @param eeg An Analysis object.
-    #' @param chan An integer that points to the EEG channel.
-    #' @param data Original EEG data for this analysis
-    #' @return void
+    #' @param chan (`int`) Integer in the range [1, number_of_eeg_signals].
+    #' @param s Plot should begin at epoch s.
+    #' @param e Plot should end at epoch e.
+    #' @return data.frame
     set_plot_data = function(chan, s = 0, e = 0) {
         data <- self$data
         canoms <- dplyr::filter(self$canoms, variate == chan)
@@ -478,6 +494,8 @@ EEG <- R6::R6Class("EEG", public = list(
     #' Plots analysis results for a specific channel.
     #'
     #' @param chan An integer that points to the EEG channel.
+    #' @param s Plot should begin at epoch s.
+    #' @param e Plot should end at epoch e.
     #' @param size (optional) The size of the red dots that signal an anomaly.
     #' @return ggplot
     plot_channel_artifacts = function(chan, s = 0, e = 0, size = 0.2) {
@@ -492,11 +510,12 @@ EEG <- R6::R6Class("EEG", public = list(
         return(p)
     },
 
+    #' @description
     #' Plots all channels with any kind of anomalies from epoch `s` to `e`.
     #' Mark anomalies with dots of radius `size`.
-    #' @param s
-    #' @param e
-    #' @param size
+    #' @param s Starting epoch
+    #' @param e Ending epoch
+    #' @param size Size of the red dots that mark anomalies in the plot
     #' @return cowplot
     plot_artifacts = function(s = 0, e = 0, size = 0.2) {
         plots <- list()
@@ -508,6 +527,15 @@ EEG <- R6::R6Class("EEG", public = list(
         return(cowplot::plot_grid(plotlist = plots, align = "v", ncol = 1))
     },
 
+    #' @description
+    #' Saves to `dir` a plot of all artifacts. Each plot contains a number of
+    #' of epochs determined by `epochs_per_plot`. If `ignore_clean` is `TRUE`,
+    #' then any segment not containing anomalies is not plotted.
+    #' 
+    #' @param epochs_per_plot Size of the x-axis in epochs.
+    #' @param dir Directory where plots will be saved.
+    #' @param ignore_clean Skip plotting clean segments?
+    #' @return void
     gen_artifact_plots = function(epochs_per_plot,
                                   dir = getwd(),
                                   ignore_clean=TRUE) {
@@ -526,6 +554,14 @@ EEG <- R6::R6Class("EEG", public = list(
         }
     },
 
+    #' @description
+    #' Determines whether a data segment contains anomalies. If `e` parameter 
+    #' is zero (default), the function test whether any anomaly exists in 
+    #' the whole EEG data.
+    #'
+    #' @param s Starting epoch of the segment
+    #' @param e Ending epoch of the segment, defaults to zero.
+    #' @return bool
     has_anoms = function(s, e = 0) {
         if (e == 0) {
             e <- s
@@ -544,10 +580,12 @@ EEG <- R6::R6Class("EEG", public = list(
 
     #' @description
     #' Normalizes the strengths of point and collective anomalies
-    #' given a normalizing function `f` which defaults to min-max
-    #' normalization.
+    #' given a normalizing function `f`, which defaults to min-max
+    #' normalization, and removes anomalies whose strength is inferior
+    #' to `x`.
     #'
-    #' @param f
+    #' @param x Threshold value
+    #' @param f Normalization function (defaults to min-max).
     #' @return void
     sfilter = function(x, f = minmax_normalization) {
         self$canoms$mean.change <- f(self$canoms$mean.change)
@@ -556,6 +594,10 @@ EEG <- R6::R6Class("EEG", public = list(
         self$panoms <- self$panoms %>% dplyr::filter(strength >= x)
     },
 
+    #' @description
+    #' COMPLETE
+    #'
+    #' @return void
     get_contaminated_epochs = function() {
         l <- list(self$canoms, self$panoms)
         i <- which(lapply(l, nrow) == 0)
@@ -576,6 +618,12 @@ EEG <- R6::R6Class("EEG", public = list(
         return(canoms_avg_epoch_strength(self$canoms))
     },
 
+    #' @description
+    #' Performs artifact rejection by means of dropping from the EEG data
+    #' all segments corresponding to epoch-subepoch pairs
+    #' that were found to contain anomalies.
+    #'
+    #' @return void
     artf_reject = function() {
         epoch_data <- self$get_contaminated_epochs()
         clone <- self$clone()
@@ -587,12 +635,24 @@ EEG <- R6::R6Class("EEG", public = list(
     # --- PSD ---
 
 
+    #' @description
+    #' Plots the spectrogram of an EEG signal.
+    #' @param channel Integer pointing to an EEG signal.
+    #' @param max_freq Maximum frequency of the plot.
+    #' @param freq Aggregate frequency to set plot resolution.
+    #'
+    #' @return void
     spectrogram = function(channel, max_freq = 30, freq = 4) {
         rsleep::spectrogram(unlist(self$data[, -c(1:3)][channel]),
                             sRate = self$fs, maxFreq = max_freq,
                             freq = freq)
     },
 
+    #' @description
+    #' Computes the PSD of an EEG signal. It is returned in data frame format.
+    #' @param channel Integer pointing to an EEG signal.
+    #'
+    #' @return data.frame
     channel_psd = function(channel) {
         welch <- gsignal::pwelch(as.matrix(self$data[, -c(1:3)][channel]), fs = self$fs)
         psd <- welch$spec %>%
@@ -602,6 +662,10 @@ EEG <- R6::R6Class("EEG", public = list(
         return(psd)
     },
 
+    #' @description
+    #' Computes the PSD of each EEG signal. Result is set to the $psd field.
+    #'
+    #' @return data.frame
     compute_psd = function() {
         pwelch <- gsignal::pwelch(as.matrix(self$data[, -c(1:3)]), fs = self$fs)
         psd <- pwelch$spec %>%
@@ -611,6 +675,11 @@ EEG <- R6::R6Class("EEG", public = list(
         self$psd <- psd
     },
 
+    #' @description
+    #' Produces a ggplot of the PSD. `compute_psd` must have been called before.
+    #'
+    #' @param xlim Maximum frequency to show
+    #' @return ggplot
     plot_psd = function(xlim = 250) {
         tall <- reshape2::melt(self$psd, id.vars = "Fqc")
         p <- ggplot2::ggplot(tall, ggplot2::aes(Fqc, value, col=variable)) +
@@ -619,6 +688,11 @@ EEG <- R6::R6Class("EEG", public = list(
         return(p)
     },
 
+    #' @description
+    #' Produces a plotly plot of the PSD. `compute_psd` must have been called before.
+    #'
+    #' @param xlim Maximum frequency to show
+    #' @return plotly figure
     iplot_psd = function(xlim = 250) {
         psd <- reshape2::melt(self$psd, id.vars = "Fqc")
         fig <- plotly::plot_ly(
@@ -643,6 +717,19 @@ EEG <- R6::R6Class("EEG", public = list(
         return(fig)
     },
 
+    #' @description
+    #' Performs spindle detection either on a specific signal (if `channel` is 
+    #' non-zero) or for each EEG signal. The two available methods are
+    #' Sigma Index and Relative Spindle Power. For details on these, consult the
+    #' GitHub README. The result is set to the $spindles field.
+    #' '
+    #'
+    #' @param channel On which signal to detect spindles? If zero (default),
+    #'                all signals are subjected to spindle detection.
+    #' @param method Either "sigma_index" (default) or "rsp".
+    #' @param filter A boolean determining whether to filter spindles according 
+    #'                to standard strength thresholds.
+    #' @return void
     spindle_detection = function(channel = 0, # channel = 0 -> whole EEG
                                  method = "sigma_index",
                                  filter = TRUE) {
@@ -679,6 +766,20 @@ EEG <- R6::R6Class("EEG", public = list(
     },
 
 
+    #' @description
+    #' Plots the distribution of spindles across the EEG. `spindle_detection`
+    #' must have been previously called.
+    #' 
+    #'
+    #' @param channel On which signal to detect spindles? If zero (default),
+    #'                a cumulative index of the spindles on all signals is 
+    #'                plotted.
+    #' @param time_axis Show distribution over "epoch", "second", "minute" or "hour"?
+    #' @param xbins Size of the x-bins in the plot.
+    #' @param ybins Size of the y-bins in the plot.
+    #' @param from Start of the plot. Defaults to 0 (whole EEG).
+    #'
+    #' @return void
     plot_spindle_distribution = function(channel = 0,
                                          time_axis = "epoch",
                                         xbins = 10,
