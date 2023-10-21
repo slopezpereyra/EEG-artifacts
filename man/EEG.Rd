@@ -83,22 +83,16 @@ Creates a new instance of the EEG class.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{data_file}}{(\code{character})\cr
-Address of .csv file containing EEG data.}
+\item{\code{data_file}}{(\code{string})
+Directory of .csv file containing EEG data.}
 
-\item{\code{set_epochs}}{(\code{bool = TRUE})\cr
+\item{\code{set_epochs}}{(\code{bool = TRUE})
 Whether to set the epoch and subepoch features upon reading the
 EEG data. Defaults to TRUE, but should be FALSE if the EEG data
 being read already has these features.}
 
-\item{\code{epoch}}{(\code{int})\cr
+\item{\code{epoch}}{(\code{int})
 How many seconds make up an epoch? Only relevant if set_epochs is TRUE.}
-
-\item{\code{signals_file}}{(\code{list()})\cr
-Arbitrary special values this parameter is allowed to take, to make it
-feasible. This allows extending the domain of the parameter. Note that
-these values are only used in feasibility checks, neither in generating
-designs nor sampling.}
 }
 \if{html}{\out{</div>}}
 }

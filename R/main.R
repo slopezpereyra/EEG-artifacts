@@ -4,6 +4,7 @@
 #'
 #' @description
 #' Abstract base class for EEG data.
+#' @export
 EEG <- R6::R6Class("EEG", public = list(
     #' @field data (`tibble`)\cr
     #' Data frame (tibble) with the EEG data.
@@ -27,19 +28,13 @@ EEG <- R6::R6Class("EEG", public = list(
     #' @description
     #' Creates a new instance of the EEG class.
     #'
-    #' @param data_file (`character`)\cr
-    #'   Address of .csv file containing EEG data.
-    #' @param signals_file (`list()`)\cr
-    #'   Arbitrary special values this parameter is allowed to take, to make it
-    #'   feasible. This allows extending the domain of the parameter. Note that
-    #'   these values are only used in feasibility checks, neither in generating
-    #'   designs nor sampling.
-    #' @param set_epochs (`bool = TRUE`)\cr
+    #' @param data_file (`string`)
+    #'   Directory of .csv file containing EEG data.
+    #' @param set_epochs (`bool = TRUE`)
     #'   Whether to set the epoch and subepoch features upon reading the 
     #'   EEG data. Defaults to TRUE, but should be FALSE if the EEG data 
     #'   being read already has these features.
-    #'   
-    #' @param epoch (`int`)\cr
+    #' @param epoch (`int`)
     #'   How many seconds make up an epoch? Only relevant if set_epochs is TRUE.
     initialize = function(data_file, 
                           set_epochs=TRUE, 
@@ -54,7 +49,7 @@ EEG <- R6::R6Class("EEG", public = list(
     },
 
     #' @description
-    #' Subsets EEG data to keep only measures in the interval [s, e], where 
+    #' Subsets EEG data to keep only measures in the interval [s, e], where
     #' `s` and `e` are times in seconds and `e > s`.
     #'
     #' @param s (`integer`).
