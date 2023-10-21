@@ -21,32 +21,26 @@ A scientific package for computational EEG analysis.
 
 ### Installation and import
 
-If you don't have `devtools` installed, install it in R with 
-`install.packages('devtools')`. If this installation fails with 
-non-zero exit status, it may be due to lacking dependencies. Run 
+Install the `remotes` package with `install.packages('remote')` and run in R
 
-```
-sudo apt-get install libcurl4-openssl-dev libssl-dev libfontconfig1-dev libxml2-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
+```R 
+remotes::install_github("slopezpereyra/EEG-toolkit")
 ```
 
-and try again. For more details, see
-[this](https://stackoverflow.com/questions/20923209/problems-installing-the-devtools-package).
+*Note:* If some of the packages on which this package depends (e.g.
+`tidyverse`) cannot be installed due to unmet dependencies, try running 
 
-Then install this package using
-
-```r 
-devtools::install_github("slopezpereyra/EEG-toolkit") 
-library(eegtk) 
+```
+apt-get update
+# System dependencies for ALL dependencies
+sudo apt-get install -y \
+    libgdal-dev gdal-bin libproj-dev proj-data proj-bin libgeos-dev \
+    libcurl4-openssl-dev libssl-dev libfontconfig1-dev libxml2-dev  \ 
+    libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
 ```
 
-If R complains of not having an up-do-date version of `Rtools`, you may try 
-the forcing install option.
-
-```r 
-devtools::install_github("slopezpereyra/EEG-toolkit", force=TRUE) 
-library(eegtk) 
-```
-
+and then repeat the `install_github` command. Most of these libraries are 
+probably installed in your system already.
 
 ### Loading EEG data
 
@@ -64,7 +58,7 @@ For example, if we have an `eeg.csv` file in some path relative to our working
 directory, we call
 
 ```r 
-eeg <- EEG$new("/relative/path/eeg.csv")
+eeg <- EEG$new("/relative/path/eeg.csv") # could be eeg.edf as well...
 ```
 
 ### The `EEG` object

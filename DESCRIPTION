@@ -1,10 +1,11 @@
 Package: eegtk
 Type: Package
 Title: EEG Tools
-Author: Santiago López Pereyra
+Author: Santiago López Pereyra <santiagolopezpereyra@gmail.com>
 Description: General EEG utilities. Visualization, artifact detection/rejection, PS estimation, and more.
 Version: 0.0.2.0
 Encoding: UTF-8
+Roxygen: list(markdown = TRUE, r6 = TRUE)
 Depends:
     tidyverse,
     ggplot2,
