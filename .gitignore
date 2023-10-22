@@ -7,7 +7,6 @@
 # My stuff
 *.png
 *.txt
-*.edf
 .idea/
 78/
 *.rds

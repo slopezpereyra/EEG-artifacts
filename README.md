@@ -21,7 +21,7 @@ A scientific package for computational EEG analysis.
 
 ### Installation and import
 
-Install the `remotes` package with `install.packages('remote')` and run in R
+Install the `remotes` package with `install.packages('remotes')` and run in R
 
 ```R 
 remotes::install_github("slopezpereyra/EEG-toolkit")
