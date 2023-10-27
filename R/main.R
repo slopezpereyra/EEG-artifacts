@@ -41,7 +41,7 @@ EEG <- R6::R6Class("EEG", public = list(
                           epoch = 30) {
         f <- ifelse(endsWith(data_file, ".edf"), read_edf, readr::read_csv)
         self$data <- f(data_file)
-        if (set_epochs){
+        if (set_epochs) {
             self$data <- set_epochs(self$data, epoch, subepochs = TRUE)
         }
         self$fs <- self$get_fs()
@@ -419,8 +419,8 @@ EEG <- R6::R6Class("EEG", public = list(
     set_anom_time_features = function() {
         self$panoms$Time <- self$data$Time[unlist(self$panoms[1])]
         self$canoms$Time <- self$data$Time[unlist(self$canoms[1])]
-        self$canoms <- self$canoms %>% set_epochs()
-        self$panoms <- self$panoms %>% set_epochs()
+        self$canoms <- self$canoms %>% set_epochs(subepochs = TRUE)
+        self$panoms <- self$panoms %>% set_epochs(subepochs = TRUE)
     },
 
     #' @description
