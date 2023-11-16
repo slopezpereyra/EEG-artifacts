@@ -356,7 +356,7 @@ EEG <- R6::R6Class("EEG", public = list(
     #' @param verbose (`bool`) Print log messages of the analysis process?
     #' 
     #' @return void
-    artf_stepwise = function(step_size = 30, alpha = 0.05, type = "mean",
+    artf_stepwise = function(step_size = 30, alpha = 0, type = "mean",
                              verbose = FALSE) {
         print("Starting analysis. This may take a couple of minutes...")
         exclude <- c("Time", "Epoch", "Subepoch")
