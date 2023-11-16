@@ -419,8 +419,8 @@ EEG <- R6::R6Class("EEG", public = list(
     set_anom_time_features = function() {
         self$panoms$Time <- self$data$Time[unlist(self$panoms[1])]
         self$canoms$Time <- self$data$Time[unlist(self$canoms[1])]
-        self$canoms <- self$canoms %>% set_epochs(subepochs = TRUE)
-        self$panoms <- self$panoms %>% set_epochs(subepochs = TRUE)
+        self$canoms <- set_epochs(self$canoms, subepochs = TRUE)
+        self$panoms <- set_epochs(self$panoms, subepochs = TRUE)
     },
 
     #' @description
@@ -713,7 +713,20 @@ EEG <- R6::R6Class("EEG", public = list(
     },
 
     #' @description
-    #' Performs spindle detection either on a specific signal (if `channel` is 
+    #' Performs zero-mean centering per epoch. Useful pre-processing step for
+    #' certain analyses (e.g. ICA).
+    #' @return void
+    center_channels = function() {
+        x <- eeg$data[, -c(1, 3)]
+        centered <- x %>%
+                    tibble:group_by(Epoch) %>%
+                    tibble::group_modify(~tibble::as_tibble(scale(.x))) %>%
+                    tibble::as_tibble(.name_repair = "minimal")
+     self$data[, -c(1:3)] <- centered[, -c(1)] #1st col of centered = Epoch
+    },
+
+    #' @description
+    #' Performs spindle detection either on a specific signal (if `channel` is
     #' non-zero) or for each EEG signal. The two available methods are
     #' Sigma Index and Relative Spindle Power. For details on these, consult the
     #' GitHub README. The result is set to the $spindles field.
@@ -722,7 +735,7 @@ EEG <- R6::R6Class("EEG", public = list(
     #' @param channel On which signal to detect spindles? If zero (default),
     #'                all signals are subjected to spindle detection.
     #' @param method Either "sigma_index" (default) or "rsp".
-    #' @param filter A boolean determining whether to filter spindles according 
+    #' @param filter A boolean determining whether to filter spindles according
     #'                to standard strength thresholds.
     #' @return void
     spindle_detection = function(channel = 0, # channel = 0 -> whole EEG
