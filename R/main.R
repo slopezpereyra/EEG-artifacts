@@ -638,9 +638,10 @@ EEG <- R6::R6Class("EEG", public = list(
     #'
     #' @return void
     spectrogram = function(channel, max_freq = 30, freq = 4) {
-        rsleep::spectrogram(unlist(self$data[, -c(1:3)][channel]),
+        p <- rsleep::spectrogram(unlist(self$data[, -c(1:3)][channel]),
                             sRate = self$fs, maxFreq = max_freq,
                             freq = freq)
+        return(p)
     },
 
     #' @description
@@ -777,10 +778,9 @@ EEG <- R6::R6Class("EEG", public = list(
     #' @description
     #' Plots the distribution of spindles across the EEG. `spindle_detection`
     #' must have been previously called.
-    #' 
     #'
     #' @param channel On which signal to detect spindles? If zero (default),
-    #'                a cumulative index of the spindles on all signals is 
+    #'                a cumulative index of the spindles on all signals is
     #'                plotted.
     #' @param time_axis Show distribution over "epoch", "second", "minute" or "hour"?
     #' @param xbins Size of the x-bins in the plot.
