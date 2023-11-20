@@ -390,7 +390,7 @@ EEG <- R6::R6Class("EEG", public = list(
     #' anomaly::collective_anomalies on an analyzed subset of the EEG data.
     #' @param alpha See artf_stepwise which transfers its alpha parameter to this.
     #' @return void
-    set_anom_dfs = function(mps, panoms, canoms, alpha=0.05) {
+    set_anom_dfs = function(mps, panoms, canoms, alpha) {
         mps <- c(0, mps[-length(mps)])
         self$canoms <- mapply(function(x, y) {
                             x %>% dplyr::mutate(
@@ -410,7 +410,6 @@ EEG <- R6::R6Class("EEG", public = list(
             bind_rows() %>%
             as_tibble()
         self$set_anom_time_features()
-        self$sfilter(alpha)
     },
 
     #' @description
