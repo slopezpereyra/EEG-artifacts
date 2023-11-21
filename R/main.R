@@ -720,7 +720,11 @@ EEG <- R6::R6Class("EEG", public = list(
     #' @param relative (bool) Plot the relative PSD?
     #' @return plotly figure
     iplot_psd = function(xlim = 250, relative = FALSE) {
-        psd <- ifelse(relative, self$relative_psd(), self$psd)
+        if (relative){
+            psd <- self$relative_psd()
+        }else{
+            psd <- self$psd
+        }
         psd <- reshape2::melt(psd, id.vars = "Fqc")
         fig <- plotly::plot_ly(
             psd,
