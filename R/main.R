@@ -670,9 +670,6 @@ EEG <- R6::R6Class("EEG", public = list(
         self$psd <- psd
     },
 
-    relative_psd = function(){
-        rpsd <- apply(self$psd[, -c(1)], 1, function(x) sum(x)/length(x))
-    }
 
     #' @description
     #' Produces a ggplot of the PSD. `compute_psd` must have been called before.
@@ -693,9 +690,9 @@ EEG <- R6::R6Class("EEG", public = list(
     #' have been called before.
     #'
     #' @return tibble (data frame)
-    relative_psd = function(){
+    relative_psd = function() {
         total_power <- rowSums(self$psd[, -ncol(self$psd)])
-        relative_psd <- as_tibble(self$psd[, -c(ncol(self$psd))]/total_power)
+        relative_psd <- as_tibble(self$psd[, -c(ncol(self$psd))] / total_power)
         relative_psd$Fqc <- self$psd$Fqc
         return(relative_psd)
     },
@@ -719,10 +716,12 @@ EEG <- R6::R6Class("EEG", public = list(
     #' @description
     #' Produces a plotly plot of the PSD. `compute_psd` must have been called before.
     #'
-    #' @param xlim Maximum frequency to show
+    #' @param xlim (numeric) Maximum frequency to show (x-axis limit)
+    #' @param relative (bool) Plot the relative PSD?
     #' @return plotly figure
-    iplot_psd = function(xlim = 250) {
-        psd <- reshape2::melt(self$psd, id.vars = "Fqc")
+    iplot_psd = function(xlim = 250, relative = FALSE) {
+        psd <- ifelse(relative, self$relative_psd(), self$psd)
+        psd <- reshape2::melt(psd, id.vars = "Fqc")
         fig <- plotly::plot_ly(
             psd,
             type = "scatter",
