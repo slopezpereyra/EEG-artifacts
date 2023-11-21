@@ -46,7 +46,6 @@ canoms_avg_epoch_strength <- function(df) {
     a <- df %>%
             dplyr::group_by(Epoch, Subepoch) %>%
             dplyr::summarise_at(vars(mean.change), list(cAnomStrength = mean))
-    print(a)
     return(a)
 }
 

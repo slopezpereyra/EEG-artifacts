@@ -670,6 +670,10 @@ EEG <- R6::R6Class("EEG", public = list(
         self$psd <- psd
     },
 
+    relative_psd = function(){
+        rpsd <- apply(self$psd[, -c(1)], 1, function(x) sum(x)/length(x))
+    }
+
     #' @description
     #' Produces a ggplot of the PSD. `compute_psd` must have been called before.
     #'
@@ -679,6 +683,35 @@ EEG <- R6::R6Class("EEG", public = list(
         tall <- reshape2::melt(self$psd, id.vars = "Fqc")
         p <- ggplot2::ggplot(tall, ggplot2::aes(Fqc, value, col=variable)) +
             ggplot2::geom_line() +
+            ggplot2::xlim(c(0, xlim))
+        return(p)
+    },
+
+
+    #' @description
+    #' Computes the relative power at each frequency band. `compute_psd` must
+    #' have been called before.
+    #'
+    #' @return tibble (data frame)
+    relative_psd = function(){
+        total_power <- rowSums(self$psd[, -ncol(self$psd)])
+        relative_psd <- as_tibble(self$psd[, -c(ncol(self$psd))]/total_power)
+        relative_psd$Fqc <- self$psd$Fqc
+        return(relative_psd)
+    },
+
+    #' @description
+    #' Produces a ggplot of the relative power spectrum. 
+    #' `compute_psd` must have been called before.
+    #'
+    #' @param xlim (numeric) Maximum frequency to show
+    #' @param smooth (bool) Smooth to show overall tendencies?
+    #' @return ggplot
+    plot_rpsd = function(xlim = 250, smooth = FALSE) {
+        tall <- reshape2::melt(self$relative_psd(), id.vars = "Fqc")
+        f <- ifelse(smooth, ggplot2::geom_smooth, ggplot2::geom_line)
+        p <- ggplot2::ggplot(tall, ggplot2::aes(Fqc, value, col=variable)) +
+            f() +
             ggplot2::xlim(c(0, xlim))
         return(p)
     },
