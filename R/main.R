@@ -210,6 +210,7 @@ EEG <- R6::R6Class("EEG", public = list(
             FUN = function(x) self$vbandpass(x, l, h, self$fs),
             simplify = FALSE
         )
+        print("Filt df computed")
         filt_df <- cbind(
                 Time = self$data$Time,
                 Epoch = self$data$Epoch,
