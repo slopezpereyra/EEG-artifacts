@@ -163,9 +163,13 @@ EEG <- R6::R6Class("EEG", public = list(
             FUN = function(x) self$vlow_pass(x, n, self$fs),
             simplify = FALSE
         ) %>%
-            tibble::as_tibble() %>%
-            tibble::add_column(Time = self$data$Time,
-                                .before = colnames(self$data)[2])
+            cbind(
+                Time = self$data$Time,
+                Epoch = self$data$Epoch,
+                Subepoch = self$data$Subepoch,
+                filt_df
+            ) %>%
+            tibble::as_tibble()
         self$data <- filt_df
     },
 
@@ -182,9 +186,13 @@ EEG <- R6::R6Class("EEG", public = list(
             FUN = function(x) self$vhigh_pass(x, n, self$fs),
             simplify = FALSE
         ) %>%
-            tibble::as_tibble() %>%
-            tibble::add_column(Time = self$data$Time,
-                                .before = colnames(self$data)[2])
+            cbind(
+                Time = self$data$Time,
+                Epoch = self$data$Epoch,
+                Subepoch = self$data$Subepoch,
+                filt_df
+            ) %>%
+            tibble::as_tibble()
         self$data <- filt_df
     },
 
@@ -202,9 +210,13 @@ EEG <- R6::R6Class("EEG", public = list(
             FUN = function(x) self$vbandpass(x, l, h, self$fs),
             simplify = FALSE
         ) %>%
-            tibble::as_tibble() %>%
-            tibble::add_column(Time = self$data$Time,
-                                .before = colnames(df)[2])
+            cbind(
+                Time = self$data$Time,
+                Epoch = self$data$Epoch,
+                Subepoch = self$data$Subepoch,
+                filt_df
+            ) %>%
+            tibble::as_tibble()
         self$data <- filt_df
     },
 
