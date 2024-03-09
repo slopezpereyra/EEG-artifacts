@@ -162,8 +162,8 @@ EEG <- R6::R6Class("EEG", public = list(
             MARGIN = 2,
             FUN = function(x) self$vlow_pass(x, n, self$fs),
             simplify = FALSE
-        ) %>%
-            cbind(
+        ) 
+        filt_df <- cbind(
                 Time = self$data$Time,
                 Epoch = self$data$Epoch,
                 Subepoch = self$data$Subepoch,
@@ -185,8 +185,8 @@ EEG <- R6::R6Class("EEG", public = list(
             MARGIN = 2,
             FUN = function(x) self$vhigh_pass(x, n, self$fs),
             simplify = FALSE
-        ) %>%
-            cbind(
+        )
+        filt_df <- cbind(
                 Time = self$data$Time,
                 Epoch = self$data$Epoch,
                 Subepoch = self$data$Subepoch,
@@ -210,7 +210,7 @@ EEG <- R6::R6Class("EEG", public = list(
             FUN = function(x) self$vbandpass(x, l, h, self$fs),
             simplify = FALSE
         ) %>%
-            cbind(
+        filt_df <- cbind(
                 Time = self$data$Time,
                 Epoch = self$data$Epoch,
                 Subepoch = self$data$Subepoch,
@@ -700,7 +700,9 @@ EEG <- R6::R6Class("EEG", public = list(
     #' @description
     #' Computes the relative power at each frequency band. `compute_psd` must
     #' have been called before.
-    #'
+    #' WRONG!!!!!!!! Frequency band is, for example, 0.5 to 4 hz. The relative 
+    #' power in a band is the total power in that range / total power across all 
+    #' frequencies, FOR A SINGLE CHANNEL!
     #' @return tibble (data frame)
     relative_psd = function() {
         total_power <- rowSums(self$psd[, -ncol(self$psd)])
