@@ -714,16 +714,24 @@ EEG <- R6::R6Class("EEG", public = list(
 
 
     #' @description
-    #' Computes the relative power at each frequency band. `compute_psd` must
-    #' have been called before.
-    #' WRONG!!!!!!!! Frequency band is, for example, 0.5 to 4 hz. The relative 
-    #' power in a band is the total power in that range / total power across all 
-    #' frequencies, FOR A SINGLE CHANNEL!
+    #' Computes the relative power spectrum at frequency band [to, from] for
+    #' each EEG channel.
+    #' The relative power of a frequency band is
+    #'
+    #'                          ∑ᵢxᵢ/ ∑yⱼ
+    #'
+    #' where xᵢis the power at the ith frequency in the range [to, from] and
+    #' yⱼ is the power at the jth frequency in the range [0, fs/2]
+    #' This funcion requires `compute_psd` to have been called before.
     #' @return tibble (data frame)
-    relative_psd = function() {
-        total_power <- rowSums(self$psd[, -ncol(self$psd)])
-        relative_psd <- as_tibble(self$psd[, -c(ncol(self$psd))] / total_power)
-        relative_psd$Fqc <- self$psd$Fqc
+    relative_psd = function(from, to) {
+        total_power <- colSums(self$psd[, -ncol(self$psd)])
+        freq_band <- self$psd %>% subset(Fqc >= from & Fqc <= to)
+        band_power <- colSums(freq_band[, -ncol(self$psd)])
+        relative_psd <- tibble::as_tibble(band_power / total_power)
+        relative_psd <- relative_psd %>%
+            tibble::add_column(channel = colnames(self$psd[, -ncol(self$psd)]),
+                               .before = 1)
         return(relative_psd)
     },
 
