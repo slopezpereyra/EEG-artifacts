@@ -162,14 +162,19 @@ EEG <- R6::R6Class("EEG", public = list(
             MARGIN = 2,
             FUN = function(x) self$vlow_pass(x, n, self$fs),
             simplify = FALSE
-        )
-        filt_df <- cbind(
-                Time = self$data$Time,
-                Epoch = self$data$Epoch,
+        ) %>% tibble::as_tibble() %>%
+            tibble::add_column(
                 Subepoch = self$data$Subepoch,
-                filt_df
+                .before = 1
             ) %>%
-            tibble::as_tibble()
+            tibble::add_column(
+                Epoch = self$data$Epoch,
+                .before = 1
+            ) %>%
+            tibble::add_column(
+                Time = self$data$Time,
+                .before = 1
+            )
         self$data <- filt_df
     },
 
@@ -185,14 +190,19 @@ EEG <- R6::R6Class("EEG", public = list(
             MARGIN = 2,
             FUN = function(x) self$vhigh_pass(x, n, self$fs),
             simplify = FALSE
-        )
-        filt_df <- cbind(
-                Time = self$data$Time,
-                Epoch = self$data$Epoch,
+        ) %>% tibble::as_tibble() %>%
+            tibble::add_column(
                 Subepoch = self$data$Subepoch,
-                filt_df
+                .before = 1
             ) %>%
-            tibble::as_tibble()
+            tibble::add_column(
+                Epoch = self$data$Epoch,
+                .before = 1
+            ) %>%
+            tibble::add_column(
+                Time = self$data$Time,
+                .before = 1
+            )
         self$data <- filt_df
     },
 
@@ -209,15 +219,20 @@ EEG <- R6::R6Class("EEG", public = list(
             MARGIN = 2,
             FUN = function(x) self$vbandpass(x, l, h, self$fs),
             simplify = FALSE
-        )
-        print("Filt df computed")
-        filt_df <- cbind(
-                Time = self$data$Time,
-                Epoch = self$data$Epoch,
+        ) %>%
+        tibble::as_tibble() %>%
+            tibble::add_column(
                 Subepoch = self$data$Subepoch,
-                filt_df
+                .before = 1
             ) %>%
-            tibble::as_tibble()
+            tibble::add_column(
+                Epoch = self$data$Epoch,
+                .before = 1
+            ) %>%
+            tibble::add_column(
+                Time = self$data$Time,
+                .before = 1
+            )
         self$data <- filt_df
     },
 
