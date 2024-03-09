@@ -162,7 +162,7 @@ EEG <- R6::R6Class("EEG", public = list(
             MARGIN = 2,
             FUN = function(x) self$vlow_pass(x, n, self$fs),
             simplify = FALSE
-        ) 
+        )
         filt_df <- cbind(
                 Time = self$data$Time,
                 Epoch = self$data$Epoch,
@@ -209,7 +209,7 @@ EEG <- R6::R6Class("EEG", public = list(
             MARGIN = 2,
             FUN = function(x) self$vbandpass(x, l, h, self$fs),
             simplify = FALSE
-        ) %>%
+        )
         filt_df <- cbind(
                 Time = self$data$Time,
                 Epoch = self$data$Epoch,
