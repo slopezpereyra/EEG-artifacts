@@ -150,6 +150,24 @@ EEG <- R6::R6Class("EEG", public = list(
         pass <- gsignal::filter(but, unlist(vec))
         return(pass)
     },
+    
+    #' @description
+    #' Private (do not use)
+    #'
+    #' @param vec (`vector`).
+    #' @param n (`int`).
+    #' @param l (`int`).
+    #' @param h (`int`).
+    #' @param fs (`int`).
+    #'
+    #' @return void
+    vnotch = function(vec, l, h, fs) {
+        fpass <- c(l, h)
+        wpass <- fpass / (fs / 2) # Nyquist
+        but <- gsignal::butter(5, wpass, type = "stop", output = "Sos")
+        pass <- gsignal::filter(but, unlist(vec))
+        return(pass)
+    },
 
     #' @description
     #' Applies a low-pass filter to the EEG data. The value of `n` is used
@@ -235,6 +253,36 @@ EEG <- R6::R6Class("EEG", public = list(
             )
         self$data <- filt_df
     },
+    
+    #' @description
+    #' Applies a notch filter to the EEG data. Parameters `l` and `h` are
+    # ' the low and high frequency bounds.
+    #'
+    #' @param l (`numeric`).
+    #' @param h (`numeric`).
+    #' @return void
+    notch = function(l, h) {
+        filt_df <- apply(self$data[, -c(1:3)],
+            MARGIN = 2,
+            FUN = function(x) self$vnotch(x, l, h, self$fs),
+            simplify = FALSE
+        ) %>%
+        tibble::as_tibble() %>%
+            tibble::add_column(
+                Subepoch = self$data$Subepoch,
+                .before = 1
+            ) %>%
+            tibble::add_column(
+                Epoch = self$data$Epoch,
+                .before = 1
+            ) %>%
+            tibble::add_column(
+                Time = self$data$Time,
+                .before = 1
+            )
+        self$data <- filt_df
+    },
+
 
 
     #' @description
