@@ -746,6 +746,29 @@ EEG <- R6::R6Class("EEG", public = list(
         self$psd <- psd
     },
 
+    #' @description
+    #' Computes the PSD of sub-epoch in the EEG signal for given channels.
+    #' Result is set to the $psd field.
+    #'
+    #' @return data.frame
+    compute_epoched_psd = function(channels, hann_window_size = self$fs * 5) {
+        pwelch_to_df <- function(pw) {
+            psd <- pw$spec %>%
+                apply(log10, MARGIN = 2) %>%
+                tibble::as_tibble()
+            psd$Fqc <- pw$freq
+            return(psd)
+        }
+        data <- self$data[, append(c(2, 3), channels + 3)]
+        res <- data %>%
+            group_by(Epoch, Subepoch) %>%
+            group_modify(~ pwelch_to_df(gsignal::pwelch(as.matrix(.x),
+                fs = eeg$fs,
+                window = hann_window_size
+            )))
+        self$psd <- res
+    },
+
 
     #' @description
     #' Produces a ggplot of the PSD. `compute_psd` must have been called before.
