@@ -763,7 +763,7 @@ EEG <- R6::R6Class("EEG", public = list(
         res <- data %>%
             group_by(Epoch, Subepoch) %>%
             group_modify(~ pwelch_to_df(gsignal::pwelch(as.matrix(.x),
-                fs = eeg$fs,
+                fs = self$fs,
                 window = hann_window_size
             )))
         self$psd <- res
