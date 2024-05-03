@@ -18,6 +18,17 @@ A scientific package for computational EEG analysis.
   - [Power spectrum analysis](#power-spectrum-analysis)
   - [Example artifact detection](#example-artifact-detection)
 
+This package was particularly thought to be easy to use. In particular, students
+with little programming experience should be able to find their way around basic EEG analysis 
+with the package. The downside of providing a highly abstract interface is that one must on 
+occassions sacrifice efficiency. In particular, since EEG data is typically so large,
+sacrifices of memory efficiency are costly.  
+
+This package counts with a [Julia
+alternative](https://github.com/slopezpereyra/EEG.jl). This Julia package
+should stil be easy to learn and use, but it provides a few leyers less of
+abstraction. In contrast, it is far more efficient in temrs of memory and
+speed, and provides more capabilities (e.g. automatice spindle detection).
 
 ### Installation and import
 
@@ -273,58 +284,6 @@ Letting `channel=0` sets spindle detection to be carried out across all
 channels. If you want perform it only over the $n$th channel simply let `channel
 = n`. If `filter` is `TRUE` then results that do not meet the recommended 
 threshold $f \geq 4.5$ are automatically removed.
-
-**Relative Spindle Power Algorithm** : The Relative Spindle Power (RSP)
-algorithm [(Devuyst et al., 2011)](https://pubmed.ncbi.nlm.nih.gov/22254656/)
-also uses the amplitude spectrum to find spindles by characterizing abnormal values
-among the spindle frequency band. Its approach is more direct and parsimonious,
-however. For every $1$ second window, the amplitude spectrum $S(t)$ is computed, and
-the RSP is defined as
-
-$$RSP(t) = \frac{\int_{11}^{16} S(t, f) df}{\int_{0.5}^{40} S(t, f) df}$$
-
-This definition is more intelligible than the that of the sigma index, insofar
-as it represents the ratio of the total power in the spindle band with respect
-to the total power in the delta-theta-alpha-beta frequency range. It is evident
-that $0 \leq RSP \leq 1$. Higher values are indicative of a higher spindle
-probability---though it should be clear that $RSP$ is not a probability itself.
-The rejection threshold recommended in the original paper is $\lambda = 0.22$.
-
-To perform spindle detection with RSP, simply call
-`eeg$spindle_detection(channel=0, method="rsp", filter=TRUE)`, where `channel=0` has 
-the same implication as in the sigma index method. If `filter` is `TRUE`,
-results with $RSP \leq 0.22$ are automatically removed.
-
-#### Plotting the spindle distribution
-
-The distribution of spindles across time can be plotted with a wrapper function
-`plot_spindle_distribution`. The function has multiple parameters that make the
-plot design as flexible as possible, specially with respect to its time
-resolution. Here's an example from EEG data of our own:
-
-```
-eeg <- EEG$new("data/eeg_s78.csv")
-eeg$spindle_detection(method="sigma_index", filter=TRUE)
-eeg$plot_spindle_distribution(channel = 4, time_axis = "hour", from=4, 
-                            xbins=75, ybins=75)
-
-# the `from` parameter sets the lower y-axis bound and is set to 4.
-# `time_axis` sets the resolution of the x-axis and accepts the 
-# values  "second", "epoch", "minute", "hour". The other parameters are 
-# self-explanatory.
-
-```
-
-![](https://i.ibb.co/CsxxBdt/Rplot.png)
-
-The $z$ values described by the coloring of the boxed regions is the number of 
-spindles found at each respective $(t, f)$ point with $f$ the detection index
-and $t$ time.
-
-Of course, researchers will limit the scope of their analysis to smaller 
-time frames and are free to adjust the sensitivity of the detectors. The 
-spindle detection plotted above is unrealistic and only serves a showcasing 
-purpose.
 
 ### Power spectrum analysis
 
