@@ -18,9 +18,6 @@ EEG <- R6::R6Class("EEG", public = list(
     #' @field psd (`tibble`)\cr
     #' Data frame (tibble) with the power spectral density data.
     psd = tibble::tibble(),
-    #' @field spindles (`tibble`)\cr
-    #' Data frame (tibble) with the spindle data.
-    spindles = tibble::tibble(),
     #' @field fs (`numeric`)
     #'  Sampling frequency of the EEG.
     fs = 0,
@@ -46,6 +43,16 @@ EEG <- R6::R6Class("EEG", public = list(
         }
         self$fs <- self$get_fs()
         gc() # ::edf module seems to produce memory ovefload
+    },
+
+    #' @description
+    #' Given a data frame with columns Epoch and Stage, determining 
+    #' the stage of each epoch, sets the stages on the EEG data.
+    #'
+    #' @param stage_data (`data.frame`).
+    #' @return void
+    set_stages = function(stage_data){
+        self$data <- merge(self$data, stage_data, by = "Epoch", all = TRUE) %>% as_tibble()
     },
 
     #' @description
@@ -689,17 +696,25 @@ EEG <- R6::R6Class("EEG", public = list(
     },
 
     #' @description
-    #' Performs artifact rejection by means of dropping from the EEG data
-    #' all segments corresponding to epoch-subepoch pairs
-    #' that were found to contain anomalies.
+    #' Drops from the EEG data as well as the $canoms and $panoms data frames
+    #' those subepochs with anomalies of `mean.change` superior to the quantile
+    #' `quantile_thresh` in the distribution of `mean.change` in $canoms.
+    #' All sub-epochs with point anomalies are preserved.
     #'
+    #' @param quantile_thresh Float in [0, 1]. 
     #' @return void
-    artf_reject = function() {
+    artf_reject = function(quantile_thresh) {
+        if (quantile_thresh < 0 || quantile_thresh > 1){
+            stop("The `quantile_thresh` argument must lie between 0 and 1")
+        }
+        self$canoms <- self$canoms %>% subset(
+            mean.change > quantile(
+                mean.change,
+                quantile_thresh
+            )
+        )
         epoch_data <- self$get_contaminated_epochs()
-        clone <- self$clone()
-        clone$drop_subepochs(epoch_data$Epoch, epoch_data$Subepoch)
-        clone$canoms <- clone$panoms <- tibble::tibble()
-        return(clone)
+        self$drop_subepochs(epoch_data$Epoch, epoch_data$Subepoch)
     },
 
     # --- PSD ---
@@ -867,107 +882,6 @@ EEG <- R6::R6Class("EEG", public = list(
                     tibble::group_modify(~tibble::as_tibble(scale(.x))) %>%
                     tibble::as_tibble(.name_repair = "minimal")
      self$data[, -c(1:3)] <- centered[, -c(1)] #1st col of centered = Epoch
-    },
-
-    #' @description
-    #' Performs spindle detection either on a specific signal (if `channel` is
-    #' non-zero) or for each EEG signal. The two available methods are
-    #' Sigma Index and Relative Spindle Power. For details on these, consult the
-    #' GitHub README. The result is set to the $spindles field.
-    #' '
-    #'
-    #' @param channel On which signal to detect spindles? If zero (default),
-    #'                all signals are subjected to spindle detection.
-    #' @param method Either "sigma_index" (default) or "rsp".
-    #' @param filter A boolean determining whether to filter spindles according
-    #'                to standard strength thresholds.
-    #' @return void
-    spindle_detection = function(channel = 0, # channel = 0 -> whole EEG
-                                 method = "sigma_index",
-                                 filter = TRUE) {
-        if (method == "sigma_index") {
-            f <- sigma_index
-            threshold <- 4.5
-        }else if (method == "rsp") {
-            f <- relative_spindle_power
-            threshold <- 0.22
-        }else {
-            stop("Invalid spindle detection method. `method` argument should be:
-            'rsp': for Relative Spindle Power detection, or
-            'sigma_index': for Sigma Index detection.")
-        }
-        if (channel != 0) {
-            data <- self$data[c(1, channel + 3)] %>% window_eeg_data(1)
-        }else {
-            data <- self$data[, -c(2:3)] %>% window_eeg_data(1)
-        }
-        result <- data %>%
-            dplyr::group_by(Group = Windows) %>%
-            dplyr::summarize(dplyr::across(-c(Time, Windows), \(x) f(x, fs = self$fs))) %>%
-            dplyr::mutate(Group = as.numeric(stringr::str_extract(Group, "\\d+\\.?\\d*?(?=,)"))) %>%
-            dplyr::rename(Second = Group) %>%
-            na.omit()
-        if (filter) {
-            result <- result %>%
-                filter(across(-Second, ~ . > threshold)
-                %>% rowSums() > 0) %>%
-                dplyr::mutate(across(-Second, ~ ifelse(. < threshold, 0, .))) %>%
-                dplyr::select(where(~ any(. != 0)))
-        }
-        self$spindles <- result
-    },
-
-
-    #' @description
-    #' Plots the distribution of spindles across the EEG. `spindle_detection`
-    #' must have been previously called.
-    #'
-    #' @param channel On which signal to detect spindles? If zero (default),
-    #'                a cumulative index of the spindles on all signals is
-    #'                plotted.
-    #' @param time_axis Show distribution over "epoch", "second", "minute" or "hour"?
-    #' @param xbins Size of the x-bins in the plot.
-    #' @param ybins Size of the y-bins in the plot.
-    #' @param from Start of the plot. Defaults to 0 (whole EEG).
-    #'
-    #' @return void
-    plot_spindle_distribution = function(channel = 0,
-                                         time_axis = "epoch",
-                                        xbins = 10,
-                                        ybins = 10,
-                                        from = 0) {
-        time_resolution <- c(second = 1 / 60,
-                            minute = 1 / (60 ^ 2),
-                            hour = 1 / (60 ^ 3),
-                            epoch = 1 / 30)
-        data <- self$spindles
-        if (channel == 0) {
-            ylabel <- "Cumulative Index Score"
-            y <- rowSums(data[, !colnames(data) %in% c("Second")])
-            plot_title <- "Cumulative spindle distribution over time"
-        }else{
-            y <- data[[channel + 1]]
-            ylabel <- "Index Score"
-            plot_title <- paste(colnames(data)[channel + 1],
-                                ": Spindle distribution over time",
-                                sep = "")
-        }
-
-        fig <- plotly::plot_ly(self$spindles,
-            x = ~(Second * time_resolution[time_axis]),
-            y = y)
-        fig <- fig %>%
-          plotly::add_histogram2d(
-                nbinsx = xbins,
-                nbinsy = ybins,
-                ybins = list(start = from)
-            ) %>%
-          plotly::layout(
-            title = plot_title,
-            xaxis = list(title = paste(time_axis, "s", sep = "")),
-            yaxis = list(title = ylabel)
-          )
-        return(fig)
     }
     )
 )
