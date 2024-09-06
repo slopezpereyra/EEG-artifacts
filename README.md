@@ -18,17 +18,9 @@ A scientific package for computational EEG analysis.
   - [Power spectrum analysis](#power-spectrum-analysis)
   - [Example artifact detection](#example-artifact-detection)
 
-This package was particularly thought to be easy to use. In particular, students
-with little programming experience should be able to find their way around basic EEG analysis 
-with the package. The downside of providing a highly abstract interface is that one must on 
-occassions sacrifice efficiency. In particular, since EEG data is typically so large,
-sacrifices of memory efficiency are costly.  
-
-This package counts with a [Julia
-alternative](https://github.com/slopezpereyra/EEG.jl). This Julia package
-should stil be easy to learn and use, but it provides a few leyers less of
-abstraction. In contrast, it is far more efficient in temrs of memory and
-speed, and provides more capabilities (e.g. automatice spindle detection).
+This package has a [Julia
+alternative](https://slopezpereyra.github.io/EEGToolkit.jl/dev/) and has been
+deprecated in favor of it.
 
 ### Installation and import
 
